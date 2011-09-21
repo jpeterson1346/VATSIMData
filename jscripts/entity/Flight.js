@@ -88,7 +88,8 @@ namespace.module('vd.entity', function(exports, require) {
         this._img.width = 16;
         this._img.height = 16;
         this._img.onmouseover = function() { me._imageMouseover(); };
-        this._img.onmouseout = function() { me._imgMouseout(); };
+        // creates flickering in some browser, currently disabled
+        // this._img.onmouseout = function() { me._imgMouseout(); };
         this.setHeading(this.heading, true);
     };
 
@@ -111,7 +112,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Reset the mouse over effect, timeout based since onmouseout did not work reliable.
     * @private
     */
-    exports.Flight.prototype._imgMouseout = function() {
+    exports.Flight.prototype._imgMouseout = function () {
         if (Object.isNullOrUndefined(this._flightSettings)) return; // nothing to reset
         this.flightSettings = this._flightSettings;
         this._flightSettings = null;

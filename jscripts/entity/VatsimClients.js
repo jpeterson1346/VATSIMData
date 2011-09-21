@@ -1,13 +1,16 @@
 ﻿/**
 * @module vd.entity
 */
-namespace.module('vd.entity', function(exports, require) {
+namespace.module('vd.entity', function(exports) {
 
     /**
     * @constructor
     * @classdesc 
     * VatsimClients is the central class for reading the client data from the vatsim data file.
-    * Here the data are parsed and the entity objects created.
+    * Here data are parsed and the entity objects are created.
+    * @see Atc
+    * @see Airport
+    * @see Flight
     */
     exports.VatsimClients = function() {
         /**
@@ -276,7 +279,7 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * Display the clients.
+    * Display the clients (invoke display on all entities).
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
@@ -299,8 +302,11 @@ namespace.module('vd.entity', function(exports, require) {
         }
     };
 
-    // @method allClients
-    // @returns {Array} array of Flight, Airport ...
+    /**
+    * Get all clients. While this.clients only gets the primary clients,
+    * this returns all of them.
+    * @returns {Array} array of Flight, Airport ...
+    */
     exports.VatsimClients.prototype.allClients = function() {
         var c = this.flights.concat(this.airports);
         c = c.concat(this.flightplans);
@@ -309,7 +315,7 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * All clients.
+    * All primary clients, not the helper entities.
     * @returns {Array} array of Flight, Airport ...
     */
     exports.VatsimClients.prototype.clients = function() {
@@ -318,7 +324,7 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * Number of clients.
+    * Number of primary clients.
     * @returns {Number}
     */
     exports.VatsimClients.prototype.count = function() {
@@ -366,7 +372,7 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * Find flights in bounds
+    * Find flights in bounds.
     * @param {Boolean} inBounds
     * @returns {Array} flights displayed / not displayed
     */

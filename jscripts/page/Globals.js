@@ -111,6 +111,7 @@ namespace.module('vd.page', function (exports) {
         this.timerLoadUpdate = -1;
 
         // urls
+        this.urlLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
         this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
         this.urlGettingInvolved = "http://vatgm.codeplex.com/";
         this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
