@@ -1,11 +1,13 @@
-﻿//
-// Web utilities
-//
-namespace.module('vd.util', function (exports, require) {
+﻿/**
+* @module vd.util
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
+*/
+namespace.module('vd.util', function (exports) {
 
     /**
     * Web utilities.
     * @constructor
+    * @author KWB
     */
     exports.UtilsWeb = function () {
         // code goes here

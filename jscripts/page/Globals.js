@@ -1,17 +1,24 @@
 ﻿/**
 * @module vd.page
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.page', function (exports) {
 
     /**
-    * Things frequently needed in a global context.
+    * @classdesc Things frequently needed in a global context.
     * @constructor
+    * @author KWB
     */
     exports.Globals = function () {
 
         var now = new Date();
 
         // Logger: http://log4javascript.org/docs/manual.html#configuration
+        this.log = null;
+        this.logAppenderPopUp = null;
+        this.logAppenderConsole = null;
+        this.logUseAppenderPopUp = true;
+        this.logUseAppenderConsole = true;
         this._initLogger();
 
         // Vatsim objects
@@ -31,6 +38,7 @@ namespace.module('vd.page', function (exports) {
         this.sideBarDataDisplay = null;
         this.sideBarEntitiesDisplay = null;
         this.sideBarCreditsDisplay = null;
+        this.sideBarAboutDisplay = null;
         this.headerTaskInfoDisplay = null;
 
         // height profile dimensions
@@ -111,9 +119,12 @@ namespace.module('vd.page', function (exports) {
         this.timerLoadUpdate = -1;
 
         // urls
-        this.urlLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
+        this.urlUserManual = "./doc/Help.pdf";
+        this.urlProjectLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
+        this.urlProjectGettingInvolved = "http://vatgm.codeplex.com/";
+        this.urlProjectReportBugs = "http://vatgm.codeplex.com/workitem/list/basic";
+        this.urlProjectFeatureRequests = "http://vatgm.codeplex.com/discussions";
         this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
-        this.urlGettingInvolved = "http://vatgm.codeplex.com/";
         this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
     };
 
@@ -136,38 +147,49 @@ namespace.module('vd.page', function (exports) {
         };
     };
 
-    // Is the given value within the visible viewport's bounds?
-    // @param {LatLng} latLng position to be checked.
+    /**
+    * Is the given value within the visible viewport's bounds?
+    * @param {LatLng} latLng position to be checked.
+    * @see Globals#map
+    */
     exports.Globals.prototype.isInBounds = function (latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
-    // Registers an object.
-    // @param  {Object} newObject: to be registered object
-    // @return {String} objectId
+    /**
+    * Registers an object and get the unique key.
+    * @param  {Object} newObject: to be registered object
+    * @return {Number} objectId
+    */
     exports.Globals.prototype.register = function (newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
         this.objects[id] = newObject;
-        return id.toString();
+        return id;
     };
 
-    // Get an object by its unique id.
-    // @param  {Number} id
-    // @return {Object}
+    /**
+    * Get an object by its unique id.
+    * @param  {Number} id
+    * @return {Object}
+    */
     exports.Globals.prototype.getObject = function (id) {
         return this.objects[id];
     };
 
-    // Resets the clients
+    /**
+    * Resets the clients
+    */
     exports.Globals.prototype.resetClients = function () {
         if (!Object.isNullOrUndefined(this.clients)) this.clients.display(false, true);
         this.clients = new vd.entity.VatsimClients();
     };
 
-    // Get objects by an array of ids.
-    // @param  {Array} ids
-    // @return {Array} 0..n objects
+    /**
+    * Get objects by an array of ids.
+    * @param  {Array} ids
+    * @return {Array} 0..n objects
+    */
     exports.Globals.prototype.getObjects = function (ids) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
@@ -181,23 +203,32 @@ namespace.module('vd.page', function (exports) {
     /**
     * Init the logger.
     * @private
-    **/
+    */
     exports.Globals.prototype._initLogger = function () {
         var local = vd.util.UtilsWeb.isLocalServer();
-        var popUpLayout = new log4javascript.PatternLayout("%d{HH:mm:ss} %-5p - %m%n");
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();
         this.log.setLevel(local ? log4javascript.Level.TRACE : log4javascript.Level.WARN);
-        this.logAppender = new log4javascript.PopUpAppender({ lazyInit: true, initiallyMinimized: true });
-        this.logAppender.setFocusPopUp(false);
-        this.logAppender.setLayout(popUpLayout);
-        this.logAppender.setShowCommandLine(false);
-        this.logAppender.setNewestMessageAtTop(true);
-        this.log.addAppender(this.logAppender);
+
+        if (this.logUseAppenderConsole) {
+            this.logAppenderConsole = new log4javascript.BrowserConsoleAppender();
+            this.log.addAppender(this.logAppenderConsole);
+        }
+
+        if (this.logUseAppenderPopUp) {
+            var popUpLayout = new log4javascript.PatternLayout("%d{HH:mm:ss} %-5p - %m%n");
+            this.logAppenderPopUp = new log4javascript.PopUpAppender({ lazyInit: true, initiallyMinimized: true });
+            this.logAppenderPopUp.setFocusPopUp(false);
+            this.logAppenderPopUp.setLayout(popUpLayout);
+            this.logAppenderPopUp.setShowCommandLine(false);
+            this.logAppenderPopUp.setNewestMessageAtTop(true);
+            this.log.addAppender(this.logAppenderPopUp);
+        }
+
         if (local) {
             // display something and hide
             this.log.info("Local mode");
-            this.logAppender.hide();
+            if (this.logUseAppenderPopUp) this.logAppenderPopUp.hide();
         }
     };
 });

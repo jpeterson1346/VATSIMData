@@ -1,18 +1,17 @@
 ﻿/**
 * @module vd.entity
 */
-namespace.module('vd.entity', function(exports) {
+namespace.module('vd.entity', function (exports) {
 
     /**
     * @constructor
     * @classdesc 
     * VatsimClients is the central class for reading the client data from the vatsim data file.
     * Here data are parsed and the entity objects are created.
-    * @see Atc
-    * @see Airport
-    * @see Flight
+    * @see vd.module:entity.Airport
+    * @see vd.module:entity.Flight
     */
-    exports.VatsimClients = function() {
+    exports.VatsimClients = function () {
         /**
         * When this was last updated.
         * @type {String} 
@@ -80,7 +79,7 @@ namespace.module('vd.entity', function(exports) {
     * Read data from the VASTIM servers ("data file").
     * @return {Boolean} status, false if data was already available or something failed
     */
-    exports.VatsimClients.prototype.readFromVatsim = function() {
+    exports.VatsimClients.prototype.readFromVatsim = function () {
         this._setDatafile();
         var runtime = new vd.util.TimeDiff();
         var xmlhttp = new XMLHttpRequest();
@@ -105,7 +104,7 @@ namespace.module('vd.entity', function(exports) {
     * it uses the test files.
     * @private
     */
-    exports.VatsimClients.prototype._setDatafile = function() {
+    exports.VatsimClients.prototype._setDatafile = function () {
         // http://www.net-flyer.net/DataFeed/vatsim-data.txt
         if (vd.util.UtilsWeb.isLocalServer()) {
             // local test mode
@@ -123,9 +122,10 @@ namespace.module('vd.entity', function(exports) {
     * @param  {String} rawData from the request
     * @return {Boolean} status, false if data was already available or something failed
     */
-    exports.VatsimClients.prototype._parseVatsimDataFile = function(rawData) {
+    exports.VatsimClients.prototype._parseVatsimDataFile = function (rawData) {
 
         // init
+        var timeDiff = new vd.util.TimeDiff();
         var lines = rawData.split("\n");
         var section = "";
         var flights = new Array();
@@ -249,18 +249,27 @@ namespace.module('vd.entity', function(exports) {
 
             // set flights
             this.flights = vd.entity.Flight.updateFlights(this.flights, flights);
-            if (Object.isNullOrUndefined(this.flights)) throw "Assert: Flights must no be null";
-            var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(this.flights);
-            vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
-
+            if (!Object.isNullOrUndefined(this.flights)) {
+                var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(this.flights);
+                vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
+            } else {
+                globals.log.error("Parsing clients, flights undefined");
+            }
             // set airports        
             this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
-            if (Object.isNullOrUndefined(this.airports)) throw "Assert: Airports must no be null";
-
+            if (Object.isNullOrUndefined(this.airports)) {
+                globals.log.error("Parsing clients, airports undefined");
+            }
+            
+            // trace
+            globals.log.trace("Parsing completed " + timeDiff.getDiffFormatted());
+            
+            // completed    
             globals._asyncBoundsUpdateSemaphore = false;
             success = true;
         } else {
             // handling of race condition
+            globals.log.warn("Parsing clients, race condition detected!");
         }
 
         // bye
@@ -271,7 +280,7 @@ namespace.module('vd.entity', function(exports) {
     * Part of the parsing
     * @private
     */
-    exports.VatsimClients.prototype._splitGeneralSection = function(line) {
+    exports.VatsimClients.prototype._splitGeneralSection = function (line) {
         if (String.isNullOrEmpty(line)) return null;
         if (line.indexOf("=") < 0) return [line];
         var kv = line.split("=");
@@ -283,7 +292,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.VatsimClients.prototype.display = function(display, forceRedraw) {
+    exports.VatsimClients.prototype.display = function (display, forceRedraw) {
         if (this.count() < 1) return;
         var clients = this.clients();
         vd.entity.base.BaseEntityMap.display(clients, display, forceRedraw);
@@ -292,7 +301,7 @@ namespace.module('vd.entity', function(exports) {
     /**
     * Clear all overlays of all clients.
     */
-    exports.VatsimClients.prototype.clearOverlays = function() {
+    exports.VatsimClients.prototype.clearOverlays = function () {
         if (this.count() < 1) return;
         this.display(false, false);
         var clients = this.allClients();
@@ -307,7 +316,7 @@ namespace.module('vd.entity', function(exports) {
     * this returns all of them.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.allClients = function() {
+    exports.VatsimClients.prototype.allClients = function () {
         var c = this.flights.concat(this.airports);
         c = c.concat(this.flightplans);
         c = c.concat(this.atcs);
@@ -318,7 +327,7 @@ namespace.module('vd.entity', function(exports) {
     * All primary clients, not the helper entities.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.clients = function() {
+    exports.VatsimClients.prototype.clients = function () {
         var c = this.flights.concat(this.airports);
         return c;
     };
@@ -327,7 +336,7 @@ namespace.module('vd.entity', function(exports) {
     * Number of primary clients.
     * @returns {Number}
     */
-    exports.VatsimClients.prototype.count = function() {
+    exports.VatsimClients.prototype.count = function () {
         return this.clients().length;
     };
 
@@ -336,7 +345,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Number} objectId
     * @returns {BaseEntityVatsim}
     */
-    exports.VatsimClients.prototype.findByObjectId = function(objectId) {
+    exports.VatsimClients.prototype.findByObjectId = function (objectId) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, objectId);
     };
@@ -346,7 +355,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Number} id
     * @returns {Array} BaseEntityVatsim
     */
-    exports.VatsimClients.prototype.findById = function(id) {
+    exports.VatsimClients.prototype.findById = function (id) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, id);
     };
@@ -357,7 +366,7 @@ namespace.module('vd.entity', function(exports) {
     * @returns {BaseEntityVatsim}
     * @see BaseEntityVatsim#findByIdFirst
     */
-    exports.VatsimClients.prototype.findByIdFirst = function(id) {
+    exports.VatsimClients.prototype.findByIdFirst = function (id) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByIdFirst(clients, id);
     };
@@ -367,7 +376,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Boolean} displayed
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsDisplayed = function(displayed) {
+    exports.VatsimClients.prototype.findFlightsDisplayed = function (displayed) {
         return vd.entity.base.BaseEntityMap.findByDisplayed(this.flights, displayed);
     };
 
@@ -376,7 +385,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Boolean} inBounds
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsInBounds = function(inBounds) {
+    exports.VatsimClients.prototype.findFlightsInBounds = function (inBounds) {
         return vd.entity.base.BaseEntityMap.findInBounds(this.flights, inBounds);
     };
 });

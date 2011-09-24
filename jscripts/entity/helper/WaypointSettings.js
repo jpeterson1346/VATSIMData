@@ -6,9 +6,6 @@ namespace.module('vd.entity.helper', function(exports, require) {
     /**
     * @constructor
     * @classdesc The settings for a Waypoint.
-    * @property {Boolean} displayFlightWaypoints
-    * @property {Boolean} displayFlightAltitudeSpeed
-    * @property {Boolean} displayFlightCallsign
     * @param {Array} [properties]
     */
     exports.WaypointSettings = function(properties) {
@@ -32,8 +29,20 @@ namespace.module('vd.entity.helper', function(exports, require) {
     */
     exports.WaypointSettings.prototype.set = function(properties) {
 
+        /**
+        * Display flight waypoints?
+        * @type {Boolean}
+        */
         this.displayFlightWaypoints = false; // display at all
+        /**
+        * Display flight altitude and speed?
+        * @type {Boolean}
+        */
         this.displayFlightAltitudeSpeed = true;
+        /**
+        * Display flight callsign?
+        * @type {Boolean}
+        */
         this.displayFlightCallsign = true;
 
         // override with arguments

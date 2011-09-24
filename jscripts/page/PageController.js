@@ -1,5 +1,6 @@
 ﻿/**
-* @module vd.page 
+* @module vd.page
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.page', function (exports) {
 
@@ -7,7 +8,8 @@ namespace.module('vd.page', function (exports) {
     /**
     * @classdesc Page controller.
     * @constructor
-    * @see Globals
+    * @see vd.module:page.Globals
+    * @author KWB
     */
     exports.PageController = function () {
         /**
@@ -22,6 +24,12 @@ namespace.module('vd.page', function (exports) {
         * @type {Number}
         */
         this._lastInfoBarContentDeleteTime = 0;
+        /**
+        * Grids in wide mode
+        * @private
+        * @type {Boolean}
+        */
+        this._gridWideMode = null;
     };
     // #endregion ------------ Constructor ------------
 
@@ -67,7 +75,7 @@ namespace.module('vd.page', function (exports) {
     * Close the application.
     */
     exports.PageController.prototype.close = function () {
-        globals.logAppender.close();
+        if (!Object.isNullOrUndefined(globals.logAppenderPopUp)) globals.logAppenderPopUp.close();
     };
     // #endregion ------------ public part init / close ------------
 
@@ -86,10 +94,17 @@ namespace.module('vd.page', function (exports) {
     * Bring logger to front and focus (aka pop up logger).
     */
     exports.PageController.prototype.showLogger = function () {
-        globals.logAppender.show(); 
-        globals.logAppender.focus();
+        if (Object.isNullOrUndefined(globals.logAppenderPopUp)) {
+            if (Object.isNullOrUndefined(globals.logAppenderConsole))
+                this.displayInfo("Logger is disabled");
+            else
+                this.displayInfo("Logger is disabled, check your browser's console");
+        } else {
+            globals.logAppenderPopUp.show();
+            globals.logAppenderPopUp.focus();
+        }
     };
-    
+
     /**
     * Load the VATSIM clients (flights, airports, ATC ...).
     * @param {Boolean} displayInfo
@@ -249,15 +264,16 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Show / hide the input fields.
+    * @see vd.module:page.PageController#altitudeProfileSettings
     */
     exports.PageController.prototype.showHideInputAndTabs = function () {
-
         var me = this;
         var selected = $("#headerBarTabSelection").val().toUpperCase();
         var sideBar = document.getElementById("sideBar");
         var sideBarLocation = document.getElementById("sideBarLocation");
         var sideBarSettings = document.getElementById("sideBarSettings");
         var sideBarData = document.getElementById("sideBarData");
+        var sideBarAbout = document.getElementById("sideBarAbout");
         var sideBarEntities = document.getElementById("sideBarEntities");
         var sideBarCredits = document.getElementById("sideBarCredits");
         var mapCanvas = document.getElementById("mapCanvas");
@@ -266,15 +282,21 @@ namespace.module('vd.page', function (exports) {
         // one time init, remember style sheet values
         // http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object
         if (Object.isNullOrUndefined(globals.sideBarWidth)) {
+            this._initAltitudeProfile();
+            globals.sideBarMinWidth = $(sideBar).css('min-Width');
             globals.sideBarWidth = vd.util.UtilsWeb.getCssStyle("#sideBar", "width"); // only way to get global CSS value
-            globals.sideBarMinWidth = $(sideBar).css('minWidth');
+            globals.altitudeProfileWidth = vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "width"); ;
+            globals.mapCanvasWidth = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "width");
+            // this would calculate it based on "rest width"
+            // globals.altitudeProfileWidth = vd.util.UtilsCalc.substractPercentages("100%", globals.sideBarWidth);
+            // globals.mapCanvasWidth = globals.altitudeProfileWidth;
             globals.sideBarLocationDisplay = $(sideBarLocation).css('display');
             globals.sideBarSettingsDisplay = $(sideBarSettings).css('display');
             globals.sideBarEntitiesDisplay = $(sideBarEntities).css('display');
             globals.sideBarDataDisplay = $(sideBarData).css('display');
+            globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
             globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
             if (Object.isNullOrUndefined(globals.sideBarWidth) || Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
-
             globals.mapCanvasWidth = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "width");
             globals.mapCanvasHeight = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "height");
         }
@@ -284,16 +306,19 @@ namespace.module('vd.page', function (exports) {
             sideBar.style.width = "0%";
             sideBar.style.minWidth = "0px";
             mapCanvas.style.width = "100%";
+            mapCanvas.style.height = "95%";
             altitudeProfile.style.width = "100%";
         } else {
             // to visible
             sideBar.style.width = globals.sideBarWidth;
             sideBar.style.minWidth = globals.sideBarMinWidth;
             mapCanvas.style.width = globals.mapCanvasWidth;
+            this.altitudeProfileSettings(false); // set mapCanvas / mapAltitudeProfile height
             altitudeProfile.style.width = globals.altitudeProfileWidth;
             sideBarLocation.style.display = selected.startsWith("M") ? globals.sideBarLocationDisplay : "none";
             sideBarSettings.style.display = selected.startsWith("S") ? globals.sideBarSettingsDisplay : "none";
             sideBarData.style.display = selected.startsWith("D") ? globals.sideBarDataDisplay : "none";
+            sideBarAbout.style.display = selected.startsWith("A") ? globals.sideBarAboutDisplay : "none";
             sideBarCredits.style.display = selected.startsWith("C") ? globals.sideBarCreditsDisplay : "none";
             sideBarEntities.style.display = selected.startsWith("E") ? globals.sideBarEntitiesDisplay : "none";
 
@@ -303,7 +328,7 @@ namespace.module('vd.page', function (exports) {
                     function () {
                         me.updateGrids(true);
                     }, 250); // delayed data update
-            if (selected.startsWith("S")) this._displayColourBar(); // force redraw
+            if (selected.startsWith("S")) this._displayAltitudeColourBar(); // force redraw
         }
 
         // resisizing
@@ -311,14 +336,7 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Getting involved.
-    */
-    exports.PageController.prototype.gettingInvolved = function () {
-        vd.util.UtilsWeb.newLocation(globals.urlGettingInvolved);
-    };
-
-    /**
-    * Select a tab, and optionally apply params (e.g. how the data grids are collapsed).
+    * Select a tab, and optionally apply parameters (e.g. how the data grids are collapsed).
     * @param {String} tab
     * @param {Object} [optParams]
     */
@@ -445,7 +463,7 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Settings for the flight object has been changed.
+    * Settings for the entites (flight, ATC, waypoints) has been changed.
     * @param {boolean} onlySettingsNoRedisplay
     */
     exports.PageController.prototype.vatsimClientSettingsChanged = function (onlySettingsNoRedisplay) {
@@ -474,8 +492,7 @@ namespace.module('vd.page', function (exports) {
             displayId: document.getElementById("inputAtcSettingsId").checked,
             displayAreaAtc: document.getElementById("inputAtcSettingsAreaAtc").checked,
             displayObservers: document.getElementById("inputAtcSettingsObserver").checked
-        }
-        );
+        });
 
         var ap = globals.airportSettings;
         ap.set({
@@ -483,8 +500,7 @@ namespace.module('vd.page', function (exports) {
             displayAirportVicinity: document.getElementById("inputAirportSettingsVicinity").checked,
             displayAtis: document.getElementById("inputAirportSettingsAtis").checked,
             displayMetar: document.getElementById("inputAirportSettingsMetar").checked
-        }
-        );
+        });
 
         var ws = globals.waypointSettings;
         ws.set({
@@ -531,12 +547,16 @@ namespace.module('vd.page', function (exports) {
     /**
     * The colour settings have been changed.
     * @param {Boolean} refresh
+    * @see vd.module:page.PageController#_initColourInputs
     */
     exports.PageController.prototype.ColourSettingsChanged = function (refresh) {
         refresh = Object.ifNotNullOrUndefined(refresh, true);
         globals.styles.setFlightWaypointColour($("#inputFlightSettingsWaypointLinesColour").val());
         globals.styles.flightLabelBackground = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsColour").val(), globals.styles.flightLabelBackground).toHex();
-        this._displayColourBar();
+        globals.styles.airportLabelBackground = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsColour").val(), globals.styles.airportLabelBackground).toHex();
+        globals.styles.flightLabelFontColor = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsFontColour").val(), globals.styles.flightLabelFontColor).toHex();
+        globals.styles.airportLabelFontColor = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsFontColour").val(), globals.styles.airportLabelFontColor).toHex();
+        this._displayAltitudeColourBar();
         if (refresh) this.refresh();
     };
 
@@ -602,7 +622,7 @@ namespace.module('vd.page', function (exports) {
 
     // #region ------------ public part grids ------------
     /**
-    * Update the data tables
+    * Update the grid tables / grid data.
     * @param {boolean} forceUpdate
     */
     exports.PageController.prototype.updateGrids = function (forceUpdate) {
@@ -663,26 +683,29 @@ namespace.module('vd.page', function (exports) {
     // #region ------------ public part height profile ------------
     /** 
     * Settings for altitude profile.
+    * @param {Boolean} [resize] avoid further calling the resize event 
+    * @see vd.module:page.PageController#_updateAltitudeProfile
     */
-    exports.PageController.prototype.altitudeProfileSettings = function () {
+    exports.PageController.prototype.altitudeProfileSettings = function (resize) {
         var map = document.getElementById("mapCanvas");
-        var settings = globals.altitudeProfile.altitudeProfileSettings;
-        settings.elevationProfile = vd.util.UtilsWeb.checked("inputAltitudeProfileElevationProfile");
+        var profile = document.getElementById("mapAltitudeProfile");
+        resize = Object.ifNotNullOrUndefined(resize, true);
+        globals.altitudeProfile.altitudeProfileSettings.elevationProfile = vd.util.UtilsWeb.checked("inputAltitudeProfileElevationProfile");
 
         // visibility
-        var profile = document.getElementById("mapAltitudeProfile");
         if (vd.util.UtilsWeb.checked("inputAltitudeProfileShow")) {
             map.style.height = globals.mapCanvasHeight;
             profile.style.height = globals.altitudeProfileHeight;
         } else {
-            map.style.height = "100%";
+            map.style.height = vd.util.UtilsCalc.addPercentages(globals.mapCanvasHeight, globals.altitudeProfileHeight);
             profile.style.height = "0%";
         }
-        this.windowResizeEvent();
+        if (resize) this.windowResizeEvent();
     };
 
     /**
-    * Update the height profile
+    * Update the altitude profile.
+    * @see vd.module:page.PageController#altitudeProfileSettings
     * @private
     */
     exports.PageController.prototype._updateAltitudeProfile = function () {
@@ -754,10 +777,14 @@ namespace.module('vd.page', function (exports) {
     /** 
     * Init the colour input fields.
     * @private
+    * @see vd.module:page.PageController#ColourSettingsChanged
     */
     exports.PageController.prototype._initColourInputs = function () {
         $("#inputFlightSettingsWaypointLinesColour").val(vd.util.Utils.fixHexColourValue(globals.styles.wpFlightWaypointBaseColour.toHex(), true));
-        $("#inputFlightSettingLabelsColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.wpFlightLabelBackground, "CCCCCC").toHex(), true));
+        $("#inputFlightSettingLabelsColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelBackground, "CCCCCC").toHex(), true));
+        $("#inputAirportSettingLabelsColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.airportLabelBackground, "CCCCCC").toHex(), true));
+        $("#inputFlightSettingLabelsFontColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelFontColor, "CCCCCC").toHex(), true));
+        $("#inputAirportSettingLabelsFontColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.airportLabelFontColor, "CCCCCC").toHex(), true));
     };
 
     /**
@@ -768,60 +795,98 @@ namespace.module('vd.page', function (exports) {
         this._initGrids();
         this._initColourInputs();
         this._initLogLevels();
-        this._displayColourBar();
+        this._displayAltitudeColourBar();
     };
 
     /**
     * Init the grid table.
     * @param {boolean} onlyResize if set just resize, do not completely init
     * @private
+    * @see vd.module:page.PageController#updateGrids
     */
     exports.PageController.prototype._initGrids = function (onlyResize) {
         onlyResize = Object.ifNotNullOrUndefined(onlyResize, false);
-        var sb = document.getElementById("sideBar");
-        if ($(sb).width() < 10) return; // sidebar is invisible / hidden. Stop here!
-        var ft = document.getElementById("flightData");
-        var at = document.getElementById("atcData");
-        var dt = document.getElementById("detailsData");
-        var filter = document.getElementById("filterData");
+        var elementSideBar = document.getElementById("sideBar");
+        if ($(elementSideBar).width() < 10) return; // sidebar is invisible / hidden. Stop here!
+
+        // wide screen?
+        var wideScreen = this._isSideBarWide();
+        if (Object.isNullOrUndefined() || this._gridWideMode != wideScreen) onlyResize = false; // force a reconstrucion of the tables
+        this._gridWideMode = wideScreen;
+
+        // need to clean up old grids (re-entry, force update due to new columns ...)?        
+        if (!onlyResize) {
+            // Required for re-entry!
+            // This must be first before retrieving the elements
+            $("#flightData").GridUnload("#flightData");
+            $("#atcData").GridUnload("#atcData");
+            $("#detailsData").GridUnload("#detailsData");
+            $("#filterData").GridUnload("#flightData");
+        }
+        var elementFlightData = document.getElementById("flightData");
+        var elementAtcData = document.getElementById("atcData");
+        var elementDetailsData = document.getElementById("detailsData");
+        var elementFilter = document.getElementById("filterData");
         var me = this;
 
-        // widths
-        var factor = 0.95;
-        var w = ($(sb).width() * factor).toFixed(0) * 1;
-        var wc = (0.325 * w).toFixed(0);
-        var wp = (0.55 * w).toFixed(0);
-        var wd = (w - wc - wp) / 2; // inBounds & displayed
-        var wdp = w * 0.4;
-        var wdv = w - wdp;
+        // widths ATC / Flights
+        var factor = 0.97;
+        var widthGrids = ($(elementSideBar).width() * factor).toFixed(0) * 1;
+        var widthCallsign = wideScreen ? (0.20 * widthGrids).toFixed(0) : (0.325 * widthGrids).toFixed(0);
+        var widthNameFlight = wideScreen ? (0.40 * widthGrids).toFixed(0) : (0.55 * widthGrids).toFixed(0);
+        var widthTransponder = wideScreen ? (0.1 * widthGrids).toFixed(0) : 0;
+        var widthId = wideScreen ? (0.15 * widthGrids).toFixed(0) : 0;
+        var withGrounded = wideScreen ? true : false;
+        var numberCheckboxes = wideScreen ? 3 : 2;
+        var widthRest = widthGrids - widthCallsign - widthNameFlight - widthTransponder - widthId;
+        var widthCheckboxes = widthRest / numberCheckboxes; // inBounds & displayed
+
+        // ATC
+        var widthNameAtc = widthGrids - (widthCheckboxes * numberCheckboxes) - widthId - widthCallsign;
+
+        // Filter
+        var widthEntity = 0.2 * widthGrids;
+        var widthNameFilter = widthGrids - (widthCheckboxes * numberCheckboxes) - widthId - widthCallsign - widthEntity;
+
+        // width details grid
+        var widthProperty = widthGrids * 0.4;
+        var widthValue = widthGrids - widthProperty;
 
         // column model
         var colModelFlights = [
-            { name: 'id', index: 'id', width: 60, hidden: true, search: false },
-            { name: 'callsign', index: 'callsign', width: wc, search: true },
-            { name: 'pilot', index: 'pilot', width: wp, search: true },
-            { name: '_isInBounds', index: '_isInBounds', align: 'center', width: wd, formatter: this._booleanToCheckmark, search: true },
-            { name: 'displayed', index: 'displayed', align: 'center', width: wd, formatter: this._booleanToCheckmark, search: true },
+            { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
+            { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
+            { name: 'pilot', index: 'pilot', width: widthNameFlight, search: true },
+        // does for some reasons not work with id
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
+            { name: '_isGrounded', index: '_isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
+            { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
+            { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
         ];
 
         var colModelAtcs = [
-            { name: 'id', index: 'id', width: 60, hidden: true, search: false },
-            { name: 'callsign', index: 'callsign', width: wc, search: true },
-            { name: 'controller', index: 'controller', width: wp, search: true },
-            { name: '_isInBounds', index: '_isInBounds', align: 'center', width: wd, formatter: this._booleanToCheckmark, search: true },
-            { name: 'displayed', index: 'displayed', align: 'center', width: wd, formatter: this._booleanToCheckmark, search: true },
+            { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
+            { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
+            { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
+        // does for some reasons not work with id
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
+            { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
         ];
 
         var colModelFilter = [
-            { name: 'id', index: 'id', width: 60, hidden: true, search: false },
-            { name: 'callsign', index: 'callsign', width: wc, search: true },
-            { name: 'name', index: 'name', width: wp, search: true },
-            { name: 'entity', index: 'entity', search: false, width: wd }
+            { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
+            { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
+            { name: 'name', index: 'name', width: widthNameFilter, search: true },
+        // does for some reasons not work with id
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            { name: 'entity', index: 'entity', search: false, width: widthEntity }
         ];
 
         var colModelDetails = [
-            { name: 'property', index: 'property', width: wdp },
-            { name: 'value', index: 'value', width: wdv }
+            { name: 'property', index: 'property', width: widthProperty },
+            { name: 'value', index: 'value', width: widthValue }
         ];
 
         if (!onlyResize) {
@@ -844,7 +909,7 @@ namespace.module('vd.page', function (exports) {
                 title: "Follow on map",
                 cursor: "pointer",
                 onClickButton: function () {
-                    var objectId = $(ft).jqGrid('getGridParam', 'selrow');
+                    var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
                     var client = globals.clients.findByObjectId(objectId);
                     if (Object.isNullOrUndefined(client)) return;
                     if (!String.isNullOrEmpty(objectId)) me.followVatsimId(client.id);
@@ -857,7 +922,7 @@ namespace.module('vd.page', function (exports) {
                 title: "Add to filter",
                 cursor: "pointer",
                 onClickButton: function () {
-                    var objectId = $(ft).jqGrid('getGridParam', 'selrow');
+                    var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.addByObjectId(objectId);
                     me.updateFilterGrid();
                 }
@@ -869,7 +934,7 @@ namespace.module('vd.page', function (exports) {
                 title: "Remove from filter",
                 cursor: "pointer",
                 onClickButton: function () {
-                    var objectId = $(filter).jqGrid('getGridParam', 'selrow');
+                    var objectId = $(elementFilter).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.removeByObjectId(objectId);
                     me.updateFilterGrid();
                 }
@@ -887,13 +952,13 @@ namespace.module('vd.page', function (exports) {
             };
 
             // Flights
-            $(ft).jqGrid({
+            $(elementFlightData).jqGrid({
                 datatype: 'clientSide',
                 height: "auto",
-                width: w,
+                width: widthGrids,
                 pager: '#flightDataPager',
                 forceFit: true,
-                colNames: ['ObjId', 'Callsign', 'Pilot', 'bounds', 'displayed'],
+                colNames: ['ObjId', 'Callsign', 'Pilot', 'Id', 'Squawk', 'grounded', 'bounds', 'displayed'],
                 colModel: colModelFlights,
                 rowNum: globals.flightGridRows,
                 sortname: 'displayed',
@@ -908,20 +973,20 @@ namespace.module('vd.page', function (exports) {
                 // rowId, iRow, iCol, e
                 ondblClickRow: function (rowId) { me._centerMapToObject(rowId); }
             });
-            navCenterOnMap.onClickButton = function () { me._centerToMapClick(ft); };
-            $(ft).jqGrid('filterToolbar', gridFilterOpts);
-            $(ft).jqGrid('navGrid', "#flightDataPager", navOptions);
-            $(ft).jqGrid('navButtonAdd', "#flightDataPager", navCenterOnMap);
-            $(ft).jqGrid('navButtonAdd', "#flightDataPager", navAddToFilter);
-            $(ft).jqGrid('navButtonAdd', "#flightDataPager", navFollowOnMap);
+            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementFlightData); };
+            $(elementFlightData).jqGrid('filterToolbar', gridFilterOpts);
+            $(elementFlightData).jqGrid('navGrid', "#flightDataPager", navOptions);
+            $(elementFlightData).jqGrid('navButtonAdd', "#flightDataPager", navCenterOnMap);
+            $(elementFlightData).jqGrid('navButtonAdd', "#flightDataPager", navAddToFilter);
+            $(elementFlightData).jqGrid('navButtonAdd', "#flightDataPager", navFollowOnMap);
 
             // ATC
-            $(at).jqGrid({
+            $(elementAtcData).jqGrid({
                 datatype: 'clientSide',
                 height: "auto",
-                width: w,
+                width: widthGrids,
                 forceFit: true,
-                colNames: ['ObjId', 'Callsign', 'Controller', 'bounds', 'displayed'],
+                colNames: ['ObjId', 'Callsign', 'Pilot', 'Id', 'bounds', 'displayed'],
                 colModel: colModelAtcs,
                 rowNum: globals.atcGridRows,
                 sortname: 'displayed',
@@ -938,18 +1003,18 @@ namespace.module('vd.page', function (exports) {
                 // rowId, iRow, iCol, e
                 ondblClickRow: function (rowId) { me._centerMapToObject(rowId); }
             });
-            navCenterOnMap.onClickButton = function () { this.centerToMapClick(at); };
-            $(at).jqGrid('filterToolbar', gridFilterOpts);
-            $(at).jqGrid('navGrid', "#atcDataPager", navOptions);
-            $(at).jqGrid('navButtonAdd', "#atcDataPager", navCenterOnMap);
+            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementAtcData); };
+            $(elementAtcData).jqGrid('filterToolbar', gridFilterOpts);
+            $(elementAtcData).jqGrid('navGrid', "#atcDataPager", navOptions);
+            $(elementAtcData).jqGrid('navButtonAdd', "#atcDataPager", navCenterOnMap);
 
             // Filter
-            $(filter).jqGrid({
+            $(elementFilter).jqGrid({
                 datatype: 'clientSide',
                 height: "auto",
-                width: w,
+                width: widthGrids,
                 forceFit: true,
-                colNames: ['ObjId', 'Callsign', 'Name', 'E.'],
+                colNames: ['ObjId', 'Callsign', 'Name', 'Id', 'E.'],
                 colModel: colModelFilter,
                 rowNum: globals.atcGridRows,
                 sortname: 'displayed',
@@ -966,19 +1031,19 @@ namespace.module('vd.page', function (exports) {
                 // rowId, iRow, iCol, e
                 ondblClickRow: function (rowId) { me._centerMapToObject(rowId); }
             });
-            navCenterOnMap.onClickButton = function () { this.centerToMapClick(filter); };
-            $(filter).jqGrid('filterToolbar', gridFilterOpts);
-            $(filter).jqGrid('navGrid', "#filterDataPager", navOptions);
-            $(filter).jqGrid('navButtonAdd', "#filterDataPager", navCenterOnMap);
-            $(filter).jqGrid('navButtonAdd', "#filterDataPager", navRemoveFromFilter);
-            $(filter).jqGrid('navButtonAdd', "#filterDataPager", navClearFilter);
+            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementFilter); };
+            $(elementFilter).jqGrid('filterToolbar', gridFilterOpts);
+            $(elementFilter).jqGrid('navGrid', "#filterDataPager", navOptions);
+            $(elementFilter).jqGrid('navButtonAdd', "#filterDataPager", navCenterOnMap);
+            $(elementFilter).jqGrid('navButtonAdd', "#filterDataPager", navRemoveFromFilter);
+            $(elementFilter).jqGrid('navButtonAdd', "#filterDataPager", navClearFilter);
 
             // details
-            $(dt).jqGrid({
+            $(elementDetailsData).jqGrid({
                 datatype: 'clientSide',
                 data: [{ property: "-->", value: "select object to display"}],
                 height: "auto",
-                width: w,
+                width: widthGrids,
                 forceFit: true,
                 ignoreCase: true,
                 colNames: ['Name', 'Value'],
@@ -990,17 +1055,17 @@ namespace.module('vd.page', function (exports) {
                 caption: 'Details'
             });
         } else {
-            this._changeGridColumnWidths(ft, colModelFlights, w);
-            this._changeGridColumnWidths(at, colModelAtcs, w);
-            this._changeGridColumnWidths(filter, colModelFilter, w);
-            this._changeGridColumnWidths(dt, colModelDetails, w);
+            this._changeGridColumnWidths(elementFlightData, colModelFlights, widthGrids);
+            this._changeGridColumnWidths(elementAtcData, colModelAtcs, widthGrids);
+            this._changeGridColumnWidths(elementFilter, colModelFilter, widthGrids);
+            this._changeGridColumnWidths(elementDetailsData, colModelDetails, widthGrids);
         }
     };
 
     /**
     * Init the log levels.
     * @private
-    * @see Globals#_initLogger
+    * @see vd.module:page.Globals#_initLogger
     */
     exports.PageController.prototype._initLogLevels = function () {
         var levels = [
@@ -1018,7 +1083,7 @@ namespace.module('vd.page', function (exports) {
         if (Object.isNullOrUndefined(globals.altitudeProfileHeight)) {
             globals.mapCanvasHeight = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "height");
             globals.altitudeProfileHeight = vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "height");
-            globals.altitudeProfileWidth = vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "width");
+            globals.altitudeProfileWidth = Object.ifNotNullOrUndefined(globals.mapCanvasWidth, vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "width"));
         }
         globals.altitudeProfile = new vd.gc.AltitudeProfile("mapAltitudeProfile"); // do this before collapsing bar
         this.altitudeProfileSettings();
@@ -1114,7 +1179,7 @@ namespace.module('vd.page', function (exports) {
     * Display a colour bar for the altitude.
     * @private
     */
-    exports.PageController.prototype._displayColourBar = function () {
+    exports.PageController.prototype._displayAltitudeColourBar = function () {
         var bar = document.getElementById("inputFlightWaypointsLegend");
         if (Object.isNullOrUndefined(bar.getContext)) {
             // check
@@ -1162,6 +1227,16 @@ namespace.module('vd.page', function (exports) {
         }
         hiddenInfo = hiddenInfo.appendIfThisIsNotEmpty(" will not be displayed due to zoom level.");
         return hiddenInfo;
+    };
+
+    /**
+    * Is side bar wide mode?
+    * @return {Boolean}
+    * @private
+    */
+    exports.PageController.prototype._isSideBarWide = function () {
+        var w = $("#sideBar").width();
+        return globals.sideBarWideWidth < w;
     };
     // #endregion ------------ private part general ------------
 
@@ -1214,8 +1289,8 @@ namespace.module('vd.page', function (exports) {
 
     // #region ------------ private part grids ------------
     /**
-    * Update the details grid
-    * @param {String}  rowId
+    * Update the details grid and details grid data.
+    * @param {String} rowId
     * @private
     */
     exports.PageController.prototype._updateDetailsGrid = function (rowId) {
@@ -1264,7 +1339,7 @@ namespace.module('vd.page', function (exports) {
     * Center to the position. 
     * @param {String} rowId is the id of the row, 
     * @private
-    * @see <a href="http://www.trirand.com/jqgridwiki/doku.php?id=wiki:events">Docu</a>
+    * @see <a href="http://www.trirand.com/jqgridwiki/doku.php?id=wiki:events">Docu jqGrid</a>
     */
     exports.PageController.prototype._centerMapToObject = function (rowId) {
         if (String.isNullOrEmpty(rowId)) {
@@ -1312,9 +1387,12 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._changeGridColumnWidths = function (table, colModel, gridWidth) {
         if (gridWidth < 10) return; // grid most likely invisible / hidden!
+
+        // the whole model cannot be changed at once:
+        // http://stackoverflow.com/questions/1485436/jqgrid-with-dynamic-colmodel
         for (var c in colModel) {
             var cp = colModel[c];
-            $(table).setColProp(cp.name, { width: cp.width });
+            $(table).setColProp(cp.name, { width: cp.width, hidden: cp.hidden });
         }
         $(table).setGridWidth(gridWidth);
     };
@@ -1323,7 +1401,7 @@ namespace.module('vd.page', function (exports) {
     * Format boolean to checkmark.
     * @param {Boolean} cellvalue
     * @private
-    * @see <a href="http://tntluoma.com/sidebars/codes/">Codes</a>
+    * @see <a href="http://tntluoma.com/sidebars/codes/">Codes (Unicode)</a>
     */
     exports.PageController.prototype._booleanToCheckmark = function (cellvalue) {
         // full signature cellvalue, options, rowObject

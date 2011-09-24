@@ -1,5 +1,6 @@
 ﻿/**
 * @module vd.gc
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.gc', function(exports) {
 
@@ -8,6 +9,7 @@ namespace.module('vd.gc', function(exports) {
     * @constructor
     * @param {HTMLDomElement|String} canvas
     * @param {AltitudeProfileSettings} [altitudeProfileSettings]
+    * @author KWB
     */
     exports.AltitudeProfile = function (htmlElement, heightProfileSettings) {
         if (Object.isNullOrUndefined(htmlElement)) throw "HTML element missing as target";
@@ -73,7 +75,7 @@ namespace.module('vd.gc', function(exports) {
                     }
                     globals.log.trace("Retrieved " + elevations.length + " elevations height profile in " + runTime.getDiffFormatted() + " from Google elevation service for path");
                 } else {
-                    globals.log.warn("Elevation request failed, status: " + status);
+                    globals.log.warn("Elevation request for bounds " + bounds.toString() + " failed, status: " + status);
                 }
 
                 // draw, even if there are no data

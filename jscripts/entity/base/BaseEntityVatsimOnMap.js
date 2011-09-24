@@ -1,14 +1,19 @@
-﻿namespace.module('vd.entity.base', function(exports, require) {
+﻿/**
+* @module vd.entity.base
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
+*/
+namespace.module('vd.entity.base', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
 
     /**
-    * Combines the base entities for Vatsim and map objects.
+    * @classdesc Combines the base entities for Vatsim and Google Map objects.
     * @constructor
     * @param {Object} argOpts
-    * @extends BaseEntityMap
-    * @extends BaseEntityVatsim
+    * @extends vd.entity.module:base.BaseEntityMap
+    * @extends vd.entity.module:base.BaseEntityVatsim
+    * @author KWB
     */
     exports.BaseEntityVatsimOnMap = function(argOpts) {
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
@@ -18,6 +23,16 @@
     };
 
     /**
+    * Destructor, removing memory leak sensitive parts will go here
+    * or method will be overridden by subclass.
+    */
+    exports.BaseEntityVatsimOnMap.prototype.dispose = function() {
+        this.dispose$BaseEntityVatsim();
+        this.dispose$BaseEntityMap();
+    };
+
+    /**
+    * Property / value pairs for properties.
     * @return {Object} with property / value pairs
     */
     exports.BaseEntityVatsimOnMap.prototype.toPropertyValue = function() {
@@ -30,8 +45,8 @@
     };
 
     /**
-    * Calculate -if possible - height
-    * @return {String}
+    * Calculate -if possible - height.
+    * @return {Number}
     */
     exports.BaseEntityVatsimOnMap.prototype.height = function() {
         if (!Object.isNumber(this.elevation) || !Object.isNumber(this.altitude)) return null;

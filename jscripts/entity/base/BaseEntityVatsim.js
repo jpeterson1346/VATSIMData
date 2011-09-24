@@ -1,11 +1,14 @@
-﻿namespace.module('vd.entity.base', function(exports, require) {
+﻿/**
+* @module vd.entity.base
+*/
+namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @constructor
     * @classdesc Vatsim base entity
     * @param {Object} properties
     */
-    exports.BaseEntityVatsim = function(properties) {
+    exports.BaseEntityVatsim = function (properties) {
         /**
         * Unique object id (key)
         * @type {Number}
@@ -16,6 +19,12 @@
         * @type {String}
         */
         this.id = Object.ifNotNullOrUndefined(properties["id"], null);
+        /**
+        * VATSIM id, same as id. This is a workaround, since some libraries as jqGrid
+        * have problems with the property name id.
+        * @type {String}
+        */
+        this.vatsimId = this.id;
         /**
         * User name.
         * @type {String}
@@ -70,10 +79,18 @@
     };
 
     /**
+    * Destructor, removing memory leak sensitive parts will go here
+    * or method will be overridden by subclass.
+    */
+    exports.BaseEntityVatsim.prototype.dispose = function () {
+        // code goes here
+    };
+
+    /**
     * Property / value.
     * @return {Object} property / value pairs
     */
-    exports.BaseEntityVatsim.prototype.toPropertyValue = function() {
+    exports.BaseEntityVatsim.prototype.toPropertyValue = function () {
         var pv = new Array();
         pv["id"] = this.id;
         pv["callsign"] = this.callsign;
@@ -91,7 +108,7 @@
     * QNH with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.qnhAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.qnhAndUnit = function () {
         if (!Object.isNumber(this.qnh)) return "?";
         return this.qnh + "hPa";
     };
@@ -100,7 +117,7 @@
     * Speed with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.groundspeedAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.groundspeedAndUnit = function () {
         if (this.groundspeed < 0) return "?";
         return ("km" == globals.unitDistance) ? "GS" + vd.util.UtilsCalc.ktsToKmh(this.groundspeed).toFixed(0) + "km/h" : "GS" + this.groundspeed + "kts";
     };
@@ -109,7 +126,7 @@
     * Frequency with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.frequencyAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.frequencyAndUnit = function () {
         if (!Object.isNumber(this.frequency)) return "?";
         return this.frequency + "MHz";
     };
@@ -118,7 +135,7 @@
     * Visibility with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.visibilityAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.visibilityAndUnit = function () {
         if (!Object.isNumber(this.visibility)) return "?";
         return this.visibility + "XXX";
     };
@@ -127,7 +144,7 @@
     * Altitude with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.altitudeAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.altitudeAndUnit = function () {
         if (!Object.isNumber(this.altitude)) return "?";
         return ("m" == globals.unitAltitude) ? vd.util.UtilsCalc.ftToM(this.altitude).toFixed(0) + "m" : this.altitude + "ft";
     };
@@ -136,7 +153,7 @@
     * Heading with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.headingAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.headingAndUnit = function () {
         if (!Object.isNumber(this.heading)) return "?";
         return this.heading + "&deg;";
     };
@@ -145,7 +162,7 @@
     * Magnetic declination with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.declinationAndUnit = function() {
+    exports.BaseEntityVatsim.prototype.declinationAndUnit = function () {
         var d = this.declination();
         if (!Object.isNumber(d)) return "?";
         return d + "&deg;";
@@ -155,7 +172,7 @@
     * Is this an entity being followed on the map?
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.isFollowed = function() {
+    exports.BaseEntityVatsim.prototype.isFollowed = function () {
         return this.id == globals.mapFollowVatsimId;
     };
 
@@ -163,7 +180,7 @@
     * Is this an entity which fullfils the filter criteria?
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.compliesWithFilter = function() {
+    exports.BaseEntityVatsim.prototype.compliesWithFilter = function () {
         return (!globals.filtered || globals.filter.contains(this));
     };
 
@@ -171,7 +188,7 @@
     * String representation.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.toString = function() {
+    exports.BaseEntityVatsim.prototype.toString = function () {
         var s = "objId:" + this.objectId;
         s = s.appendIfNotEmpty([this.id, this.name], " ");
         return s;
@@ -181,7 +198,7 @@
     * Equals another object.
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.equals = function(otherEntity) {
+    exports.BaseEntityVatsim.prototype.equals = function (otherEntity) {
         if (otherEntity == this) return true;
         if (Object.isNullOrUndefined(otherEntity)) return false;
         if (this.objectId == otherEntity.objectId) return true;
@@ -194,7 +211,7 @@
     * @param {String} objectId
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByObjectId = function(entites, objectId) {
+    exports.BaseEntityVatsim.findByObjectId = function (entites, objectId) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(objectId)) return null;
         for (var be = 0, len = entites.length; be < len; be++) {
             var baseEntity = entites[be];
@@ -209,7 +226,7 @@
     * @param  {String} id
     * @return {Array} BaseEntityVatsim objects
     */
-    exports.BaseEntityVatsim.findById = function(entites, id) {
+    exports.BaseEntityVatsim.findById = function (entites, id) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
         var entities = new Array();
         for (var e = 0, len = entites.length; e < len; e++) {
@@ -225,7 +242,7 @@
     * @param {String} id
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByIdFirst = function(entites, id) {
+    exports.BaseEntityVatsim.findByIdFirst = function (entites, id) {
         var entities = exports.BaseEntityVatsim.findById(entites, id);
         return (Array.isNullOrEmpty(entities)) ? null : entities[0];
     };
@@ -236,7 +253,7 @@
     * @param {String} callsign
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByCallsign = function(entites, callsign) {
+    exports.BaseEntityVatsim.findByCallsign = function (entites, callsign) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(callsign)) return null;
         var cs = callsign.toUpperCase();
         for (var e = 0, len = entites.length; e < len; e++) {

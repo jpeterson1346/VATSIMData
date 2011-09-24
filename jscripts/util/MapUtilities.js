@@ -1,6 +1,6 @@
-﻿//
-// Map utilities
-//
+﻿/**
+* @module vd.util
+*/
 namespace.module('vd.util', function(exports, require) {
 
     /**
@@ -16,7 +16,7 @@ namespace.module('vd.util', function(exports, require) {
     * @param {google.maps.LatLng} latLng
     * @param {Number} [precision]
     * @return {Array} array with formatted strings latitude/longitude
-    **/
+    */
     exports.UtilsMap.formatLatLngValues = function(latLng, precision) {
         precision = precision == null ? 6 : precision;
         var lat = latLng.lat().toFixed(precision);

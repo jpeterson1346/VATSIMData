@@ -1,4 +1,7 @@
-﻿namespace.module('vd.entity.helper', function(exports, require) {
+﻿/**
+* @module vd.entity.helper
+*/
+namespace.module('vd.entity.helper', function (exports) {
 
     /**
     * @classdesc Metar information

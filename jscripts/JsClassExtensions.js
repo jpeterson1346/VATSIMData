@@ -72,6 +72,16 @@ String.fromArray = function(arr) {
 };
 
 /**
+* Strip number - find the first number and return it.
+* @return {Number}
+*/
+String.prototype.stripNumber = function () {
+    var m = this.match(/\d+/);
+    if (Array.isNullOrEmpty(m)) return null;
+    return m[0];
+};
+
+/**
 * Internationalized string to its best equivalent in latin characters. Requires
 * the latin conversion table.
 * @return {String}

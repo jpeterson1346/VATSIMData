@@ -6,7 +6,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
     /**
     * @constructor
     * @classdesc Describes waypoints of a flight, SID, STAR.
-    * @see Waypoint
+    * @see vd.entity.module:helper.Waypoint
     */
     exports.Waypoints = function() {
         // code goes here
@@ -36,8 +36,8 @@ namespace.module('vd.entity.helper', function(exports, require) {
 
     /**
     * Convert Array of Waypoints to Array of Google google.maps.LatLng points, aka path.
-    * @param  {Array} waypoints: Waypoints
-    * @return {Array} google.maps.LatLng: path
+    * @param  {Array} waypoints Waypoints
+    * @return {Array} path of google.maps.LatLng 
     */
     exports.Waypoints.waypointsToLatLngPath = function(waypoints) {
         var path = new Array();

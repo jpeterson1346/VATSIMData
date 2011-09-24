@@ -1,14 +1,16 @@
 ﻿/**
 * @module vd.gm
 */
-namespace.module('vd.gm', function (exports, require) {
+namespace.module('vd.gm', function (exports) {
 
     /**
     * @classdesc Elevation.
     * @constructor
     */
     exports.Elevation = function() {
+        //
         // code
+        //
     };
 
     /**
@@ -42,7 +44,7 @@ namespace.module('vd.gm', function (exports, require) {
                     globals.log.trace("Retrieved " + results.length + " elevations for " + entities.length + " entites from Google elevation service, " + runTime.getDiffFormatted());
                 }
             } else {
-                globals.log.warn("Elevation request failed, status: " + status);
+                globals.log.warn("Elevation request for " + entities.length + " entities failed, status: " + status);
             }
         });
     };

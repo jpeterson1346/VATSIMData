@@ -1,4 +1,7 @@
-﻿namespace.module('vd.entity.helper', function(exports, require) {
+﻿/**
+* @module vd.entity.helper
+*/
+namespace.module('vd.entity.helper', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -8,7 +11,8 @@
     * @constructor
     * @param {Array} waypointOpts
     * @param {WaypointSettings} [waypointSettings]
-    * @see Waypoints
+    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @see vd.entity.module:helper.Waypoints
     */
     exports.Waypoint = function(waypointProperties, waypointSettings) {
 

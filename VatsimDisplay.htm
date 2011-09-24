@@ -88,10 +88,10 @@
                     <option>Entities</option>
                     <option>Settings</option>
                     <option>Data</option>
+                    <option>About</option>
                     <option>Credits</option>
                     <option>Hidden</option>
                 </select>
-                &nbsp;
                 <!-- the first button also "catches" the first selected button action, so choose wisely -->
                 <button class="ui-button" onclick=" ctr.refresh(); "><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
                 <button class="ui-button" onclick=" ctr.hideAllClients(); "><span class="ui-icon ui-icon-circlesmall-minus" title="Clear"></span></button>
@@ -101,8 +101,8 @@
                 <button class="ui-button" onclick=" ctr.showLogger(); "><span class="ui-icon ui-icon-newwin" title="Console"></span></button>
                 <button class="ui-button" onclick=" globals.flightSettings.displayMinimal(); ctr.refresh(); "><span class="ui-icon ui-icon-arrow-1-sw" title="Display minimal information"></span></button>
                 <button class="ui-button" onclick=" ctr.vatsimClientSettingsChanged(); "><span class="ui-icon ui-icon-transfer-e-w" title="Display as set"></span></button>
-                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation('./doc/Help.pdf', true); "><span class="ui-icon ui-icon-help" title="User manual"></span></button>
-                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlLegalText, true); "><span class="ui-icon ui-icon-info" title="Legal text / imprint"></span></button>
+                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); "><span class="ui-icon ui-icon-help" title="User manual"></span></button>
+                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlProjectLegalText, true); "><span class="ui-icon ui-icon-info" title="Legal text / imprint"></span></button>
                 &nbsp;
                 <div id="headerBarTaskInfo"> Loading ...</div>
             </div>
@@ -247,7 +247,7 @@
                         <td>
                             Elevation line:
                         </td>
-                        <td class="sideBarRightAlign">
+                        <td>
                             <input name="elevationProfile" id="inputAltitudeProfileElevationProfile" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
                     </tr>
@@ -262,11 +262,11 @@
                         </td>
                         <td>
                             <input name="followVatsimId" id="inputFollowVatsimId" type="text" size="8" onkeydown=" ctr.onEnter(event, function() { ctr.followVatsimId(null); }); "/>
-                            <div id="inputFollowedVatsimClient"></div>
                         </td>
                         <td colspan="2">
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " ><span class="ui-icon ui-icon-link" title="Show data"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(); "><span class="ui-icon ui-icon-check" title="Follow"></span></button>
+                            <div id="inputFollowedVatsimClient"></div>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -517,7 +517,7 @@
                             Check console pop up:
                         </td>
                         <td colspan="2">
-                            <button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppender.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppenderPopUp.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -535,6 +535,33 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
+                        <td>
+                            Flight labels font:
+                        </td>
+                        <td colspan="3">
+                            <input name="flightLabelsFontColour" id="inputFlightSettingLabelsFontColour" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Airport labels:
+                        </td>
+                        <td colspan="3">
+                            <input name="airportLabelsColour" id="inputAirportSettingLabelsColour" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Airport labels font:
+                        </td>
+                        <td colspan="3">
+                            <input name="airportLabelsFontColour" id="inputAirportSettingLabelsFontColour" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
                         <td>Wp.-Lines:</td>
                         <td colspan="3">
                             <input name="waypointLinesColour" id="inputFlightSettingsWaypointLinesColour" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
@@ -545,7 +572,7 @@
                         <td>0 - FL30</td>
                         <td colspan="3">
                             <!-- colour gradient will go here -->
-                            <canvas width="140px" height="15px" id="inputFlightWaypointsLegend"></canvas>
+                            <canvas width="125px" height="15px" id="inputFlightWaypointsLegend"></canvas>
                         </td>
                     </tr>
                 </table>
@@ -577,8 +604,8 @@
                     </tr>
                 </table>
                 <!-- tab data (flight/atc) ends here -->
-                <!-- credits start -->
-                <table id="sideBarCredits" class="sideBarStandard">
+                <!-- about start -->
+                <table id="sideBarAbout" class="sideBarStandard">
                     <tr class="ui-widget-header">
                         <th colspan="2" class="sideBarHeader">
                             Getting involved:
@@ -587,11 +614,28 @@
                     <tr class="ui-widget-content">
                         <td>
                             <ul>
-                                <li><a href="javascript: ctr.gettingInvolved(); ">This software (join ..)</a></li>
-                                <li><a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlLegalText, true);">Legal information</a></li>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlProjectGettingInvolved, true); ">This software (join ..)</a></li>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlProjectFeatureRequests, true); ">Feature requests</a></li>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true); ">Report bugs or typos</a>.<br/>Please read corresponding section in the <a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); ">user manual</a>.</li>
                             </ul>
                         </td>
                     </tr>
+                    <tr class="ui-widget-header">
+                        <th class="sideBarHeader">
+                            Legal:
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            <ul>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlProjectLegalText, true);">Legal information including license</a></li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+                <!-- about end -->
+                <!-- credits start -->
+                <table id="sideBarCredits" class="sideBarStandard">
                     <tr class="ui-widget-header">
                         <th class="sideBarHeader">
                             Libraries:

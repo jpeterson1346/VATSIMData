@@ -1,4 +1,7 @@
-﻿namespace.module('vd.entity.base', function (exports, require) {
+﻿/**
+* @module vd.entity.base
+*/
+namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @classdesc List of entities.

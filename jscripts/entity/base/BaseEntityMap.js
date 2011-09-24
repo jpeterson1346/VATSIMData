@@ -1,11 +1,11 @@
-﻿//
-// Base entity for maps
-// 
-namespace.module('vd.entity.base', function(exports, require) {
+﻿/**
+* @module vd.entity.base
+*/ 
+namespace.module('vd.entity.base', function(exports) {
 
     /**
     * @constructor
-    * @classdesc Base class for objects displayed on the Google map.
+    * @classdesc Base class for objects displayed on the Google Map.
     * @param {Object} [mapProperties]
     */
     exports.BaseEntityMap = function(mapProperties) {
@@ -76,6 +76,14 @@ namespace.module('vd.entity.base', function(exports, require) {
         this._isInVicinity = false;
     };
 
+    /**
+    * Destructor, removing memory leak sensitive parts will go here
+    * or method will be overridden by subclass.
+    */
+    exports.BaseEntityMap.prototype.dispose = function () {
+        // code goes here
+    };
+    
     /**
     * Current position for Google Map.
     * @return {google.maps.LatLng}

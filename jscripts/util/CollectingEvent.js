@@ -1,7 +1,7 @@
 ﻿/**
-* Generic utilities
+* @module vd.util
 */
-namespace.module('vd.util', function(exports, require) {
+namespace.module('vd.util', function (exports, require) {
 
     /**
     * @constructor

@@ -10,6 +10,7 @@ namespace.module('vd.entity.helper', function (exports, require) {
     * @constructor
     * @classdesc Flightplan origin to destination.
     * @param {Object} flightplanProperties
+    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
     */
     exports.Flightplan = function (flightplanProperties) {
 
