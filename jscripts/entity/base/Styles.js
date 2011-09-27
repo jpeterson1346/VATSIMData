@@ -1,18 +1,23 @@
 ﻿/**
 * @module vd.entity.base
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function(exports, require) {
+namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @classdesc Styles for the entities.
     * @constructor
+    * @author KWB
+    * @see <a href="http://www.w3schools.com/html/html_colors.asp">Colours</a>
     */
-    exports.Styles = function() {
+    exports.Styles = function () {
 
         // flights
         this.flightLabelBorder = "1px solid gray";
         this.flightLabelPadding = "2px";
         this.flightLabelBackground = "white";
+        this.flightLabelBackgroundIfFollowed = "#EDEDED";
+        this.flightLabelBackgroundIfFiltered = "#993300";
         this.flightLabelOpacity = 0.75;
         this.flightLabelTextAlign = "left";
         this.flightLabelFontSize = "7pt";
@@ -52,7 +57,7 @@ namespace.module('vd.entity.base', function(exports, require) {
     * Set the colour for the flight waypoints.
     * @param {String} colour
     */
-    exports.Styles.prototype.setFlightWaypointColour = function(colour) {
+    exports.Styles.prototype.setFlightWaypointColour = function (colour) {
         this.wpFlightWaypointBaseColour = new RgbColor(colour);
         this.wpFlightWaypointBaseColourHsv = rgbToHsv(this.wpFlightWaypointBaseColour.r, this.wpFlightWaypointBaseColour.g, this.wpFlightWaypointBaseColour.b);
     };

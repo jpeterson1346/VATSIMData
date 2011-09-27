@@ -547,8 +547,10 @@ namespace.module('vd.page', function (exports) {
         refresh = Object.ifNotNullOrUndefined(refresh, true);
         globals.styles.setFlightWaypointColour($("#inputFlightSettingsWaypointLinesColour").val());
         globals.styles.flightLabelBackground = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsColour").val(), globals.styles.flightLabelBackground).toHex();
-        globals.styles.airportLabelBackground = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsColour").val(), globals.styles.airportLabelBackground).toHex();
+        globals.styles.flightLabelBackgroundIfFollowed = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsColourIfFollowed").val(), globals.styles.flightLabelBackgroundIfFollowed).toHex();
+        globals.styles.flightLabelBackgroundIfFiltered = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsColourIfFiltered").val(), globals.styles.flightLabelBackgroundIfFiltered).toHex();
         globals.styles.flightLabelFontColor = vd.util.Utils.getValidColour($("#inputFlightSettingLabelsFontColour").val(), globals.styles.flightLabelFontColor).toHex();
+        globals.styles.airportLabelBackground = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsColour").val(), globals.styles.airportLabelBackground).toHex();
         globals.styles.airportLabelFontColor = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsFontColour").val(), globals.styles.airportLabelFontColor).toHex();
         this._displayAltitudeColourBar();
         if (refresh) this.refresh();
@@ -783,13 +785,15 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype._initColourInputs = function () {
         $("#inputFlightSettingsWaypointLinesColour").val(vd.util.Utils.fixHexColourValue(globals.styles.wpFlightWaypointBaseColour.toHex(), true));
         $("#inputFlightSettingLabelsColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelBackground, "CCCCCC").toHex(), true));
+        $("#inputFlightSettingLabelsColourIfFollowed").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelBackgroundIfFollowed, "CCCCCC").toHex(), true));
+        $("#inputFlightSettingLabelsColourIfFiltered").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelBackgroundIfFiltered, "CCCCCC").toHex(), true));
         $("#inputAirportSettingLabelsColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.airportLabelBackground, "CCCCCC").toHex(), true));
         $("#inputFlightSettingLabelsFontColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.flightLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputAirportSettingLabelsFontColour").val(vd.util.Utils.fixHexColourValue(vd.util.Utils.getValidColour(globals.styles.airportLabelFontColor, "CCCCCC").toHex(), true));
     };
 
     /**
-    * Init the side bar
+    * Init the side bar.
     * @private
     */
     exports.PageController.prototype._initSideBarData = function () {

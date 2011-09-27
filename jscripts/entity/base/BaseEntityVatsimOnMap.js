@@ -8,7 +8,7 @@ namespace.module('vd.entity.base', function(exports, require) {
     var util = require("vd.util.Utils");
 
     /**
-    * @classdesc Combines the base entities for Vatsim and Google Map objects.
+    * @classdesc Combines the base entities for VATSIM and Google Map objects.
     * @constructor
     * @param {Object} argOpts
     * @extends vd.entity.module:base.BaseEntityMap

@@ -2,14 +2,14 @@
 * @module vd.util
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function(exports) {
+namespace.module('vd.util', function (exports) {
 
     /**
     * Generic utilities.
     * @constructor
     * @author KWB
     */
-    exports.Utils = function() {
+    exports.Utils = function () {
         // code goes heres
     };
 
@@ -19,7 +19,7 @@ namespace.module('vd.util', function(exports) {
     * @param  {Number} digits
     * @return {String} hex value
     */
-    exports.Utils.decToHex = function(i, digits) {
+    exports.Utils.decToHex = function (i, digits) {
         digits = Object.isNullOrUndefined(digits) ? 4 : digits;
         var result = "0000";
         if (i >= 0 && i <= 15) {
@@ -40,7 +40,7 @@ namespace.module('vd.util', function(exports) {
     * @param  {Number} digits
     * @return {Array}  hex values
     */
-    exports.Utils.decsToHex = function(values, digits) {
+    exports.Utils.decsToHex = function (values, digits) {
         var r = "";
         for (var i = 0, len = values.length; i < len; i++) {
             r += exports.Utils.decToHex(values[i], digits);
@@ -54,7 +54,7 @@ namespace.module('vd.util', function(exports) {
     * @param  {maxValue} interval 0-maxValue
     * @return {String} RGB colour string, e.g #CCCCCC
     */
-    exports.Utils.valueToGreyScale = function(value, maxValue) {
+    exports.Utils.valueToGreyScale = function (value, maxValue) {
         if (value <= 0) return "#FFFFFF";
         if (value >= maxValue) return "#000000";
         var v = 255 - Math.round(value / maxValue * 255);
@@ -72,7 +72,7 @@ namespace.module('vd.util', function(exports) {
     * @see <a href="http://stackoverflow.com/questions/1423925/changing-rgb-color-values-to-represent-a-value">Color representation</a>
     * @see http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascriptvar 
     */
-    exports.Utils.valueToGradient = function(colourH, colourS, value, maxValue) {
+    exports.Utils.valueToGradient = function (colourH, colourS, value, maxValue) {
         var v = value / maxValue;
         if (v > 1) v = 1;
         if (v < 0) v = 0;
@@ -88,7 +88,8 @@ namespace.module('vd.util', function(exports) {
     * @param {String} defaultValue
     * @return {RgbColor}
     */
-    exports.Utils.getValidColour = function(colourCandidate, defaultValue) {
+    exports.Utils.getValidColour = function (colourCandidate, defaultValue) {
+        if (Object.isNullOrUndefined(colourCandidate)) return defaultValue;
         var c = new RgbColor(colourCandidate);
         return (c.ok) ? c : new RgbColor(defaultValue);
     };
@@ -99,9 +100,9 @@ namespace.module('vd.util', function(exports) {
     * @param {Boolean} stripHash strip any leading #
     * @return {String}
     */
-    exports.Utils.fixHexColourValue = function(value, stripHash) {
+    exports.Utils.fixHexColourValue = function (value, stripHash) {
         var v = value.trim().toUpperCase();
-        if (stripHash) v = v.replace( /^#*/ , "");
+        if (stripHash) v = v.replace(/^#*/, "");
         return v;
     };
 
@@ -111,7 +112,7 @@ namespace.module('vd.util', function(exports) {
     * @param {Number} maxWidth
     * @param {String} lineBreak    
     */
-    exports.Utils.formatToMaxWidth = function(str, maxWidth, lineBreak) {
+    exports.Utils.formatToMaxWidth = function (str, maxWidth, lineBreak) {
         if (String.isNullOrEmpty(str) || maxWidth >= str.length) return str;
         lineBreak = String.isNullOrEmpty(lineBreak) ? "\n" : lineBreak;
         var counter = 0;
@@ -146,7 +147,7 @@ namespace.module('vd.util', function(exports) {
     * @see <a href="http://www.crockford.com/javascript/inheritance.html#sugar">Inheritance</a>
     * @see <a href="http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586">Inherit from JS class</a>
     */
-    exports.Utils.inheritPrototypes = function(subclass, superclass, superclassName) {
+    exports.Utils.inheritPrototypes = function (subclass, superclass, superclassName) {
         var superclassPrototypes = superclass.prototype;
         if (Object.isNullOrUndefined(subclass.superclasses)) subclass.superclasses = new Array();
         subclass.superclasses[superclassName] = superclass;
@@ -165,7 +166,7 @@ namespace.module('vd.util', function(exports) {
     * Time difference.
     * @constructor
     */
-    exports.TimeDiff = function() {
+    exports.TimeDiff = function () {
         this.startTime = null;
         this.setStartTime();
     };
@@ -174,7 +175,7 @@ namespace.module('vd.util', function(exports) {
     * Set the start time ("now"). Automatically set in constructor,
     * only required if needs to be reset later.
     */
-    exports.TimeDiff.prototype.setStartTime = function() {
+    exports.TimeDiff.prototype.setStartTime = function () {
         this.startTime = new Date().getTime();
     };
 
@@ -182,7 +183,7 @@ namespace.module('vd.util', function(exports) {
     * Get the time difference.
     * @return {Number} time difference in ms
     */
-    exports.TimeDiff.prototype.getDiff = function() {
+    exports.TimeDiff.prototype.getDiff = function () {
         var d = new Date();
         return (d.getTime() - this.startTime);
     };
@@ -191,7 +192,7 @@ namespace.module('vd.util', function(exports) {
     * Get the time difference as formatted string.
     * @return {String} time difference in ms
     */
-    exports.TimeDiff.prototype.getDiffFormatted = function() {
+    exports.TimeDiff.prototype.getDiffFormatted = function () {
         return (this.getDiff().toFixed(0) + "ms");
     };
 });

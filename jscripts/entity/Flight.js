@@ -270,9 +270,21 @@ namespace.module('vd.entity', function(exports, require) {
         // build the plane icon
         // view-source:http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.7/examples/infobox-basic.html
         this._setImage();
+        var planeLabelBoxStyle = (this.isFollowed()) ? {
+            background: globals.styles.flightLabelBackgroundIfFollowed,
+            opacity: globals.styles.flightLabelOpacity
+        } :
+        // show if in filter, but filter is not active
+        // if filtered, only the selected flights are visible, so no need to highlight them
+            (!globals.filtered && this.isInFilter()) ? {
+                background: globals.styles.flightLabelBackgroundIfFiltered,
+                opacity: globals.styles.flightLabelOpacity
+            } : null;
+
         var planeLabelOptions = {
             content: this._img,
             disableAutoPan: true,
+            boxStyle: planeLabelBoxStyle,
             pixelOffset: new google.maps.Size(-this._img.width / 2, -this._img.height / 2),
             closeBoxURL: "",
             position: latlng,

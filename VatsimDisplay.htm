@@ -474,20 +474,6 @@
                             <input type="checkbox" checked="checked" name="ShowATC" id="inputAtcSettingsShowAtc" onchange="ctr.vatsimClientSettingsChanged()" />
                         </td>
                         <td>
-                            Area Ctr.:
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="checked" name="ShowAreaAtc" id="inputAtcSettingsAreaAtc" onchange="ctr.vatsimClientSettingsChanged()" />
-                        </td>
-                    </tr>
-                    <tr class="ui-widget-content">
-                        <td>
-                            Observer:
-                        </td>
-                        <td>
-                            <input type="checkbox" name="ShowObserver" id="inputAtcSettingsObserver" onchange="ctr.vatsimClientSettingsChanged()" />
-                        </td>
-                        <td>
                             Callsign:
                         </td>
                         <td>
@@ -506,6 +492,20 @@
                         </td>
                         <td>
                             <input type="checkbox" checked="checked" name="ShowAtcId" id="inputAtcSettingsId" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Observer:
+                        </td>
+                        <td>
+                            <input type="checkbox" disabled="disabled" name="ShowObserver" id="inputAtcSettingsObserver" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                        <td>
+                            Area Ctr.:
+                        </td>
+                        <td>
+                            <input type="checkbox" disabled="disabled" checked="checked" name="ShowAreaAtc" id="inputAtcSettingsAreaAtc" onchange="ctr.vatsimClientSettingsChanged()" />
                         </td>
                     </tr>
                 </table>
@@ -567,6 +567,24 @@
                         </td>
                         <td colspan="3">
                             <input name="flightLabelsColour" id="inputFlightSettingLabelsColour" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            .. when followed:
+                        </td>
+                        <td colspan="3">
+                            <input name="flightLabelsColourIfFollowed" id="inputFlightSettingLabelsColourIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            .. when filtered:
+                        </td>
+                        <td colspan="3">
+                            <input name="flightLabelsColourIfFiltered" id="inputFlightSettingLabelsColourIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.ColourSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.ColourSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
@@ -686,6 +704,18 @@
                 <table id="sideBarCredits" class="sideBarStandard">
                     <tr class="ui-widget-header">
                         <th class="sideBarHeader">
+                            Data:
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://www.vatsim.net/', true);">VATSIM</a></li>
+                            </ul>
+                        </td>                    
+                    </tr>
+                    <tr class="ui-widget-header">
+                        <th class="sideBarHeader">
                             Libraries:
                         </th>
                     </tr>
@@ -702,25 +732,11 @@
                     </tr>
                     <tr>
                         <td>
-                            jQuery plugins:
+                            Others:
                             <ul>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://www.trirand.com/blog/', true);">jQuery Grid (jqGrid)</a></li>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://code.google.com/p/jqueryrotate/', true);">JQueryRotate</a></li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Google Maps Utilitys:
-                            <ul>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/examples/infobox-basic.html', true);">Infobox</a></li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Others:
-                            <ul>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('https://github.com/mckoss/namespace', true);">JS Namespace</a></li>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://www.bdcc.co.uk/Gmaps/Services.htm', true); ">Library</a> for <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtmlNOAA', true);">World Magnetic Model</a></li>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://www.movable-type.co.uk/scripts/latlong.html', true);">Lat/Lon Calculations</a></li>

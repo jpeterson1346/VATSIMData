@@ -1,12 +1,14 @@
 ﻿/**
 * @module vd.entity.base
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @constructor
-    * @classdesc Vatsim base entity
+    * @classdesc VATSIM base entity
     * @param {Object} properties
+    * @author KWB
     */
     exports.BaseEntityVatsim = function (properties) {
         /**
@@ -176,12 +178,20 @@ namespace.module('vd.entity.base', function (exports) {
         return this.id == globals.mapFollowVatsimId;
     };
 
-    /*
+    /**
     * Is this an entity which fullfils the filter criteria?
     * @return {Boolean}
     */
     exports.BaseEntityVatsim.prototype.compliesWithFilter = function () {
         return (!globals.filtered || globals.filter.contains(this));
+    };
+
+    /**
+    * Is in filter?
+    * @return {Boolean}
+    */
+    exports.BaseEntityVatsim.prototype.isInFilter = function () {
+        return (globals.filter.contains(this));
     };
 
     /**
