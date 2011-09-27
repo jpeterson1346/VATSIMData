@@ -1,35 +1,41 @@
 ﻿/**
 * @module vd.gm
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.gm', function (exports) {
 
     /**
-    * @classdesc Elevation.
+    * @classdesc Elevation methods.
     * @constructor
+    * @author KWB
     */
-    exports.Elevation = function() {
+    exports.Elevation = function () {
         //
         // code
         //
     };
 
     /**
-    * Update (asynchronously) the elevations of the given entities
-    * @param {Array} entities
+    * Update (asynchronously) the elevations of the given entities.
+    * @param  {Array} entities
+    * @return {Boolean} true, if the event is completely fired (does not mean it is successful)
     */
     exports.Elevation.getElevationsForEntities = function (entities) {
-        if (Array.isNullOrEmpty(entities)) return;
+        if (Array.isNullOrEmpty(entities)) return false;
+        if (!globals.elevationServiceEnabled) {
+            globals.log.info("Elevation service is disabled");
+            return false;
+        }
+
         var runTime = new vd.util.TimeDiff();
-        var latLngValues = vd.entity.base.BaseEntityMap.getLatLngValues(entities);
+        var latLngValues = vd.entity.base.BaseEntityMap.getLatLngValues(entities, globals.elevationSingleSamplesMax);
 
         // Create a LocationElevationRequest 
         // see http://code.google.com/apis/maps/documentation/javascript/services.html#Elevation
-        var positionalRequest = {
-            'locations': latLngValues
-        };
+        var positionalRequest = { 'locations': latLngValues };
 
         // Initiate the location request
-        globals.elevator.getElevationForLocations(positionalRequest, function (results, status) {
+        globals.elevationService.getElevationForLocations(positionalRequest, function (results, status) {
             if (status == google.maps.ElevationStatus.OK) {
                 if (!Array.isNullOrEmpty(results)) {
                     for (var r = 0, len = results.length; r < len; r++) {
@@ -47,6 +53,10 @@ namespace.module('vd.gm', function (exports) {
                 globals.log.warn("Elevation request for " + entities.length + " entities failed, status: " + status);
             }
         });
+
+        var completely = latLngValues.length == entities.length;
+        if (!completely) globals.log.warn("Too many entities " + entities.length + ", considered " + globals.elevationSingleSamplesMax);
+        return completely;
     };
 
     /**
@@ -58,6 +68,10 @@ namespace.module('vd.gm', function (exports) {
     */
     exports.Elevation.getElevationsForBounds = function (bounds, mode, callback) {
         if (Object.isNullOrUndefined(callback)) return;
+        if (!globals.elevationServiceEnabled) {
+            globals.log.info("Elevation service is disabled");
+            return;
+        }
         bounds = Object.ifNotNullOrUndefined(bounds, globals.map.getBounds());
         mode = String.isNullOrEmpty(mode) ? "d" : mode.toLowerCase().substr(0, 1);
         var sw = bounds.getSouthWest();
@@ -80,9 +94,9 @@ namespace.module('vd.gm', function (exports) {
         }
 
         // Initiate the path request.
-        globals.elevator.getElevationAlongPath({
+        globals.elevationService.getElevationAlongPath({
             path: path,
-            samples: globals.elevatorElevationPathRequestSamples
+            samples: globals.elevationServicePathRequestSamples
         }, callback);
     };
 });

@@ -1,15 +1,17 @@
 ﻿/**
 * @module vd.entity
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity', function (exports) {
 
     /**
     * @constructor
     * @classdesc 
-    * VatsimClients is the central class for reading the client data from the vatsim data file.
+    * VatsimClients is the central class for reading the client data from the VATSIM data file.
     * Here data are parsed and the entity objects are created.
     * @see vd.module:entity.Airport
     * @see vd.module:entity.Flight
+    * @author KWB
     */
     exports.VatsimClients = function () {
         /**
@@ -23,7 +25,7 @@ namespace.module('vd.entity', function (exports) {
         */
         this.clientsConnected = 0;
         /**
-        * Number of connected clients (aka VATSIm users).
+        * Number of connected clients (aka VATSIM users).
         * @type {Number}
         */
         this.info = "";

@@ -41,6 +41,8 @@ body
 #headerBarTaskInfo
 {
     display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
     vertical-align: top;
     padding: 3px 0px 0px 0px;
     font-size: 0.9em;
@@ -59,9 +61,26 @@ body
 */
 #sideBar {
     float: left;
-    width: 25%;
-    min-width: 250px;
+    min-width: 275px;
     z-index: 0;
+}
+
+@media (max-width: 1249px) {
+    #sideBar {
+        width: 30%;
+    }
+}
+
+@media (min-width: 1250px) and (max-width: 1699px) {
+    #sideBar {
+        width: 25%;
+    }
+}
+
+@media (min-width: 1700px) {
+    #sideBar {
+        width: 20%;
+    }
 }
 
 #sideBarLocation div {
@@ -105,24 +124,64 @@ body
 /* where the altitude profile is placed */
 #mapAltitudeProfile
 {
-    width: 75%;
     min-width: 600px;
     height: 10%;
     float: left;
     z-index: 0;
 }
 
+/** => width see below **/
+
 /* where the map is placed */
 #mapCanvas
 {
-    width: 75%;
     min-width: 600px;
-    /** 10% + 80% + header bar 50px => avoid scrollbar */
-    height: 80%;
+    /** 50 pixel for top bars means: */
+    /** 800 => 6,25%
+    /** 1000 => 5% */
+    /** 1600 => 3,1% */
     float: left;
     z-index: 0;
     overflow: hidden;
 }
+
+/** use optimized height to avoid scrollbar, as long as there is nothing like 100%-50px **/
+@media (max-height: 999px) {
+    #mapCanvas {
+        height: 91%;        
+    }
+}
+
+@media (min-height: 1000px) and (max-height: 1599px) {
+    #mapCanvas {
+        height: 94%;        
+    }
+}
+
+@media (min-height: 1600px) {
+    #mapCanvas {
+        height: 97%;        
+    }
+}
+
+@media (max-width: 1249px) {
+    #mapCanvas, #mapAltitudeProfile {
+        width: 70%;
+    }
+}
+
+@media (min-width: 1250px) and (max-width: 1699px) {
+    #mapCanvas, #mapAltitudeProfile {
+        width: 75%;
+    }
+}
+
+@media (min-width: 1700px) {
+    #mapCanvas, #mapAltitudeProfile {
+        width: 80%;
+    }
+}
+
 
 /* -- color just a dummy for jscolor **/
 /* avoids problems with the IDE reporting missing styles */

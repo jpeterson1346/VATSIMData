@@ -76,10 +76,10 @@ namespace.module('vd.util', function (exports) {
     /**
     * Get the selected values.
     * @param {HTMLSelectElement} selectElement
-    * @param {String} value
+    * @param {String} value to be set value, must be one of the options
     */
     exports.UtilsWeb.selectValue = function (selectElement, value) {
-        var selectDomElement = elementFromStringOrDomElement(selectElement);
+        var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
         if (Object.isNullOrUndefined(selectDomElement)) return;
         for (var i = 0; i < selectDomElement.length; ++i) {
             selectDomElement.options[i].selected = (selectDomElement.options[i].value == value);
@@ -159,19 +159,27 @@ namespace.module('vd.util', function (exports) {
 
     /**
     * Get the original CSS values instead of values of the element.
+    * Does not(!) find values of @media sections!
     * @param {String} ruleSelector
     * @param {String} cssprop
+    * @param {String} [styleSheet] Styles.css, MySheet.css
     * @return {String} property of the style
     * @see <a href="http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object">CSS parser</a>
     */
-    exports.UtilsWeb.getCssStyle = function (ruleSelector, cssprop) {
+    exports.UtilsWeb.getCssStyle = function (ruleSelector, cssprop, styleSheet) {
         for (var c = 0, lenC = document.styleSheets.length; c < lenC; c++) {
-            var rules = document.styleSheets[c].cssRules;
+            var sheet = document.styleSheets[c];
+            if (!String.isNullOrEmpty(styleSheet) &&!String.isNullOrEmpty(sheet.href)) {
+                if (!sheet.href.endsWith(styleSheet)) continue; // check on sheet name 
+            }
+            var rules = sheet.cssRules;
             if (Object.isNullOrUndefined(rules)) continue;
             for (var r = 0, lenR = rules.length; r < lenR; r++) {
                 var rule = rules[r];
+                if (String.isNullOrEmpty(rule.selectorText)) continue;
                 if (rule.selectorText == ruleSelector && rule.style) {
-                    return rule.style[cssprop]; // rule.cssText;
+                    var ruleProperty = rule.style[cssprop];
+                    return ruleProperty; // rule.cssText;
                 }
             }
         }

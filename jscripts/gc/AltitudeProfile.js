@@ -73,7 +73,7 @@ namespace.module('vd.gc', function(exports) {
                         var loc = (lat ? elevation.location.lat() * m : elevation.location.lng() * m).toFixed(0) * 1; // trick to get the dots directly above the planes
                         data.addRow([loc, null, null, elv]);
                     }
-                    globals.log.trace("Retrieved " + elevations.length + " elevations height profile in " + runTime.getDiffFormatted() + " from Google elevation service for path");
+                    globals.log.trace("Retrieved " + elevations.length + " elevations for profile in " + runTime.getDiffFormatted() + " from Google elevation service for path");
                 } else {
                     globals.log.warn("Elevation request for bounds " + bounds.toString() + " failed, status: " + status);
                 }

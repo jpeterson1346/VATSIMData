@@ -16,6 +16,7 @@
         <script type="text/javascript" src="js/Infobox.js"> </script>
         <script type="text/javascript" src="js/ColourConversion.js"> </script>
         <script type="text/javascript" src="js/RgbColor.js"> </script>
+        <script type="text/javascript" src="js/BrowserDetect.js"> </script>
         <script type="text/javascript" src="js/WorldMagneticModel.js"> </script>
         <script type="text/javascript" src="js/jquery/JQuery-1.6.2.js"> </script>
         <script type="text/javascript" src="js/jquery/JQquery-ui-1.8.15.custom.min.js"> </script>
@@ -80,7 +81,7 @@
     <body>
         <div class="ui-widget">
             <div id="header">
-                VatGM - Who is flying ..? [Dev.version | only for simulation]
+                VatGM - Who is flying ..? [Only for simulation]
             </div>
             <div id="headerBar" class="ui-widget-header">
                 <select id="headerBarTabSelection" onchange="ctr.showHideInputAndTabs()">
@@ -234,8 +235,16 @@
                     </tr>
                     <tr class="ui-widget-header">
                         <th colspan="4" class="sideBarHeader">
-                            Altitude profile
+                            Elevation services
                         </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="3">
+                            Service (generally enable / disable):
+                        </td>
+                        <td>
+                            <input name="showProfile" id="inputElevationService" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
+                        </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
@@ -248,7 +257,7 @@
                             Elevation line:
                         </td>
                         <td>
-                            <input name="elevationProfile" id="inputAltitudeProfileElevationProfile" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
+                            <input name="elevationProfile" id="inputAltitudeProfileElevationLine" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -261,12 +270,20 @@
                             Vatsim Id:
                         </td>
                         <td>
-                            <input name="followVatsimId" id="inputFollowVatsimId" type="text" size="8" onkeydown=" ctr.onEnter(event, function() { ctr.followVatsimId(null); }); "/>
+                            <input name="followVatsimId" id="inputFollowVatsimId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followVatsimId(null); }); "/>
                         </td>
                         <td colspan="2">
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " ><span class="ui-icon ui-icon-link" title="Show data"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(); "><span class="ui-icon ui-icon-check" title="Follow"></span></button>
-                            <div id="inputFollowedVatsimClient"></div>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td></td>
+                        <td colspan="2">
+                            <div id="inputFollowedVatsimClient">Not followed.</div>
+                        </td>
+                        <td>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(''); " ><span class="ui-icon ui-icon-trash" title="End follow id"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -390,6 +407,25 @@
                         </td>
                         <td>
                             <input type="checkbox" name="WaypointsFlightSpeedAltitudeHeading" id="inputWaypointSettingsFlightSpeedAltitudeHeading" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Max. waypoints:
+                        </td>
+                        <td>
+                            <select name="FlightWaypointsMaxNumber" id="inputWaypointSettingsFlightMaxNumber" onchange="ctr.vatsimClientSettingsChanged()">
+                                <option>5</option>
+                                <option>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                                <option>100</option>
+                                <option>all</option>
+                            </select>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -608,7 +644,19 @@
                 <table id="sideBarAbout" class="sideBarStandard">
                     <tr class="ui-widget-header">
                         <th colspan="2" class="sideBarHeader">
-                            Getting involved:
+                            Version
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            <ul>
+                                <li id="vatGmVersion"></li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-header">
+                        <th colspan="2" class="sideBarHeader">
+                            Getting involved
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
@@ -622,7 +670,7 @@
                     </tr>
                     <tr class="ui-widget-header">
                         <th class="sideBarHeader">
-                            Legal:
+                            Legal
                         </th>
                     </tr>
                     <tr class="ui-widget-content">

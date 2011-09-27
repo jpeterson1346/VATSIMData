@@ -5,13 +5,19 @@
 namespace.module('vd.page', function (exports) {
 
     /**
-    * @classdesc Things frequently needed in a global context.
+    * @classdesc
+    * Things frequently needed in a global context, e.g. options to write log
+    * information and settings.
     * @constructor
     * @author KWB
     */
     exports.Globals = function () {
 
         var now = new Date();
+
+        // version
+        this.version = "N/A";
+        this._initVersion();
 
         // Logger: http://log4javascript.org/docs/manual.html#configuration
         this.log = null;
@@ -26,12 +32,7 @@ namespace.module('vd.page', function (exports) {
         this.clients = new vd.entity.VatsimClients();
         this.metar = new vd.entity.helper.VatsimMetar();
 
-        // map dimensions
-        this.mapCanvasWidth = null;
-        this.mapCanvasHeight = null;
-
         // sidebar dimensions
-        this.sideBarWidth = null;
         this.sideBarMinWidth = null;
         this.sideBarLocationDisplay = null;
         this.sideBarSettingsDisplay = null;
@@ -40,10 +41,6 @@ namespace.module('vd.page', function (exports) {
         this.sideBarCreditsDisplay = null;
         this.sideBarAboutDisplay = null;
         this.headerTaskInfoDisplay = null;
-
-        // height profile dimensions
-        this.altitudeProfileWidth = null;
-        this.altitudeProfileHeight = null;
 
         // styles
         this.styles = new vd.entity.base.Styles();
@@ -60,40 +57,51 @@ namespace.module('vd.page', function (exports) {
         this.coordinatesDigitsDisplayed = 3; // rounding for displayed coordinates
         this.coordinatesDigitsCalculation = 6; // rounding for calculations
         this.angelsDigitsDisplayed = 2;
+
+        // Places, geolocation
         this.geolocation = navigator.geolocation; // browser supports feature
         this.geolocationWorking = this.geolocation; // feature is really working
         this.geolocationLat = 0;
         this.geolocationLon = 0;
         this.geocoder = new google.maps.Geocoder(); // resolve places etc.
-        this.elevator = new google.maps.ElevationService(); // resolves elevations
-        this.elevatorElevationPathRequestSamples = 200;
+
+        // Elevation
+        this.elevationServiceEnabled = true;
+        this.elevationService = new google.maps.ElevationService(); // resolves elevations
+        this.elevationServicePathRequestSamples = 200;
+        this.elevationSingleSamplesMax = 75;
 
         // data grids
         this.gridSelectedVatsimClient = null;
+        this.gridJqGridUnloadPossible = BrowserDetect.OS.toLowerCase().startsWith("win"); // add additional columns when on a wide screen.
 
-        // height profile
+        // altitude profile
         this.altitudeProfile = null;
         this.altitudeProfileSettings = new vd.gc.AltitudeProfileSettings();
 
         // which property to display and how
-        this.flightSettings = new vd.entity.FlightSettings();
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
-        this.flightWaypointsWhenGrounded = false;
         this.flightMouseoverTimeout = 6 * 1000; //ms
-
-        this.atcSettings = new vd.entity.helper.AtcSettings();
+        this.flightSettings = new vd.entity.FlightSettings();
+        
         this.atcGridRows = 10;
         this.atcHideZoomLevel = 4;
+        this.atcSettings = new vd.entity.helper.AtcSettings();
 
-        this.waypointSettings = new vd.entity.helper.WaypointSettings();
+        this.waypointSettings = new vd.entity.helper.WaypointSettings(
+            { 
+                displayFlightWaypointsWhenGrounded: false,
+                flightWaypointsNumberMaximum: 50
+            }
+        );
         this.waypointHideZoomLevel = 4;
         this.waypointLinesHideZoomLevel = 4;
 
-        this.airportSettings = new vd.entity.AirportSettings();
         this.airportHideZoomLevel = 4;
         this.airportAtisTextWidth = 30;
-
+        this.airportSettings = new vd.entity.AirportSettings();
+       
         // filter
         this.filtered = false;
         this.filter = new vd.entity.base.EntityList();
@@ -201,6 +209,18 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
+    * Init the version (by version.txt).
+    * @private
+    */
+    exports.Globals.prototype._initVersion = function () {
+        var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", url, false);
+        xmlhttp.send();
+        if (xmlhttp.status == 200) this.version = xmlhttp.responseText;
+    };
+
+    /**
     * Init the logger.
     * @private
     */
@@ -208,7 +228,6 @@ namespace.module('vd.page', function (exports) {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();
-        this.log.setLevel(local ? log4javascript.Level.TRACE : log4javascript.Level.WARN);
 
         if (this.logUseAppenderConsole) {
             this.logAppenderConsole = new log4javascript.BrowserConsoleAppender();
@@ -225,10 +244,17 @@ namespace.module('vd.page', function (exports) {
             this.log.addAppender(this.logAppenderPopUp);
         }
 
-        if (local) {
-            // display something and hide
-            this.log.info("Local mode");
-            if (this.logUseAppenderPopUp) this.logAppenderPopUp.hide();
+        // level
+        if (this.logUseAppenderConsole || this.logUseAppenderPopUp) {
+            this.log.setLevel(local ? log4javascript.Level.TRACE : log4javascript.Level.WARN);
+            if (local) {
+                // display something and hide
+                this.log.info("Local mode");
+                if (this.logUseAppenderPopUp) this.logAppenderPopUp.hide();
+            }
+        } else {
+            // no appenders no logging required
+            this.log.setLevel(log4javascript.Level.OFF);
         }
     };
 });

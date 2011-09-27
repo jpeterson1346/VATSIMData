@@ -54,11 +54,10 @@ namespace.module('vd.page', function (exports) {
 
         // tabs and client information, then side bars
         this.showHideInputAndTabs(); // init side bar
-        this.vatsimClientSettingsChanged(true); // init the settings only
-        this.resetUpdateTimer();
         this._initSideBarData(); // side bar data init
         this._initAltitudeProfile(); // all related to height profile
 
+        
         // load flight when map completed
         var me = this;
         google.maps.event.addListenerOnce(globals.map, 'tilesloaded',
@@ -281,24 +280,16 @@ namespace.module('vd.page', function (exports) {
 
         // one time init, remember style sheet values
         // http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object
-        if (Object.isNullOrUndefined(globals.sideBarWidth)) {
+        if (Object.isNullOrUndefined(globals.sideBarMinWidth)) {
             this._initAltitudeProfile();
             globals.sideBarMinWidth = $(sideBar).css('min-Width');
-            globals.sideBarWidth = vd.util.UtilsWeb.getCssStyle("#sideBar", "width"); // only way to get global CSS value
-            globals.altitudeProfileWidth = vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "width"); ;
-            globals.mapCanvasWidth = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "width");
-            // this would calculate it based on "rest width"
-            // globals.altitudeProfileWidth = vd.util.UtilsCalc.substractPercentages("100%", globals.sideBarWidth);
-            // globals.mapCanvasWidth = globals.altitudeProfileWidth;
             globals.sideBarLocationDisplay = $(sideBarLocation).css('display');
             globals.sideBarSettingsDisplay = $(sideBarSettings).css('display');
             globals.sideBarEntitiesDisplay = $(sideBarEntities).css('display');
             globals.sideBarDataDisplay = $(sideBarData).css('display');
             globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
             globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
-            if (Object.isNullOrUndefined(globals.sideBarWidth) || Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
-            globals.mapCanvasWidth = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "width");
-            globals.mapCanvasHeight = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "height");
+            if (Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
         }
 
         if (selected.startsWith("H")) {
@@ -306,15 +297,17 @@ namespace.module('vd.page', function (exports) {
             sideBar.style.width = "0%";
             sideBar.style.minWidth = "0px";
             mapCanvas.style.width = "100%";
-            mapCanvas.style.height = "95%";
+            mapCanvas.style.height = "97%";
             altitudeProfile.style.width = "100%";
         } else {
-            // to visible
-            sideBar.style.width = globals.sideBarWidth;
-            sideBar.style.minWidth = globals.sideBarMinWidth;
-            mapCanvas.style.width = globals.mapCanvasWidth;
+            // to visible by reseting to CSS values
+            sideBar.style.width = null;
+            sideBar.style.minWidth = null;
+            mapCanvas.style.width = null;
+            mapCanvas.style.height = null;
+            altitudeProfile.style.width = null;
             this.altitudeProfileSettings(false); // set mapCanvas / mapAltitudeProfile height
-            altitudeProfile.style.width = globals.altitudeProfileWidth;
+
             sideBarLocation.style.display = selected.startsWith("M") ? globals.sideBarLocationDisplay : "none";
             sideBarSettings.style.display = selected.startsWith("S") ? globals.sideBarSettingsDisplay : "none";
             sideBarData.style.display = selected.startsWith("D") ? globals.sideBarDataDisplay : "none";
@@ -410,7 +403,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype.followVatsimId = function (id, displayInfo) {
         id = Object.ifNotNullOrUndefined(id, $("#inputFollowVatsimId").val());
         if (id == globals.mapFollowVatsimId) return;
-        var client = globals.clients.findByIdFirst(id);
+        var client = (id == "") ? null : globals.clients.findByIdFirst(id);
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, true);
 
         // element for info text
@@ -421,9 +414,9 @@ namespace.module('vd.page', function (exports) {
             $("#inputFollowVatsimId").val("");
             globals.mapFollowVatsimId = null;
             if (displayInfo) this.displayInfo("Follow mode 'off'.");
-            td.appendChild(document.createTextNode("off"));
+            td.appendChild(document.createTextNode("Follow mode 'off'."));
         } else {
-            var infoText = client.callsign;
+            var infoText = client.callsign.appendIfNotEmpty(client.name, " ");
             $("#inputFollowVatsimId").val(id);
             globals.mapFollowVatsimId = id;
             td.appendChild(document.createTextNode(infoText));
@@ -464,9 +457,9 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Settings for the entites (flight, ATC, waypoints) has been changed.
-    * @param {boolean} onlySettingsNoRedisplay
+    * @param {boolean} initializeOnly only initialize, do not refresh the GUI
     */
-    exports.PageController.prototype.vatsimClientSettingsChanged = function (onlySettingsNoRedisplay) {
+    exports.PageController.prototype.vatsimClientSettingsChanged = function (initializeOnly) {
 
         var fs = globals.flightSettings;
         fs.set({
@@ -506,11 +499,12 @@ namespace.module('vd.page', function (exports) {
         ws.set({
             displayFlightWaypoints: document.getElementById("inputWaypointSettingsFlight").checked,
             displayFlightCallsign: document.getElementById("inputWaypointSettingsFlightCallsign").checked,
-            displayFlightAltitudeSpeed: document.getElementById("inputWaypointSettingsFlightSpeedAltitudeHeading").checked
+            displayFlightAltitudeSpeed: document.getElementById("inputWaypointSettingsFlightSpeedAltitudeHeading").checked,
+            flightWaypointsNumberMaximum:  $("#inputWaypointSettingsFlightMaxNumber").val()
         });
 
         // redisplay
-        if (!onlySettingsNoRedisplay) this.refresh();
+        if (!initializeOnly) this.refresh();
     };
 
     /**
@@ -682,23 +676,30 @@ namespace.module('vd.page', function (exports) {
 
     // #region ------------ public part height profile ------------
     /** 
-    * Settings for altitude profile.
-    * @param {Boolean} [resize] avoid further calling the resize event 
+    * Settings for altitude profile (based on GUI checkboxes).
+    * @param {Boolean} [resize] further calling the resize event to adjust width / height 
     * @see vd.module:page.PageController#_updateAltitudeProfile
     */
     exports.PageController.prototype.altitudeProfileSettings = function (resize) {
-        var map = document.getElementById("mapCanvas");
         var profile = document.getElementById("mapAltitudeProfile");
         resize = Object.ifNotNullOrUndefined(resize, true);
-        globals.altitudeProfile.altitudeProfileSettings.elevationProfile = vd.util.UtilsWeb.checked("inputAltitudeProfileElevationProfile");
 
-        // visibility
+        //
+        // set values based on checkboxes
+        //
+        var enabled = vd.util.UtilsWeb.checked("inputElevationService");
+        globals.altitudeProfile.altitudeProfileSettings.elevationProfile = vd.util.UtilsWeb.checked("inputAltitudeProfileElevationLine");
+        globals.elevationServiceEnabled = enabled;
+        document.getElementById("inputAltitudeProfileShow").disabled = !enabled;
+        document.getElementById("inputAltitudeProfileElevationLine").disabled = !enabled;
+
+        //
+        // visibility of the altitude profile 
+        //
         if (vd.util.UtilsWeb.checked("inputAltitudeProfileShow")) {
-            map.style.height = globals.mapCanvasHeight;
-            profile.style.height = globals.altitudeProfileHeight;
+            profile.style.height = null; // reset the value
         } else {
-            map.style.height = vd.util.UtilsCalc.addPercentages(globals.mapCanvasHeight, globals.altitudeProfileHeight);
-            profile.style.height = "0%";
+            profile.style.height = "0px"; // override CSS value
         }
         if (resize) this.windowResizeEvent();
     };
@@ -792,10 +793,15 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._initSideBarData = function () {
+        // order here is crucial!
+        vd.util.UtilsWeb.selectValue("inputWaypointSettingsFlightMaxNumber", globals.waypointSettings.flightWaypointsNumberMaximum);
+        this.vatsimClientSettingsChanged(true); // init the settings only
         this._initGrids();
         this._initColourInputs();
         this._initLogLevels();
+        this._initAbout();
         this._displayAltitudeColourBar();
+        this.resetUpdateTimer();
     };
 
     /**
@@ -809,20 +815,26 @@ namespace.module('vd.page', function (exports) {
         var elementSideBar = document.getElementById("sideBar");
         if ($(elementSideBar).width() < 10) return; // sidebar is invisible / hidden. Stop here!
 
-        // wide screen?
+        // Adjust columns on a wide screen?
         var wideScreen = this._isSideBarWide();
-        if (Object.isNullOrUndefined() || this._gridWideMode != wideScreen) onlyResize = false; // force a reconstrucion of the tables
+        var extraColumns = false;
+        if (globals.gridJqGridUnloadPossible) {
+            extraColumns = wideScreen;
+
+            // force a reconstruction of the tables when mode has been changed
+            if (Object.isNullOrUndefined(this._gridWideMode) || this._gridWideMode != wideScreen) {
+                // need to clean up old grids (re-entry, force update due to new columns ...)?        
+                // Required for re-entry!
+                // This must be first before retrieving the elements
+                $("#flightData").GridUnload("#flightData");
+                $("#atcData").GridUnload("#atcData");
+                $("#detailsData").GridUnload("#detailsData");
+                $("#filterData").GridUnload("#flightData");
+            }
+        }
         this._gridWideMode = wideScreen;
 
-        // need to clean up old grids (re-entry, force update due to new columns ...)?        
-        if (!onlyResize) {
-            // Required for re-entry!
-            // This must be first before retrieving the elements
-            $("#flightData").GridUnload("#flightData");
-            $("#atcData").GridUnload("#atcData");
-            $("#detailsData").GridUnload("#detailsData");
-            $("#filterData").GridUnload("#flightData");
-        }
+        // now init elements (after Unload!)
         var elementFlightData = document.getElementById("flightData");
         var elementAtcData = document.getElementById("atcData");
         var elementDetailsData = document.getElementById("detailsData");
@@ -832,12 +844,12 @@ namespace.module('vd.page', function (exports) {
         // widths ATC / Flights
         var factor = 0.97;
         var widthGrids = ($(elementSideBar).width() * factor).toFixed(0) * 1;
-        var widthCallsign = wideScreen ? (0.20 * widthGrids).toFixed(0) : (0.325 * widthGrids).toFixed(0);
-        var widthNameFlight = wideScreen ? (0.40 * widthGrids).toFixed(0) : (0.55 * widthGrids).toFixed(0);
-        var widthTransponder = wideScreen ? (0.1 * widthGrids).toFixed(0) : 0;
-        var widthId = wideScreen ? (0.15 * widthGrids).toFixed(0) : 0;
-        var withGrounded = wideScreen ? true : false;
-        var numberCheckboxes = wideScreen ? 3 : 2;
+        var widthCallsign = extraColumns ? (0.20 * widthGrids).toFixed(0) : (0.325 * widthGrids).toFixed(0);
+        var widthNameFlight = extraColumns ? (0.40 * widthGrids).toFixed(0) : (0.55 * widthGrids).toFixed(0);
+        var widthTransponder = extraColumns ? (0.1 * widthGrids).toFixed(0) : 0;
+        var widthId = extraColumns ? (0.15 * widthGrids).toFixed(0) : 0;
+        var withGrounded = extraColumns ? true : false;
+        var numberCheckboxes = extraColumns ? 3 : 2;
         var widthRest = widthGrids - widthCallsign - widthNameFlight - widthTransponder - widthId;
         var widthCheckboxes = widthRest / numberCheckboxes; // inBounds & displayed
 
@@ -1076,15 +1088,20 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
+    * Init the about side bar tab.
+    * @private
+    */
+    exports.PageController.prototype._initAbout = function () {
+        var version = document.getElementById("vatGmVersion");
+        $(version).empty();
+        version.appendChild(document.createTextNode(globals.version));
+    };
+
+    /**
     * Init altitude profile.
     * @private
     */
     exports.PageController.prototype._initAltitudeProfile = function () {
-        if (Object.isNullOrUndefined(globals.altitudeProfileHeight)) {
-            globals.mapCanvasHeight = vd.util.UtilsWeb.getCssStyle("#mapCanvas", "height");
-            globals.altitudeProfileHeight = vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "height");
-            globals.altitudeProfileWidth = Object.ifNotNullOrUndefined(globals.mapCanvasWidth, vd.util.UtilsWeb.getCssStyle("#mapAltitudeProfile", "width"));
-        }
         globals.altitudeProfile = new vd.gc.AltitudeProfile("mapAltitudeProfile"); // do this before collapsing bar
         this.altitudeProfileSettings();
     };

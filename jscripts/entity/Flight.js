@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -15,7 +15,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @extends vd.entity.module:base.BaseEntityVatsimOnMap
     * @author KWB
     */
-    exports.Flight = function (flightProperties, flightSettings) {
+    exports.Flight = function(flightProperties, flightSettings) {
 
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
         // after this, the subclasses are merged into flight
@@ -87,7 +87,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.Flight.prototype.dispose = function () {
+    exports.Flight.prototype.dispose = function() {
         this.display(false, false, false);
         if (!Object.isNullOrUndefined(this._img)) {
             this._img.onmouseover = null;
@@ -100,7 +100,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Adjust the image.
     * @private
     */
-    exports.Flight.prototype._setImage = function () {
+    exports.Flight.prototype._setImage = function() {
         var me = this;
         // try to avoid memory leaks
         if (!Object.isNullOrUndefined(this._img)) {
@@ -113,7 +113,7 @@ namespace.module('vd.entity', function (exports, require) {
         this._img.src = (this.isGrounded()) ? "images/AircraftJetGnd.png" : this._img.src = "images/AircraftJet.png";
         this._img.width = 16;
         this._img.height = 16;
-        this._img.onmouseover = function () { me._imageMouseover(); };
+        this._img.onmouseover = function() { me._imageMouseover(); };
         // creates flickering in some browser, currently disabled
         // this._img.onmouseout = function() { me._imgMouseout(); };
         this.setHeading(this.heading, true);
@@ -123,7 +123,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Mouse over image.
     * @private
     */
-    exports.Flight.prototype._imageMouseover = function () {
+    exports.Flight.prototype._imageMouseover = function() {
         if (!Object.isNullOrUndefined(this._flightSettings)) return; // already in this mode
         this._flightSettings = this.flightSettings;
         this.flightSettings = this.flightSettings.clone().displayAll();
@@ -131,14 +131,14 @@ namespace.module('vd.entity', function (exports, require) {
 
         // if the mouse out event fails, make sure the details disappear some time later
         var me = this;
-        setTimeout(function () { me._imgMouseout(); }, globals.flightMouseoverTimeout);
+        setTimeout(function() { me._imgMouseout(); }, globals.flightMouseoverTimeout);
     };
 
     /**
     * Reset the mouse over effect, timeout based since onmouseout did not work reliable.
     * @private
     */
-    exports.Flight.prototype._imgMouseout = function () {
+    exports.Flight.prototype._imgMouseout = function() {
         if (Object.isNullOrUndefined(this._flightSettings)) return; // nothing to reset
         this.flightSettings = this._flightSettings;
         this._flightSettings = null;
@@ -151,7 +151,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.Flight.prototype.display = function (display, center, forceRedraw) {
+    exports.Flight.prototype.display = function(display, center, forceRedraw) {
         // display checks
         if (this.isFollowed()) {
             display = true;
@@ -175,7 +175,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Number} heading 0-359
     * @param {Boolean} [force]
     */
-    exports.Flight.prototype.setHeading = function (heading, force) {
+    exports.Flight.prototype.setHeading = function(heading, force) {
         if (Object.isNullOrUndefined(force)) force = false;
         if (this.heading == heading && !force) return;
         this.heading = heading;
@@ -186,7 +186,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Airborne or grounded?
     * @return {Boolean}
     */
-    exports.Flight.prototype.isGrounded = function () {
+    exports.Flight.prototype.isGrounded = function() {
         // due to data provisioning 0 is not a reliable value
         if (Object.isNumber(this.groundspeed)) {
             if (this.groundspeed >= 1 && this.groundspeed <= globals.groundedSpeedThreshold) return (this._isGrounded = true); // safe decision
@@ -211,7 +211,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Flightplan available?
     * @return {Boolean}
     */
-    exports.Flight.prototype.hasFlightplan = function () {
+    exports.Flight.prototype.hasFlightplan = function() {
         return !Object.isNullOrUndefined(this.flightplan);
     };
 
@@ -219,7 +219,7 @@ namespace.module('vd.entity', function (exports, require) {
     * In vicinity of the departing / or arrival airport.
     * @returns {Boolean} 
     */
-    exports.Flight.prototype.isInAirportVicinity = function () {
+    exports.Flight.prototype.isInAirportVicinity = function() {
         if (!this.hasFlightplan()) return false;
         if (!Object.isNullOrUndefined(this.flightplan.airportDeparting)) {
             if (this.flightplan.airportDeparting.isInVicinity(this))
@@ -236,7 +236,7 @@ namespace.module('vd.entity', function (exports, require) {
     * To an object containing the properties.
     * @return {Array} with property / value pairs
     */
-    exports.Flight.prototype.toPropertyValue = function () {
+    exports.Flight.prototype.toPropertyValue = function() {
         var pv = this.toPropertyValue$BaseEntityVatsimOnMap();
         if (!String.isNullOrEmpty(this.pilot)) pv["pilot"] = this.pilot;
         if (!String.isNullOrEmpty(this.aircraft)) pv["aircraft"] = this.aircraft;
@@ -252,7 +252,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.Flight.prototype._draw = function (forceRedraw) {
+    exports.Flight.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
         var latlng = this.latLng();
 
@@ -318,14 +318,14 @@ namespace.module('vd.entity', function (exports, require) {
             var path = vd.entity.helper.Waypoints.waypointsToLatLngPath(this.waypoints);
             var pw = this.waypoints[0].speedToWidth();
             var line = new google.maps.Polyline({
-                clickable: false,
-                geodesic: true,
-                path: path,
-                strokeColor: colour,
-                strokeOpacity: globals.styles.wpFlightLineOpacity,
-                strokeWeight: pw,
-                zIndex: 0
-            });
+                    clickable: false,
+                    geodesic: true,
+                    path: path,
+                    strokeColor: colour,
+                    strokeOpacity: globals.styles.wpFlightLineOpacity,
+                    strokeWeight: pw,
+                    zIndex: 0
+                });
             this.overlays.add(line);
         }
 
@@ -345,7 +345,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @return {String}
     */
-    exports.Flight.prototype._getContent = function () {
+    exports.Flight.prototype._getContent = function() {
         var c = (this.flightSettings.displayCallsign) ? this.callsign : "";
         if (this.flightSettings.displayAircraft && !String.isNullOrEmpty(this.aircraft)) c = c.appendIfThisIsNotEmpty(" ") + this.aircraft;
         if (this.flightSettings.displayFrequency && this.frequency > 100) c += " " + this.frequency + "MHz";
@@ -362,7 +362,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Flight|Object} newFlightInformation with the appropriate data
     * @return {Boolean} updated?
     */
-    exports.Flight.prototype.update = function (newFlightInformation) {
+    exports.Flight.prototype.update = function(newFlightInformation) {
         this.groundspeed = newFlightInformation.groundspeed;
         this.altitude = newFlightInformation.altitude;
         this.flightplan = newFlightInformation.flightplan;
@@ -375,7 +375,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.Flight.prototype.toString = function () {
+    exports.Flight.prototype.toString = function() {
         var s = this.toString$BaseEntityVatsimOnMap();
         return s;
     };
@@ -386,7 +386,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Array} newFlights
     * @return {Array} updated flights including new excluding gone flights
     */
-    exports.Flight.updateFlights = function (existingFlights, newFlights) {
+    exports.Flight.updateFlights = function(existingFlights, newFlights) {
         if (Array.isNullOrEmpty(newFlights)) return existingFlights;
         if (Array.isNullOrEmpty(existingFlights)) return newFlights;
 
@@ -413,30 +413,34 @@ namespace.module('vd.entity', function (exports, require) {
     };
 
     /**
-    * Insert a new waypoint
+    * Insert a new waypoint.
     * @param  {Boolean} [ignoreSameWaypoint]
     * @private
     * @return {Boolean} inserted?
     */
-    exports.Flight.prototype._insertNewWaypoint = function (ignoreSameWaypoint) {
-        if (this.isGrounded() && !globals.flightWaypointsWhenGrounded) return false;
+    exports.Flight.prototype._insertNewWaypoint = function(ignoreSameWaypoint) {
+        if (this.isGrounded() && !globals.waypointSettings.displayFlightWaypointsWhenGrounded) return false;
         ignoreSameWaypoint = Object.ifNotNullOrUndefined(ignoreSameWaypoint, true);
 
         var wp = new vd.entity.helper.Waypoint({
-            parentObject: this,
-            type: vd.entity.helper.WaypointSettings.TypeFlight,
-            name: this.callsign,
-            latitude: this.latitude,
-            longitude: this.longitude,
-            groundspeed: this.groundspeed,
-            altitude: this.altitude
-        });
+                parentObject: this,
+                type: vd.entity.helper.WaypointSettings.TypeFlight,
+                name: this.callsign,
+                latitude: this.latitude,
+                longitude: this.longitude,
+                groundspeed: this.groundspeed,
+                altitude: this.altitude
+            });
 
         if (ignoreSameWaypoint && this.waypoints.length > 0) {
             var lastWp = this.waypoints[0];
             if (this.hasSameLocation(lastWp)) return false;
         }
         this.waypoints.unshift(wp);
+        if (Object.isNumber(globals.waypointSettings.flightWaypointsNumberMaximum) && this.waypoints.length > globals.waypointSettings.flightWaypointsNumberMaximum) {
+            this.waypoints.pop();
+            globals.log.trace("Removing waypoint for flight" + this.callsign + " , waypoints " + this.waypoints.length);
+        }
         return true;
     };
 
