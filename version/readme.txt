@@ -1,0 +1,1 @@
+This directory contains version information.
