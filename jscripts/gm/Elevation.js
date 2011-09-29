@@ -2,7 +2,7 @@
 * @module vd.gm
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.gm', function (exports) {
+namespace.module('vd.gm', function (exports, require) {
 
     /**
     * @classdesc Elevation methods.
@@ -10,9 +10,7 @@ namespace.module('vd.gm', function (exports) {
     * @author KWB
     */
     exports.Elevation = function () {
-        //
         // code
-        //
     };
 
     /**
@@ -22,12 +20,9 @@ namespace.module('vd.gm', function (exports) {
     */
     exports.Elevation.getElevationsForEntities = function (entities) {
         if (Array.isNullOrEmpty(entities)) return false;
-        if (!globals.elevationServiceEnabled) {
-            globals.log.info("Elevation service is disabled");
-            return false;
-        }
+        if (!globals.elevationServiceEnabled) return false;
 
-        var runTime = new vd.util.TimeDiff();
+        var statEntry = new vd.util.RuntimeEntry("Elevation for " + entities.length + " entities (getElevationsForEntities)");
         var latLngValues = vd.entity.base.BaseEntityMap.getLatLngValues(entities, globals.elevationSingleSamplesMax);
 
         // Create a LocationElevationRequest 
@@ -47,7 +42,8 @@ namespace.module('vd.gm', function (exports) {
                             entityToBeUpdated.setElevation(elevation);
                         }
                     }
-                    globals.log.trace("Retrieved " + results.length + " elevations for " + entities.length + " entites from Google elevation service, " + runTime.getDiffFormatted());
+                    exports.Elevation.statisticsElevationsForEntities.add(statEntry, true);
+                    globals.log.trace(statEntry.toString());
                 }
             } else {
                 globals.log.warn("Elevation request for " + entities.length + " entities failed, status: " + status);
@@ -63,15 +59,13 @@ namespace.module('vd.gm', function (exports) {
     * Get elevations for a given number of horizontal / vertical pathes.
     * @param {google.maps.LatLngBounds} bounds
     * @param {String} mode h=horizontal, v=vertical, d=diagonal
-    * @param {Number} verticalLines
-    * @param {function} callback (result, status)
+    * @param {function} callback function(result, status, statEntry)
     */
     exports.Elevation.getElevationsForBounds = function (bounds, mode, callback) {
         if (Object.isNullOrUndefined(callback)) return;
-        if (!globals.elevationServiceEnabled) {
-            globals.log.info("Elevation service is disabled");
-            return;
-        }
+        if (!globals.elevationServiceEnabled) return;
+        
+        // determine path
         bounds = Object.ifNotNullOrUndefined(bounds, globals.map.getBounds());
         mode = String.isNullOrEmpty(mode) ? "d" : mode.toLowerCase().substr(0, 1);
         var sw = bounds.getSouthWest();
@@ -99,4 +93,12 @@ namespace.module('vd.gm', function (exports) {
             samples: globals.elevationServicePathRequestSamples
         }, callback);
     };
+
+    /**
+    * Statistics.
+    * @type {vd.util.RuntimeStatistics}
+    */
+    var util = require("vd.util");
+    exports.Elevation.statisticsElevationsForEntities = new util.RuntimeStatistics("Elevation for entities");
+    exports.Elevation.statisticsElevationsForBounds = new util.RuntimeStatistics("Elevation for bounds");
 });

@@ -46,7 +46,9 @@ namespace.module('vd.entity', function (exports) {
         */
         this._testModeFileNumber = 0;
 
-        // helper entities
+        //
+        // ---- helper entities
+        //
 
         /**
         * All read ATCs.
@@ -61,7 +63,9 @@ namespace.module('vd.entity', function (exports) {
         */
         this.flightplans = new Array();
 
-        // "main" entities 
+        //
+        // ---- main entities
+        //
 
         /**
         * All read flights.
@@ -75,29 +79,51 @@ namespace.module('vd.entity', function (exports) {
         * @see Airport
         */
         this.airports = new Array();
+
+        //
+        // ---- statistics
+        //
+
+        /**
+        * Log read statistics.
+        * @type {vd.util.RuntimeStatistics}
+        */
+        this._statisticsRead = new vd.util.RuntimeStatistics("VatsimClients read");
+        /**
+        * Log parse statistics.
+        * @type {vd.util.RuntimeStatistics}
+        */
+        this._statisticsParse = new vd.util.RuntimeStatistics("VatsimClients parse");
+        /**
+        * Log parse statistics.
+        * @type {vd.util.RuntimeStatistics}
+        */
+        this._statisticsDisplay = new vd.util.RuntimeStatistics("VatsimClients display");
     };
 
     /**
     * Read data from the VASTIM servers ("data file").
-    * @return {Boolean} status, false if data was already available or something failed
+    * @return {Number} status, const values indicating if data was already available or something failed
     */
     exports.VatsimClients.prototype.readFromVatsim = function () {
+        this._statisticsRead.start();
         this._setDatafile();
-        var runtime = new vd.util.TimeDiff();
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", this.datafile, false);
         xmlhttp.send();
         if (xmlhttp.status == 200) {
             var xml = xmlhttp.responseText;
             var r = this._parseVatsimDataFile(xml);
-            if (r)
-                globals.log.trace("Data loaded in " + runtime.getDiffFormatted());
+            if (r == exports.VatsimClients.Ok)
+                this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
+            else if (r == exports.VatsimClients.NoNewData)
+                globals.log.trace("VATSIM Data loaded but no new data");
             else
-                globals.log.error("Data loaded, but parsing failed");
+                globals.log.error("Parsing VATSIM data failed");
             return r;
         } else {
-            globals.log.error("Vatsim data cannot be loaded, status " + xmlhttp.status + ". " + this.datafile);
-            return false;
+            globals.log.error("VATSIM data cannot be loaded, status " + xmlhttp.status + ". " + this.datafile);
+            return exports.VatsimClients.ReadFailed;
         }
     };
 
@@ -122,12 +148,12 @@ namespace.module('vd.entity', function (exports) {
     /**
     * Parse the VATSIM data file.
     * @param  {String} rawData from the request
-    * @return {Boolean} status, false if data was already available or something failed
+    * @return {Number} status, e.g. whether data was already available or something failed
     */
     exports.VatsimClients.prototype._parseVatsimDataFile = function (rawData) {
 
         // init
-        var timeDiff = new vd.util.TimeDiff();
+        var statsEntry = new vd.util.RuntimeEntry("Parsing file (VatsimClients)");
         var lines = rawData.split("\n");
         var section = "";
         var flights = new Array();
@@ -135,6 +161,7 @@ namespace.module('vd.entity', function (exports) {
         var atcs = new Array();
         var airports = new Array();
         var currentAirport = null;
+        var status = exports.VatsimClients.ParsingFailed;
 
         // parse each line
         for (var l = 0, len = lines.length; l < len; l++) {
@@ -176,8 +203,7 @@ namespace.module('vd.entity', function (exports) {
                                 route: String.isNullOrEmpty(clientElements[30]) ? null : clientElements[30].trim()
                             });
                         flightplans.push(flightplan);
-                    }
-                    ;
+                    };
                     var flight = new vd.entity.Flight(
                         {
                             flightplan: flightplan,
@@ -226,12 +252,12 @@ namespace.module('vd.entity', function (exports) {
             } else if (section == "GENERAL") {
                 var kv = this._splitGeneralSection(line);
                 if (!Object.isNullOrUndefined(kv)) {
-                    var dt = kv[1];
                     if (kv[0] == "UPDATE") {
+                        var dt = Date.parseString(kv[1], "yyyyMMddHHmmss");
                         if (this.readHistory.contains(dt))
-                            return false; // break!
+                            return exports.VatsimClients.NoNewData;
                         else {
-                            this.update = Date.parseString(kv[1], "yyyyMMddHHmmss");
+                            this.update = dt;
                             this.readHistory.unshift(this.update);
                         }
                     } else if (kv[0] == "CONNECTED CLIENTS") this.clientsConnected = kv[1] * 1;
@@ -245,7 +271,6 @@ namespace.module('vd.entity', function (exports) {
         this.flightplans = flightplans;
 
         // update flights with elevation
-        var success = false;
         if (!globals._asyncBoundsUpdateSemaphore) {
             globals._asyncBoundsUpdateSemaphore = true;
 
@@ -256,26 +281,29 @@ namespace.module('vd.entity', function (exports) {
                 vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
             } else {
                 globals.log.error("Parsing clients, flights undefined");
+                return exports.VatsimClients.ParsingFailed;
             }
             // set airports        
             this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
             if (Object.isNullOrUndefined(this.airports)) {
                 globals.log.error("Parsing clients, airports undefined");
+                return exports.VatsimClients.ParsingFailed;
             }
-            
-            // trace
-            globals.log.trace("Parsing completed " + timeDiff.getDiffFormatted());
-            
+
+            // statistics / log
+            this._statisticsParse.add(statsEntry);
+            globals.log.trace(statsEntry.toString());
+
             // completed    
             globals._asyncBoundsUpdateSemaphore = false;
-            success = true;
+            status = exports.VatsimClients.Ok;
         } else {
             // handling of race condition
             globals.log.warn("Parsing clients, race condition detected!");
         }
 
         // bye
-        return success;
+        return status;
     };
 
     /**
@@ -295,9 +323,13 @@ namespace.module('vd.entity', function (exports) {
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
     exports.VatsimClients.prototype.display = function (display, forceRedraw) {
-        if (this.count() < 1) return;
+        var c = this.count();
+        if (c < 1) return;
+        var statsEntry = new vd.util.RuntimeEntry("Display on " + c + " clients (VatsimClients)");
         var clients = this.clients();
         vd.entity.base.BaseEntityMap.display(clients, display, forceRedraw);
+        this._statisticsDisplay.add(statsEntry, true);
+        globals.log.trace(statsEntry.toString());
     };
 
     /**
@@ -390,4 +422,30 @@ namespace.module('vd.entity', function (exports) {
     exports.VatsimClients.prototype.findFlightsInBounds = function (inBounds) {
         return vd.entity.base.BaseEntityMap.findInBounds(this.flights, inBounds);
     };
+
+
+    /**
+    * Reading OK.
+    * @type {Number}
+    * @const
+    */
+    exports.VatsimClients.Ok = 0;
+    /**
+    * Reading but no new data.
+    * @type {Number}
+    * @const
+    */
+    exports.VatsimClients.NoNewData = 1;
+    /**
+    * Reading failed.
+    * @type {Number}
+    * @const
+    */
+    exports.VatsimClients.ReadFailed = 10;
+    /**
+    * Parsing failed.
+    * @type {Number}
+    * @const
+    */
+    exports.VatsimClients.ParsingFailed = 11;
 });

@@ -1,7 +1,8 @@
 ﻿/**
 * @module vd.util
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function (exports, require) {
+namespace.module('vd.util', function (exports) {
 
     /**
     * @constructor
@@ -9,9 +10,10 @@ namespace.module('vd.util', function (exports, require) {
     * @param {function} func event function to be called
     * @param {Number}   collectMs time in milliseconds over which the event is being collected
     * @param {Boolean}  restart a new event restarts the timer
+    * @param {String}   description clear text of purpose of this event, simplifies debugging
     * @param {function} [methodCalledCallback] callback when method is really being called
     */
-    exports.CollectingEvent = function(func, collectMs, restart, methodCalledCallback) {
+    exports.CollectingEvent = function(func, collectMs, restart, description, methodCalledCallback) {
 
         /**
         * Restart time whenever called. 
@@ -23,6 +25,11 @@ namespace.module('vd.util', function (exports, require) {
         * @type {Number}
         */
         this.collectTime = collectMs;
+        /**
+        * Clear text description. 
+        * @type {String}
+        */
+        this.description = String.isNullOrEmpty(description) ? "" : description;
         /**
         * Event to be called. 
         * @private

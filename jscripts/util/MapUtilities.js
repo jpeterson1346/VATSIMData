@@ -1,7 +1,8 @@
 ﻿/**
 * @module vd.util
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function(exports, require) {
+namespace.module('vd.util', function(exports) {
 
     /**
     * Utilities for the maps.

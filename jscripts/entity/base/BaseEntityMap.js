@@ -1,5 +1,6 @@
 ﻿/**
 * @module vd.entity.base
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity.base', function (exports) {
 
@@ -82,7 +83,8 @@ namespace.module('vd.entity.base', function (exports) {
     * or method will be overridden by subclass.
     */
     exports.BaseEntityMap.prototype.dispose = function () {
-        // code goes here
+        this.overlays.clear();
+        this.overlays = null;
     };
 
     /**

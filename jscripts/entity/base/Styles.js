@@ -16,7 +16,7 @@ namespace.module('vd.entity.base', function (exports) {
         this.flightLabelBorder = "1px solid gray";
         this.flightLabelPadding = "2px";
         this.flightLabelBackground = "white";
-        this.flightLabelBackgroundIfFollowed = "#EDEDED";
+        this.flightLabelBackgroundIfFollowed = "#F2FF33";
         this.flightLabelBackgroundIfFiltered = "#993300";
         this.flightLabelOpacity = 0.75;
         this.flightLabelTextAlign = "left";

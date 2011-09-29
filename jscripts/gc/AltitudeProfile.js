@@ -2,7 +2,7 @@
 * @module vd.gc
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.gc', function(exports) {
+namespace.module('vd.gc', function (exports) {
 
     /**
     * Display elevations and altitudes such as the ground elevation and flight altitude.
@@ -23,6 +23,12 @@ namespace.module('vd.gc', function(exports) {
         * @type {AltitudeProfileSettings}
         */
         this.altitudeProfileSettings = Object.ifNotNullOrUndefined(heightProfileSettings, globals.altitudeProfileSettings);
+        /**
+        * Statistics about displaying the projection.
+        * @type {vd.util.RuntimeStatistcis}
+        * @private
+        */
+        this._statisticsAltitudeProfile = new vd.util.RuntimeStatistics("Altitude projection synchronous part");
     };
 
     /**
@@ -32,11 +38,11 @@ namespace.module('vd.gc', function(exports) {
     * @param  {Boolean} withElevationProfile display an elevation profile
     * @return {Boolean} displayed?
     */
-    exports.AltitudeProfile.prototype.displayProjection = function(flights, latOrLon, withElevationProfile) {
+    exports.AltitudeProfile.prototype.displayProjection = function (flights, latOrLon, withElevationProfile) {
         if (!this.isVisible()) return false;
-        var runTime = new vd.util.TimeDiff();
         flights = Array.isNullOrEmpty(flights) ? globals.clients.findFlightsDisplayed(true) : flights;
         withElevationProfile = Object.ifNotNullOrUndefined(withElevationProfile, this.altitudeProfileSettings.elevationProfile);
+        var statsEntry = new vd.util.RuntimeEntry("Display projection " + flights.length + " flights, elevation profile " + withElevationProfile + " (AltitudeProfile)");
         var data = new google.visualization.DataTable();
         data.addColumn('number', latOrLon);
         data.addColumn('number', 'flight altitude');
@@ -59,11 +65,13 @@ namespace.module('vd.gc', function(exports) {
 
         if (withElevationProfile) {
             var me = this;
-            vd.gm.Elevation.getElevationsForBounds(bounds, elevationMode, function(elevations, status) {
+            vd.gm.Elevation.getElevationsForBounds(bounds, elevationMode, function (elevations, status) {
                 // asynchronously get the elevations and then draw
                 var elv;
                 if (status == google.maps.ElevationStatus.OK) {
-                    for (var e = 0; e < elevations.length; e++) {
+                    var eLen = elevations.length;
+                    var statsEntryAsync = new vd.util.RuntimeEntry("Elevation for bounds, samples: " + eLen);
+                    for (var e = 0; e < eLen; e++) {
                         var elevation = elevations[e];
                         if (globals.mapElevationZeroCutoff && elevation.elevation < 0)
                             elv = 0;
@@ -73,7 +81,8 @@ namespace.module('vd.gc', function(exports) {
                         var loc = (lat ? elevation.location.lat() * m : elevation.location.lng() * m).toFixed(0) * 1; // trick to get the dots directly above the planes
                         data.addRow([loc, null, null, elv]);
                     }
-                    globals.log.trace("Retrieved " + elevations.length + " elevations for profile in " + runTime.getDiffFormatted() + " from Google elevation service for path");
+                    vd.gm.Elevation.statisticsElevationsForBounds.add(statsEntryAsync, true);
+                    globals.log.trace(statsEntryAsync.toString());
                 } else {
                     globals.log.warn("Elevation request for bounds " + bounds.toString() + " failed, status: " + status);
                 }
@@ -85,6 +94,12 @@ namespace.module('vd.gc', function(exports) {
             // no google elevations
             this._draw(data, xRangeMin, xRangeMax);
         }
+
+        // log + statistics
+        this._statisticsAltitudeProfile.add(statsEntry, true);
+        globals.log.trace(statsEntry.toString());
+
+        // end
         return true;
     };
 
@@ -96,7 +111,7 @@ namespace.module('vd.gc', function(exports) {
     * @private
     * @see <a href="http://code.google.com/apis/chart/interactive/docs/gallery/scatterchart.html#Configuration_Options">Configuration options</a>
     */
-    exports.AltitudeProfile.prototype._draw = function(data, xMin, xMax) {
+    exports.AltitudeProfile.prototype._draw = function (data, xMin, xMax) {
         var rows = data.getNumberOfRows();
         var chart = new google.visualization.ScatterChart(this.profileElement);
 
@@ -153,7 +168,7 @@ namespace.module('vd.gc', function(exports) {
     * Is the height profile visible?
     * @return {Boolean}
     */
-    exports.AltitudeProfile.prototype.isVisible = function() {
+    exports.AltitudeProfile.prototype.isVisible = function () {
         return $(this.profileElement).height() > 10;
     };
 });

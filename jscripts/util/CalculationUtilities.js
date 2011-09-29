@@ -112,9 +112,9 @@ namespace.module('vd.util', function (exports) {
 
         // unit
         if ("nm" == unit) {
-            d = exports.kmToNm(d) * 1;
-            h = exports.kmToNm(h) * 1;
-            v = exports.kmToNm(v) * 1;
+            d = exports.UtilsCalc.kmToNm(d) * 1;
+            h = exports.UtilsCalc.kmToNm(h) * 1;
+            v = exports.UtilsCalc.kmToNm(v) * 1;
         }
 
         // bye

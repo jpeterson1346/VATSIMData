@@ -19,6 +19,18 @@ namespace.module('vd.page', function (exports) {
         */
         this._boundsChangedCollectedEvent = null;
         /**
+        * Collective refresh event, avoid too many refreshs.
+        * @private
+        * @type {CollectingEvent}
+        */
+        this._backgroundRefreshCollectEvent = null;
+        /**
+        * Collective grid update refresh event, avoid too many refreshs.
+        * @private
+        * @type {CollectingEvent}
+        */
+        this._backgroundUpdateGridCollectEvent = null;
+        /**
         * Time when the content bar was last deleted.
         * @private
         * @type {Number}
@@ -30,6 +42,20 @@ namespace.module('vd.page', function (exports) {
         * @type {Boolean}
         */
         this._gridWideMode = null;
+        /**
+        * Statistics about page refresh (do not confuse with browser reload).
+        * @type {vd.util.RuntimeStatistics}
+        * @private
+        * @see vd.module:page.PageController#refresh
+        */
+        this._statisticsRefresh = new vd.util.RuntimeStatistics("Page refresh");
+        /**
+        * Statistics about page data grid updates.
+        * @type {vd.util.RuntimeStatistics}
+        * @private
+        * @see vd.module:page.PageController#refresh
+        */
+        this._statisticsDataGridUpdates = new vd.util.RuntimeStatistics("Data grid updates");
     };
     // #endregion ------------ Constructor ------------
 
@@ -57,7 +83,6 @@ namespace.module('vd.page', function (exports) {
         this._initSideBarData(); // side bar data init
         this._initAltitudeProfile(); // all related to height profile
 
-        
         // load flight when map completed
         var me = this;
         google.maps.event.addListenerOnce(globals.map, 'tilesloaded',
@@ -113,15 +138,21 @@ namespace.module('vd.page', function (exports) {
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, false);
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
         if (timerCalled && this.timerLoadUpdate < 0) return; // timer calls no longer valid?
-        var me = this;
         var clients = globals.clients;
         var readStatus = clients.readFromVatsim();
         var info = "";
         if (displayInfo) {
-            if (timerCalled && readStatus)
-                info = "Data loaded " + clients.info + ".";
-            else
-                info = readStatus ? "Data loaded " + clients.info + "." : "Data not loaded!";
+            switch (readStatus) {
+                case vd.entity.VatsimClients.Ok:
+                    info = "Data loaded as of " + clients.info + ".";
+                    break;
+                case vd.entity.VatsimClients.NoNewData:
+                    info = "No new data, skipping read.";
+                    break;
+                default:
+                    info = "Read error, check console.";
+                    break;
+            }
         }
         this._setInfoFields(clients.info);
         clients.display(true);
@@ -131,11 +162,8 @@ namespace.module('vd.page', function (exports) {
         var hiddenInfo = this._hiddenByZoomMessage();
         info = info.appendIfNotEmpty(hiddenInfo, " ");
 
-        // update the grids, either directly or asynchronously
-        if (this._gridsVisible())
-            this.updateGrids();
-        else
-            setTimeout(function () { me.updateGrids(true); }, globals.timerUpdateGridsDelay);
+        // update the grids
+        this.updateGridsBackground(this._gridsVisible());
 
         // update the height profile
         this._updateAltitudeProfile();
@@ -150,7 +178,7 @@ namespace.module('vd.page', function (exports) {
                 info += "'.";
             } else {
                 info = info.appendIfNotEmpty("Followed object no longer available.", " ");
-                this.followVatsimId("", false);
+                this.followVatsimId("", false, false);
             }
         }
 
@@ -398,13 +426,15 @@ namespace.module('vd.page', function (exports) {
     /**
     * Map follows a VATSIM id.
     * @param {String|Number} [id]
-    * @param {Boolean} [displayInfo]
+    * @param {Boolean} [displayInfo] display an info message
+    * @param {Boolean} [refresh] update the entities, e.g. by highlighting them
     */
-    exports.PageController.prototype.followVatsimId = function (id, displayInfo) {
+    exports.PageController.prototype.followVatsimId = function (id, displayInfo, refresh) {
         id = Object.ifNotNullOrUndefined(id, $("#inputFollowVatsimId").val());
         if (id == globals.mapFollowVatsimId) return;
         var client = (id == "") ? null : globals.clients.findByIdFirst(id);
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, true);
+        refresh = Object.ifNotNullOrUndefined(refresh, true);
 
         // element for info text
         var td = document.getElementById("inputFollowedVatsimClient");
@@ -423,6 +453,7 @@ namespace.module('vd.page', function (exports) {
             if (displayInfo) this.displayInfo("Will follow '" + infoText + "'.");
             globals.map.setCenter(client.latLng());
         }
+        if (refresh) this.backgroundRefresh(true);
     };
     // #endregion ------------ public part general ------------
 
@@ -436,7 +467,7 @@ namespace.module('vd.page', function (exports) {
             this._boundsChangedCollectedEvent = new vd.util.CollectingEvent(
                 function () {
                     me._asyncBoundsUpdate();
-                }, 2500, true);
+                }, globals.collectiveBoundsChangedInterval, true, "Bounds changed event");
         else
             this._boundsChangedCollectedEvent.fire();
 
@@ -500,11 +531,11 @@ namespace.module('vd.page', function (exports) {
             displayFlightWaypoints: document.getElementById("inputWaypointSettingsFlight").checked,
             displayFlightCallsign: document.getElementById("inputWaypointSettingsFlightCallsign").checked,
             displayFlightAltitudeSpeed: document.getElementById("inputWaypointSettingsFlightSpeedAltitudeHeading").checked,
-            flightWaypointsNumberMaximum:  $("#inputWaypointSettingsFlightMaxNumber").val()
+            flightWaypointsNumberMaximum: $("#inputWaypointSettingsFlightMaxNumber").val()
         });
 
         // redisplay
-        if (!initializeOnly) this.refresh();
+        if (!initializeOnly) this.backgroundRefresh();
     };
 
     /**
@@ -553,11 +584,11 @@ namespace.module('vd.page', function (exports) {
         globals.styles.airportLabelBackground = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsColour").val(), globals.styles.airportLabelBackground).toHex();
         globals.styles.airportLabelFontColor = vd.util.Utils.getValidColour($("#inputAirportSettingLabelsFontColour").val(), globals.styles.airportLabelFontColor).toHex();
         this._displayAltitudeColourBar();
-        if (refresh) this.refresh();
+        if (refresh) this.backgroundRefresh();
     };
 
     /**
-    * Change the filter.
+    * Change the filter (e.g. toggle the filter, or set it).
     * @param {Object} filterParams 
     */
     exports.PageController.prototype.filterSettingsChanged = function (filterParams) {
@@ -572,20 +603,40 @@ namespace.module('vd.page', function (exports) {
             this.displayInfo("Filter is off.");
         }
         globals.filtered = f;
-        this.refresh();
+        this.reiinresh(true);
     };
 
     /**
     * Redisplay the clients.
     * @param {Boolean} forceRedraw
-    **/
+    */
     exports.PageController.prototype.refresh = function (forceRedraw) {
+        var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
         var clients = globals.clients;
         forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, true);
         if (!Object.isNullOrUndefined(clients)) clients.display(true, forceRedraw);
 
         // update tables
         this.updateGrids();
+
+        // statistics / logging
+        this._statisticsRefresh.add(statsEntry, true);
+        globals.log.trace(statsEntry.toString());
+    };
+
+    /**
+    * Redisplay the clients (after some delay in the background).
+    * @param {Boolean} forceRedraw
+    **/
+    exports.PageController.prototype.backgroundRefresh = function (forceRedraw) {
+        var me = this;
+        if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
+            this._backgroundRefreshCollectEvent = new vd.util.CollectingEvent(
+                function () {
+                    me.refresh(forceRedraw);
+                }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
+        else
+            this._backgroundRefreshCollectEvent.fire();
     };
 
     /**
@@ -619,19 +670,21 @@ namespace.module('vd.page', function (exports) {
     // #region ------------ public part grids ------------
     /**
     * Update the grid tables / grid data.
-    * @param {boolean} forceUpdate
+    * Remark: Time consuming method, use wisely.
+    * @param {boolean} forceUpdate update even when grid is invisible
     */
     exports.PageController.prototype.updateGrids = function (forceUpdate) {
         if (!(forceUpdate || this._gridsVisible())) return;
 
-        var flightsGrid = jQuery("#flightData");
+        var statsEntry = new vd.util.RuntimeEntry("Grid update (Page Controller)");
+        var flightsGrid = $("#flightData");
         flightsGrid.clearGridData();
         for (var f = 0, lenF = globals.clients.flights.length; f < lenF; f++) {
             var flight = globals.clients.flights[f];
             flightsGrid.addRowData(flight.objectId, flight);
         }
 
-        var atcGrid = jQuery("#atcData");
+        var atcGrid = $("#atcData");
         atcGrid.clearGridData();
         for (var a = 0, lenA = globals.clients.atcs.length; a < lenA; a++) {
             var atc = globals.clients.atcs[a];
@@ -639,24 +692,69 @@ namespace.module('vd.page', function (exports) {
         }
 
         // filter grid
-        this.updateFilterGrid();
+        this.updateFilterGrid(false);
 
         // sort
-        var sc = "_isInBounds";
+        this.sortGrids("_isInBounds", flightsGrid, atcGrid);
+
+        // statistics / logging
+        this._statisticsDataGridUpdates.add(statsEntry, true);
+        globals.log.trace(statsEntry.toString());
+    };
+
+
+    /**
+    * Sort the grids.
+    * @param {String} [sortProperty]
+    * @param {jQuery|String|HtmlDomElement} [flightsGrid]
+    * @param {jQuery|String|HtmlDomElement} [atcGrid]
+    */
+    exports.PageController.prototype.sortGrids = function (sortProperty, flightsGrid, atcGrid) {
+        if (Object.isNullOrUndefined(flightsGrid))
+            flightsGrid = $("#flightData");
+        else if (Object.isNullOrUndefined(flightsGrid.jquery)) {
+            flightsGrid = $(elementFromStringOrDomElement(flightsGrid));
+        }
+        if (Object.isNullOrUndefined(atcGrid))
+            atcGrid = $("#atcData");
+        else if (Object.isNullOrUndefined(atcGrid.jquery)) {
+            atcGrid = $(elementFromStringOrDomElement(atcGrid));
+        }
+
+        var sc = String.isNullOrEmpty(sortProperty) ? "_isInBounds" : sortProperty;
         flightsGrid.sortGrid(sc, false, "desc");
         atcGrid.sortGrid(sc, false, "desc");
     };
 
     /**
-    * Update the data grid.
+    * Update the grid tables / grid data in background.
+    * Remark: Triggers a time consuming method.
+    * @param {boolean} forceUpdate
     */
-    exports.PageController.prototype.updateFilterGrid = function () {
+    exports.PageController.prototype.updateGridsBackground = function (forceUpdate) {
+        var me = this;
+        if (Object.isNullOrUndefined(this._backgroundUpdateGridCollectEvent))
+            this._backgroundUpdateGridCollectEvent = new vd.util.CollectingEvent(
+                function () {
+                    me.updateGrids(forceUpdate);
+                }, globals.collectiveBackgroundGridsDelay, true, "Update grids");
+        else
+            this._backgroundUpdateGridCollectEvent.fire();
+    };
+
+    /**
+    * Update the filter grid.
+    * @param {Boolean} [refresh] refresh the entities, e.g. by highlighting them.
+    */
+    exports.PageController.prototype.updateFilterGrid = function (refresh) {
+        refresh = Object.ifNotNullOrUndefined(refresh, false);
         var filterGrid = jQuery("#filterData");
         filterGrid.clearGridData();
         for (var f = 0, lenF = globals.filter.entities.length; f < lenF; f++) {
             var entity = globals.filter.entities[f];
             filterGrid.addRowData(entity.objectId, entity);
         }
+        if (refresh) this.backgroundRefresh(true);
     };
 
     /**
@@ -799,6 +897,8 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype._initSideBarData = function () {
         // order here is crucial!
         vd.util.UtilsWeb.selectValue("inputWaypointSettingsFlightMaxNumber", globals.waypointSettings.flightWaypointsNumberMaximum);
+
+        // more detailed setups
         this.vatsimClientSettingsChanged(true); // init the settings only
         this._initGrids();
         this._initColourInputs();
@@ -940,7 +1040,7 @@ namespace.module('vd.page', function (exports) {
                 onClickButton: function () {
                     var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.addByObjectId(objectId);
-                    me.updateFilterGrid();
+                    me.updateFilterGrid(true);
                 }
             };
             var navRemoveFromFilter = {
@@ -952,7 +1052,7 @@ namespace.module('vd.page', function (exports) {
                 onClickButton: function () {
                     var objectId = $(elementFilter).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.removeByObjectId(objectId);
-                    me.updateFilterGrid();
+                    me.updateFilterGrid(true);
                 }
             };
             var navClearFilter = {
@@ -963,7 +1063,7 @@ namespace.module('vd.page', function (exports) {
                 cursor: "pointer",
                 onClickButton: function () {
                     globals.filter.clear();
-                    me.updateFilterGrid();
+                    me.updateFilterGrid(true);
                 }
             };
 
@@ -1107,6 +1207,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._initAltitudeProfile = function () {
         globals.altitudeProfile = new vd.gc.AltitudeProfile("mapAltitudeProfile"); // do this before collapsing bar
+        document.getElementById("inputElevationService").checked = globals.elevationServiceEnabled;
         this.altitudeProfileSettings();
     };
     // #endregion ------------ private part init ------------
@@ -1310,7 +1411,7 @@ namespace.module('vd.page', function (exports) {
 
     // #region ------------ private part grids ------------
     /**
-    * Update the details grid and details grid data.
+    * Update the details grid and its data.
     * @param {String} rowId
     * @private
     */
@@ -1358,7 +1459,7 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Center to the position. 
-    * @param {String} rowId is the id of the row, 
+    * @param {String} rowId entity.objectId 
     * @private
     * @see <a href="http://www.trirand.com/jqgridwiki/doku.php?id=wiki:events">Docu jqGrid</a>
     */
@@ -1390,7 +1491,7 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Convert boolean to visible/hidden
+    * Convert boolean to visible/hidden.
     * @param  {Boolean} hidden
     * @return {String}
     * @private

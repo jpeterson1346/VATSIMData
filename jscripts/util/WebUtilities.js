@@ -199,7 +199,7 @@ namespace.module('vd.util', function (exports) {
     };
 
     /**
-    * Toogle checkbox with given id.
+    * Is Checkbox set?
     * @param {String|HTMLCheckbox|event} checkbox
     * @return {Boolean} new value
     */

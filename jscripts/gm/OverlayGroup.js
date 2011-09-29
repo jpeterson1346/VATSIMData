@@ -1,13 +1,15 @@
 ﻿/**
 * @module vd.gm
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.gm', function(exports, require) {
+namespace.module('vd.gm', function(exports) {
 
     /**
     * @constructor
     * @classdesc Consists of 0..n Google Map overlay elements.
     * @param {String} name: name of the group
     * @param {google.maps.Map} map
+    * @author KWB
     */
     exports.OverlayGroup = function(name, map) {
         this.name = name;

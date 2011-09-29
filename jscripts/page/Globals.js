@@ -14,7 +14,8 @@ namespace.module('vd.page', function (exports) {
     exports.Globals = function () {
 
         var now = new Date();
-
+        var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
+        
         // version
         this.version = "N/A";
         this._initVersion();
@@ -52,7 +53,7 @@ namespace.module('vd.page', function (exports) {
         this.mapFollowVatsimId = null;
         this.mapOldZoom = -1;
         this.mapRelevantMovement = 5; // 5%
-        this.mapElevationZeroCutoff = true; // google features sea levels < 0, I am aware this will cutoff some places on land < 0
+        this.mapElevationZeroCutoff = true; // Google features sea levels < 0, I am aware this will cutoff some places on land < 0
         this.altitudesDigitsDisplayed = 2; // height, elevation, altitude
         this.coordinatesDigitsDisplayed = 3; // rounding for displayed coordinates
         this.coordinatesDigitsCalculation = 6; // rounding for calculations
@@ -66,14 +67,14 @@ namespace.module('vd.page', function (exports) {
         this.geocoder = new google.maps.Geocoder(); // resolve places etc.
 
         // Elevation
-        this.elevationServiceEnabled = true;
+        this.elevationServiceEnabled = isOsWindows;
         this.elevationService = new google.maps.ElevationService(); // resolves elevations
         this.elevationServicePathRequestSamples = 200;
         this.elevationSingleSamplesMax = 75;
 
         // data grids
         this.gridSelectedVatsimClient = null;
-        this.gridJqGridUnloadPossible = BrowserDetect.OS.toLowerCase().startsWith("win"); // add additional columns when on a wide screen.
+        this.gridJqGridUnloadPossible = isOsWindows; // add additional columns when on a wide screen.
 
         // altitude profile
         this.altitudeProfile = null;
@@ -84,13 +85,13 @@ namespace.module('vd.page', function (exports) {
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms
         this.flightSettings = new vd.entity.FlightSettings();
-        
+
         this.atcGridRows = 10;
         this.atcHideZoomLevel = 4;
         this.atcSettings = new vd.entity.helper.AtcSettings();
 
         this.waypointSettings = new vd.entity.helper.WaypointSettings(
-            { 
+            {
                 displayFlightWaypointsWhenGrounded: false,
                 flightWaypointsNumberMaximum: 50
             }
@@ -101,7 +102,7 @@ namespace.module('vd.page', function (exports) {
         this.airportHideZoomLevel = 4;
         this.airportAtisTextWidth = 30;
         this.airportSettings = new vd.entity.AirportSettings();
-       
+
         // filter
         this.filtered = false;
         this.filter = new vd.entity.base.EntityList();
@@ -121,10 +122,12 @@ namespace.module('vd.page', function (exports) {
         // semaphores
         this._asyncBoundsUpdateSemaphore = false;
 
-        // timers
+        // timers / collective events
         this.timerCleanUpInfoBar = 10000; // clean info message after ms
-        this.timerUpdateGridsDelay = 3000; // ms
         this.timerLoadUpdate = -1;
+        this.collectiveBoundsChangedInterval = 2500; // ms
+        this.collectiveBackgroundRefreshEvent = 2000; // ms
+        this.collectiveBackgroundGridsDelay = 3000; // ms
 
         // urls
         this.urlUserManual = "./doc/Help.pdf";
