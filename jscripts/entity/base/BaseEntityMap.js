@@ -281,7 +281,7 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
-    * Display the given entities.
+    * Display the given entities (if in bounds).
     * @param {Array} entities
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed

@@ -319,12 +319,14 @@ namespace.module('vd.entity', function (exports) {
 
     /**
     * Display the clients (invoke display on all entities).
+    * This will display the entities if they are in bounds of the map.
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
     exports.VatsimClients.prototype.display = function (display, forceRedraw) {
         var c = this.count();
         if (c < 1) return;
+        forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, false);
         var statsEntry = new vd.util.RuntimeEntry("Display on " + c + " clients (VatsimClients)");
         var clients = this.clients();
         vd.entity.base.BaseEntityMap.display(clients, display, forceRedraw);
