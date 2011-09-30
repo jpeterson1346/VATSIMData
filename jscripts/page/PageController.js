@@ -602,7 +602,7 @@ namespace.module('vd.page', function (exports) {
             this.displayInfo("Filter is off.");
         }
         globals.filtered = f;
-        this.reiinresh(true);
+        this.refresh(true);
     };
 
     /**
