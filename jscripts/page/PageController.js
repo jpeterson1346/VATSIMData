@@ -6,7 +6,7 @@ namespace.module('vd.page', function(exports) {
 
     // #region ------------ Constructor ------------
     /**
-    * @classdesc Page controller.
+    * @classdesc Page controller. Anything directly controlling the UI.
     * @constructor
     * @see vd.module:page.Globals
     * @author KWB

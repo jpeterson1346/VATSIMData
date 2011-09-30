@@ -75,8 +75,8 @@ String.fromArray = function(arr) {
 * Strip number - find the first number and return it.
 * @return {Number}
 */
-String.prototype.stripNumber = function () {
-    var m = this.match(/\d+/);
+String.prototype.stripNumber = function() {
+    var m = this.match( /\d+/ );
     if (Array.isNullOrEmpty(m)) return null;
     return m[0];
 };
@@ -267,7 +267,7 @@ Object.isNullOrUndefined = function(candidate) {
 * @return {Object} candidate or ifNullValue
 */
 Object.ifNotNullOrUndefined = function(candidate, ifNullValue) {
-return Object.isNullOrUndefined(candidate) ? ifNullValue : candidate;
+    return Object.isNullOrUndefined(candidate) ? ifNullValue : candidate;
 };
 
 /**
@@ -276,12 +276,12 @@ return Object.isNullOrUndefined(candidate) ? ifNullValue : candidate;
 */
 Object.isNumber = function(candidate) {
     if (Object.isNullOrUndefined(candidate)) return false;
-    if ("" == candidate) return false;
+    if ("" === candidate) return false; // 0 == "" is true
     return !isNaN(candidate);
 };
 
 /**
-* Is Array null or empty?
+* Is Array null / undefined, or empty?
 * @param {Array} arr
 * @return {Boolean}
 */
@@ -290,7 +290,7 @@ Array.isNullOrEmpty = function(arr) {
     return arr.length < 1;
 };
 
-// Convert array values which represent a number to type number.
+// Convert array values - which represent a number - to type number.
 // @param {Array} array
 // @returns {Array}
 Array.arrayValuesToNumber = function(array) {
