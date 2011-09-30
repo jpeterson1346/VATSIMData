@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>VatGM - VATSIM flight information for Google Maps</title>
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <meta name="viewport" content="initial-scale=1, user-scalable=yes, width=device-width" />
         <link rel="stylesheet" type="text/css" media="screen" href="css/Styles.css" />
         <link rel="stylesheet" type="text/css" media="screen" href="css/smoothness/jquery-ui-1.8.16.custom.css" />
         <link rel="stylesheet" type="text/css" media="screen" href="css/ui.jqgrid.css" />
@@ -106,7 +106,7 @@
                 <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); "><span class="ui-icon ui-icon-help" title="User manual"></span></button>
                 <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlProjectLegalText, true); "><span class="ui-icon ui-icon-info" title="Legal text / imprint"></span></button>
                 &nbsp;
-                <div id="headerBarTaskInfo">Loading ...</div>
+                <div id="headerBarTaskInfo">Loading...</div>
             </div>
             <!-- side bar starts here -->
             <div id="sideBar">
@@ -255,7 +255,7 @@
                             <input name="showProfile" id="inputAltitudeProfileShow" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
                         <td>
-                            Elevation line:
+                            Elevation profile:
                         </td>
                         <td>
                             <input name="elevationProfile" id="inputAltitudeProfileElevationLine" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
