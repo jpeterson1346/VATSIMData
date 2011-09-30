@@ -157,6 +157,14 @@ namespace.module('vd.entity.helper', function(exports, require) {
         return vd.util.UtilsWeb.spaceToNbsp(title);
     };
 
+    /**
+    * Destructor, hide and clean up.
+    */
+    exports.Waypoint.prototype.dispose = function () {
+        this.display(false, false, false);
+        this.dispose$BaseEntityVatsimOnMap();
+    };
+    
     // Get the representation.
     // @return {String}
     exports.Waypoint.prototype.toString = function() {

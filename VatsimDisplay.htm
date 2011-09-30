@@ -95,16 +95,16 @@
                     <option>Hidden</option>
                 </select>
                 <!-- the first button also "catches" the first selected button action, so choose wisely -->
-                <button class="ui-button" onclick=" ctr.refresh(); "><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
-                <button class="ui-button" onclick=" ctr.hideAllClients(); "><span class="ui-icon ui-icon-circlesmall-minus" title="Clear"></span></button>
-                <button class="ui-button" onclick=" ctr.loadAndDisplayVatsimClients(true); "><span class="ui-icon ui-icon-document" title="Load"></span></button>
-                <button class="ui-button" onclick=" globals.resetClients(); "><span class="ui-icon ui-icon-refresh" title="Reset"></span></button>
-                <button class="ui-button" onclick=" ctr.filterSettingsChanged({ toogleFilter: true }); "><span class="ui-icon ui-icon-shuffle" title="Toggle filter"></span></button>
-                <button class="ui-button" onclick=" ctr.showLogger(); "><span class="ui-icon ui-icon-newwin" title="Console"></span></button>
-                <button class="ui-button" onclick=" globals.flightSettings.displayMinimal(); ctr.refresh(); "><span class="ui-icon ui-icon-arrow-1-sw" title="Display minimal information"></span></button>
-                <button class="ui-button" onclick=" ctr.vatsimClientSettingsChanged(); "><span class="ui-icon ui-icon-transfer-e-w" title="Display as set"></span></button>
-                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); "><span class="ui-icon ui-icon-help" title="User manual"></span></button>
-                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlProjectLegalText, true); "><span class="ui-icon ui-icon-info" title="Legal text / imprint"></span></button>
+                <button class="ui-button" onclick=" ctr.refresh(); " title="Refresh"><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
+                <button class="ui-button" onclick=" ctr.hideAllClients(); " title="Clear"><span class="ui-icon ui-icon-circlesmall-minus" title="Clear"></span></button>
+                <button class="ui-button" onclick=" ctr.loadAndDisplayVatsimClients(true); " title="Load"><span class="ui-icon ui-icon-document" title="Load"></span></button>
+                <button class="ui-button" onclick=" globals.resetClients(); " title="Reset"><span class="ui-icon ui-icon-refresh" title="Reset"></span></button>
+                <button class="ui-button" onclick=" ctr.filterSettingsChanged({ toogleFilter: true }); " title="Toggle filter"><span class="ui-icon ui-icon-shuffle" title="Toggle filter"></span></button>
+                <button class="ui-button" onclick=" ctr.showLogger(); " title="Console"><span class="ui-icon ui-icon-newwin" title="Console"></span></button>
+                <button class="ui-button" onclick=" globals.flightSettings.displayMinimal(); ctr.refresh(); " title="Display minimal information"><span class="ui-icon ui-icon-arrow-1-sw" title="Display minimal information"></span></button>
+                <button class="ui-button" onclick=" ctr.vatsimClientSettingsChanged(); " title="Display as set"><span class="ui-icon ui-icon-transfer-e-w" title="Display as set"></span></button>
+                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); " title="User manual"><span class="ui-icon ui-icon-help" title="User manual"></span></button>
+                <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlProjectLegalText, true); " title="Legal text / imprint"><span class="ui-icon ui-icon-info" title="Legal text / imprint"></span></button>
                 &nbsp;
                 <div id="headerBarTaskInfo">Loading...</div>
             </div>
@@ -161,7 +161,7 @@
                             <div id="inputGeoLocationInfo">undefined</div>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.gotoGeolocation(); "><span class="ui-icon ui-icon-check" title="Go to my place"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.gotoGeolocation(); " title="Go to my place"><span class="ui-icon ui-icon-check" title="Go to my place"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -209,7 +209,7 @@
                             <input name="place" id="inputPlace" type="text" size="16" onkeydown=" ctr.onEnter(event, function() { ctr.newPlace(true); }); "/>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.newPlace($('#inputPlace').val(), true); "><span class="ui-icon ui-icon-check" title="Go to a new location"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.newPlace($('#inputPlace').val(), true); " title="Go to a new location"><span class="ui-icon ui-icon-check" title="Go to a new location"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -220,7 +220,7 @@
                             <input name="latitude" id="inputLatitude" type="text" size="6" onkeydown=" ctr.onEnter(event, function() { ctr.newLocation(true); }); "/>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.reverseLookup() " onkeydown=" if (event.keyCode == 13) ctr.reverseLookup(); "><span class="ui-icon ui-icon-search" title="Where is this?"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.reverseLookup() " onkeydown=" if (event.keyCode == 13) ctr.reverseLookup(); " title="Where is this?"><span class="ui-icon ui-icon-search" title="Where is this?"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -274,8 +274,8 @@
                             <input name="followVatsimId" id="inputFollowVatsimId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followVatsimId(null); }); "/>
                         </td>
                         <td colspan="2">
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " ><span class="ui-icon ui-icon-link" title="Show data"></span></button>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(); "><span class="ui-icon ui-icon-check" title="Follow"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " title="Show data"><span class="ui-icon ui-icon-link" title="Show data"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(); " title="Follow"><span class="ui-icon ui-icon-check" title="Follow"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -284,7 +284,7 @@
                             <div id="inputFollowedVatsimClient">Not followed.</div>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(''); " ><span class="ui-icon ui-icon-trash" title="End follow id"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(''); " title="End follow id"><span class="ui-icon ui-icon-trash" title="End follow id"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -295,7 +295,7 @@
                             <input name="applyFilter" id="inputApplyFilter" type="checkbox" onchange = " ctr.filterSettingsChanged() ;"/>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: false }); " ><span class="ui-icon ui-icon-link" title="Show filter data"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: false }); " title="Show filter data"><span class="ui-icon ui-icon-link" title="Show filter data"></span></button>
                         </td>
                     </tr>
                 </table>

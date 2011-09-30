@@ -93,7 +93,7 @@ namespace.module('vd.page', function (exports) {
         this.waypointSettings = new vd.entity.helper.WaypointSettings(
             {
                 displayFlightWaypointsWhenGrounded: false,
-                flightWaypointsNumberMaximum: 50
+                flightWaypointsNumberMaximum: 50 // default
             }
         );
         this.waypointHideZoomLevel = 4;
@@ -189,7 +189,7 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Resets the clients
+    * Reset the clients.
     */
     exports.Globals.prototype.resetClients = function () {
         if (!Object.isNullOrUndefined(this.clients)) this.clients.display(false, true);

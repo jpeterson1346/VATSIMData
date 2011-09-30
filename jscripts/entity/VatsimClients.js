@@ -102,7 +102,7 @@ namespace.module('vd.entity', function (exports) {
     };
 
     /**
-    * Read data from the VASTIM servers ("data file").
+    * Read data from the VATSIM servers ("data file").
     * @return {Number} status, const values indicating if data was already available or something failed
     */
     exports.VatsimClients.prototype.readFromVatsim = function () {
@@ -283,6 +283,7 @@ namespace.module('vd.entity', function (exports) {
                 globals.log.error("Parsing clients, flights undefined");
                 return exports.VatsimClients.ParsingFailed;
             }
+            
             // set airports        
             this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
             if (Object.isNullOrUndefined(this.airports)) {

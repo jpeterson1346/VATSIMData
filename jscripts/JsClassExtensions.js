@@ -306,6 +306,15 @@ Array.arrayValuesToNumber = function(array) {
 };
 
 /**
+* Get the last element.
+* @return {Object} last element if array or null
+*/
+Array.prototype.last = function () {
+    if (this.length < 1) return null;
+    return this[this.length - 1];
+};
+
+/**
 * Remove array value.
 * @param {Object} val
 */

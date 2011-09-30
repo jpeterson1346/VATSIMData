@@ -18,7 +18,7 @@ namespace.module('vd.entity', function(exports, require) {
     exports.Flight = function(flightProperties, flightSettings) {
 
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
-        // after this, the subclasses are merged into flight
+        // after this, the subclasses are "merged" into flight
         vd.entity.base.BaseEntityVatsimOnMap.call(this, flightProperties);
 
         /**
@@ -416,6 +416,9 @@ namespace.module('vd.entity', function(exports, require) {
             }
         }
 
+        // remove from filter
+        globals.filter.removeEntites(existingFlightsCopy); // remove no longer existing flights 
+
         // flights no longer available and will be hidden
         for (f = 0, len = existingFlightsCopy.length; f < len; f++) {
             var disappearedFlight = existingFlightsCopy[f];
@@ -450,8 +453,10 @@ namespace.module('vd.entity', function(exports, require) {
         }
         this.waypoints.unshift(wp);
         if (Object.isNumber(globals.waypointSettings.flightWaypointsNumberMaximum) && this.waypoints.length > globals.waypointSettings.flightWaypointsNumberMaximum) {
+            var firstWp = this.waypoints.last(); // first waypoint is last in array
+            firstWp.dispose();
             this.waypoints.pop();
-            globals.log.trace("Removing waypoint for flight" + this.callsign + " , waypoints " + this.waypoints.length);
+            // globals.log.trace("Removing waypoint for flight" + this.callsign + " , waypoints " + this.waypoints.length);
         }
         return true;
     };

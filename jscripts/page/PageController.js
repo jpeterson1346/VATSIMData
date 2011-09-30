@@ -174,7 +174,6 @@ namespace.module('vd.page', function (exports) {
             if (!Object.isNullOrUndefined(client)) {
                 globals.map.setCenter(client.latLng());
                 info = info.appendIfNotEmpty("Center on '" + client.callsign, " ");
-                info = info.appendIfNotEmpty(client.name, " ");
                 info += "'.";
             } else {
                 info = info.appendIfNotEmpty("Followed object no longer available.", " ");
