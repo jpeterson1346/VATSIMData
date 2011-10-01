@@ -1,0 +1,4 @@
+﻿/**
+* Utilities.
+* @namespace vd.util
+*/
