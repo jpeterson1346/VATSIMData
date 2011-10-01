@@ -51,7 +51,7 @@ namespace.module('vd.gm', function (exports, require) {
         });
 
         var completely = latLngValues.length == entities.length;
-        if (!completely) globals.log.warn("Too many entities " + entities.length + ", considered " + globals.elevationSingleSamplesMax);
+        if (!completely) globals.log.info("Too many entities " + entities.length + ", considered " + globals.elevationSingleSamplesMax);
         return completely;
     };
 
