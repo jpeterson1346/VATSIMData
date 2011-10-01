@@ -19,6 +19,12 @@ namespace.module('vd.page', function (exports) {
         */
         this._boundsChangedCollectedEvent = null;
         /**
+        * The collecting event for windows resize.
+        * @private
+        * @type {CollectingEvent}
+        */
+        this._windowsResizeCollectedEvent = null;
+        /**
         * Collective refresh event, avoid too many refreshs.
         * @private
         * @type {CollectingEvent}
