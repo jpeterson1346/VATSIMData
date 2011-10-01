@@ -15,7 +15,7 @@ namespace.module('vd.page', function (exports) {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
-        
+
         // version
         this.version = "N/A";
         this._initVersion();
@@ -35,6 +35,7 @@ namespace.module('vd.page', function (exports) {
 
         // sidebar dimensions
         this.sideBarMinWidth = null;
+        this.sideBarWideWidth = 375; // when side bar is considered "wide"
         this.sideBarLocationDisplay = null;
         this.sideBarSettingsDisplay = null;
         this.sideBarDataDisplay = null;
@@ -128,7 +129,8 @@ namespace.module('vd.page', function (exports) {
         this.collectiveBoundsChangedInterval = 2500; // ms
         this.collectiveBackgroundRefreshEvent = 2000; // ms
         this.collectiveBackgroundGridsDelay = 3000; // ms
-
+        this.collectiveBoundsWindowsRefreshDelay = 1000; // ms
+        
         // urls
         this.urlUserManual = "./doc/Help.pdf";
         this.urlProjectLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
