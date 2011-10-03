@@ -1,7 +1,8 @@
 ﻿/**
 * @module vd.entity.helper
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.helper', function(exports, require) {
+namespace.module('vd.entity.helper', function(exports) {
 
     /**
     * @classdesc Edge containing distance between two given points.

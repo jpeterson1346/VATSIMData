@@ -1,14 +1,78 @@
 ﻿/**
 * @module vd.entity
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports) {
 
     /**
     * @constructor
     * @classdesc Settings for Flights
     * @param {Object} [properties]
+    * @author KWB
     */
-    exports.FlightSettings = function (properties) {
+    exports.FlightSettings = function(properties) {
+        /**
+        * Display flight at all.
+        * @type {Boolean}
+        */
+        this.displayFlight = true;
+        /**
+        * Display flight at all.
+        * @type {Boolean}
+        */
+        this.displayCallsign = true;
+        /**
+        * Display pilot.
+        * @type {Boolean}
+        */
+        this.displayPilot = true;
+        /**
+        * Display VATSIM id.
+        * @type {Boolean}
+        */
+        this.displayId = true;
+        /**
+        * Display speed and heading.
+        * @type {Boolean}
+        */
+        this.displaySpeedAltitudeHeading = true;
+        /**
+        * Display frequency.
+        * @type {Boolean}
+        */
+        this.displayFrequency = false;
+        /**
+        * Display SQUAWK.
+        * @type {Boolean}
+        */
+        this.displayTransponder = false;
+        /**
+        * Display if grounded.
+        * @type {Boolean}
+        */
+        this.displayOnGround = false;
+        /**
+        * Display waypoint lines.
+        * @type {Boolean}
+        */
+        this.displayWaypointLines = true;
+        /**
+        * Display aircraft e.g. B737, B747, A320, C172.
+        * @type {Boolean}
+        */
+        this.displayAircraft = false;
+        /**
+        * Display only if flightplan is available.
+        * @type {Boolean}
+        */
+        this.displayRequireFlightplan = true;
+        /**
+        * Display height (if available) and magnetic declination.
+        * @type {Boolean}
+        */
+        this.displayHeightAndDeclination = false;
+
+        // set values
         this.set(properties);
     };
 
@@ -16,20 +80,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Reset values on the same object.
     * @param {Object} [properties]
     */
-    exports.FlightSettings.prototype.set = function (properties) {
-        this.displayFlight = true; // display at all
-        this.displayCallsign = true;
-        this.displayPilot = true;
-        this.displayId = true;
-        this.displaySpeedAltitudeHeading = true;
-        this.displayFrequency = false;
-        this.displayTransponder = false;
-        this.displayOnGround = false;
-        this.displayWaypointLines = true;
-        this.displayAircraft = false;
-        this.displayRequireFlightplan = true;
-        this.displayHeightAndDeclination = false;
-
+    exports.FlightSettings.prototype.set = function(properties) {
         // override with arguments
         if (!Object.isNullOrUndefined(properties)) {
             for (var property in properties) {
@@ -43,7 +94,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display all properties.
     * @return {FlightSettings}
     */
-    exports.FlightSettings.prototype.displayAll = function () {
+    exports.FlightSettings.prototype.displayAll = function() {
         this.displayFlight = true; // display at all
         this.displayCallsign = true;
         this.displaySpeedAltitudeHeading = true;
@@ -63,7 +114,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display minimal set of properties.
     * @return {FlightSettings}
     */
-    exports.FlightSettings.prototype.displayMinimal = function () {
+    exports.FlightSettings.prototype.displayMinimal = function() {
         this.displayFlight = true; // display at all
         this.displayCallsign = true;
         this.displaySpeedAltitudeHeading = false;
@@ -83,7 +134,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Number of elements displayed.
     * @return {Number}
     */
-    exports.FlightSettings.prototype.displayedElements = function () {
+    exports.FlightSettings.prototype.displayedElements = function() {
         var c = 0;
         if (this.displayCallsign) c++;
         if (this.displayAircraft) c++;
@@ -101,7 +152,7 @@ namespace.module('vd.entity', function (exports, require) {
     /**
     * Clone this object.
     */
-    exports.FlightSettings.prototype.clone = function () {
+    exports.FlightSettings.prototype.clone = function() {
         var clone = new exports.FlightSettings(this);
         return clone;
     };

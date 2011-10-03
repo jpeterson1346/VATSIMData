@@ -42,6 +42,7 @@
         <script type="text/javascript" src="jscripts/entity/helper/Atc.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Edge.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Flightplan.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/helper/RouteParser.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Waypoint.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Waypoints.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/VatsimMetar.js"> </script>
@@ -51,6 +52,8 @@
         <script type="text/javascript" src="jscripts/entity/AirportSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Airport.js"> </script>
         <script type="text/javascript" src="jscripts/entity/VatsimClients.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/RouteSettings.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/Route.js"> </script>
         <script type="text/javascript" src="jscripts/page/Globals.js"> </script>
         <script type="text/javascript" src="jscripts/page/PageController.js"> </script>
         <script type="text/javascript" src="jscripts/gm/OverlayGroup.js"> </script>
@@ -90,6 +93,7 @@
                     <option>Entities</option>
                     <option>Settings</option>
                     <option>Data</option>
+                    <option>Route</option>
                     <option>About</option>
                     <option>Credits</option>
                     <option>Hidden</option>
@@ -659,6 +663,23 @@
                     </tr>
                 </table>
                 <!-- tab data (flight/atc) ends here -->
+                <!-- route start -->
+                <table id="sideBarRoute" class="sideBarStandard">
+                    <tr class="ui-widget-header">
+                        <th colspan="2" class="sideBarHeader">
+                            VATroute
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Paste your <a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlVATroute, true); ">VATRoute</a> here:
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.loadVatRouteDemoData(); " title="Demo data"><span class="ui-icon ui-icon-document" title="Demo data"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.showVatRoute(); " title="Display route"><span class="ui-icon ui-icon-circle-arrow-e" title="Display route"></span></button>
+                            <textarea id="inputVatRoute" rows="5" cols="40" title="Paste your VATroute here" class="sideBarRouteInput"></textarea>                                
+                        </td>
+                    </tr>
+                </table>
+                <!-- route end -->
                 <!-- about start -->
                 <table id="sideBarAbout" class="sideBarStandard">
                     <tr class="ui-widget-header">

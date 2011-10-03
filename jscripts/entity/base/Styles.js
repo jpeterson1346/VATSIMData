@@ -37,7 +37,7 @@ namespace.module('vd.entity.base', function (exports) {
         this.airportVicinityLineStrokeOpacity = 0.8;
         this.airportVicinityFillOpacity = 0.35;
 
-        // waypoint
+        // waypoints Flight
         this.wpFlightLabelBorder = "0px";
         this.wpFlightLabelPadding = "1px";
         this.wpFlightLabelBackground = "white";
@@ -49,8 +49,20 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpFlightWaypointBaseColourHsv = null;
         this.setFlightWaypointColour("blue");
 
-        // waypoint lines
+        // flight waypoint lines
         this.wpFlightLineOpacity = 0.5;
+
+        // waypoints Route
+        this.wpRouteLabelBorder = "0px";
+        this.wpRouteLabelPadding = "1px";
+        this.wpRouteLabelBackground = "white";
+        this.wpRouteLabelOpacity = 1;
+        this.wpRouteLabelTextAlign = "left";
+        this.wpRouteLabelFontSize = "7pt";
+        this.wpRouteLabelFontColor = "black";
+        this.wpRouteLineOpacity = 0.5;
+        this.wpRouteLineColour = "black";
+        this.wpRouteLineStrokeWeight = 2;
     };
 
     /**

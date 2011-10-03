@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function (exports) {
+namespace.module('vd.page', function(exports) {
 
     /**
     * @classdesc
@@ -11,7 +11,7 @@ namespace.module('vd.page', function (exports) {
     * @constructor
     * @author KWB
     */
-    exports.Globals = function () {
+    exports.Globals = function() {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
@@ -41,6 +41,7 @@ namespace.module('vd.page', function (exports) {
         this.sideBarDataDisplay = null;
         this.sideBarEntitiesDisplay = null;
         this.sideBarCreditsDisplay = null;
+        this.sideBarRoute = null;
         this.sideBarAboutDisplay = null;
         this.headerTaskInfoDisplay = null;
 
@@ -81,7 +82,7 @@ namespace.module('vd.page', function (exports) {
         this.altitudeProfile = null;
         this.altitudeProfileSettings = new vd.gc.AltitudeProfileSettings();
 
-        // which property to display and how
+        // flights, which property to display and how
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms
@@ -103,6 +104,9 @@ namespace.module('vd.page', function (exports) {
         this.airportHideZoomLevel = 4;
         this.airportAtisTextWidth = 30;
         this.airportSettings = new vd.entity.AirportSettings();
+
+        // route
+        this.routeSettings = new vd.entity.RouteSettings();
 
         // filter
         this.filtered = false;
@@ -130,9 +134,10 @@ namespace.module('vd.page', function (exports) {
         this.collectiveBackgroundRefreshEvent = 2000; // ms
         this.collectiveBackgroundGridsDelay = 3000; // ms
         this.collectiveBoundsWindowsRefreshDelay = 1000; // ms
-        
+
         // urls
         this.urlUserManual = "./doc/Help.pdf";
+        this.urlVATroute = "http://www.vatroute.net/";
         this.urlProjectLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
         this.urlProjectGettingInvolved = "http://vatgm.codeplex.com/";
         this.urlProjectReportBugs = "http://vatgm.codeplex.com/workitem/list/basic";
@@ -145,14 +150,14 @@ namespace.module('vd.page', function (exports) {
     * Assign a map.
     * @param {google.maps.Map} map
     **/
-    exports.Globals.prototype.assignMap = function (map) {
+    exports.Globals.prototype.assignMap = function(map) {
         this.clients.clearOverlays(); // re-entry, clean up
         this.map = map;
         this.objects = new Array();
 
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
-        this.mapOverlayView.draw = function () {
+        this.mapOverlayView.draw = function() {
             if (!this.ready) {
                 this.ready = true;
                 google.maps.event.trigger(this, 'ready');
@@ -165,7 +170,7 @@ namespace.module('vd.page', function (exports) {
     * @param {LatLng} latLng position to be checked.
     * @see Globals#map
     */
-    exports.Globals.prototype.isInBounds = function (latLng) {
+    exports.Globals.prototype.isInBounds = function(latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
@@ -174,7 +179,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Object} newObject: to be registered object
     * @return {Number} objectId
     */
-    exports.Globals.prototype.register = function (newObject) {
+    exports.Globals.prototype.register = function(newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
         this.objects[id] = newObject;
@@ -186,14 +191,14 @@ namespace.module('vd.page', function (exports) {
     * @param  {Number} id
     * @return {Object}
     */
-    exports.Globals.prototype.getObject = function (id) {
+    exports.Globals.prototype.getObject = function(id) {
         return this.objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetClients = function () {
+    exports.Globals.prototype.resetClients = function() {
         if (!Object.isNullOrUndefined(this.clients)) this.clients.display(false, true);
         this.clients = new vd.entity.VatsimClients();
     };
@@ -203,7 +208,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Array} ids
     * @return {Array} 0..n objects
     */
-    exports.Globals.prototype.getObjects = function (ids) {
+    exports.Globals.prototype.getObjects = function(ids) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
         for (var id in ids) {
@@ -217,7 +222,7 @@ namespace.module('vd.page', function (exports) {
     * Init the version (by version.txt).
     * @private
     */
-    exports.Globals.prototype._initVersion = function () {
+    exports.Globals.prototype._initVersion = function() {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", url, false);
@@ -229,7 +234,7 @@ namespace.module('vd.page', function (exports) {
     * Init the logger.
     * @private
     */
-    exports.Globals.prototype._initLogger = function () {
+    exports.Globals.prototype._initLogger = function() {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();

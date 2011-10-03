@@ -1,5 +1,6 @@
 ﻿/**
 * @module vd.entity.helper
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity.helper', function (exports, require) {
 
@@ -106,7 +107,7 @@ namespace.module('vd.entity.helper', function (exports, require) {
     */
     exports.Flightplan.addWaypoint = function (waypoint) {
         if (Object.isNullOrUndefined(waypoint)) return;
-        waypoint.type = vd.entity.WaypointSettings.TypeFlightplan;
+        waypoint.type = vd.entity.WaypointSettings.TypeRoute;
         this.waypoints.push(waypoint);
     };
 
