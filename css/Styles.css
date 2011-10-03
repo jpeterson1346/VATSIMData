@@ -132,6 +132,15 @@ body
     vertical-align: top;
 }
 
+/* route text area */
+.sideBarRouteInput {
+    width: 95%;
+    height: 200px;
+    margin: 2px 2px 2px 2px;
+    font-family: Courier;
+    font-size: 50%;
+}
+
 /* -------------- map ------------*/
 /* where the altitude profile is placed */
 #mapAltitudeProfile
@@ -193,7 +202,6 @@ body
         width: 80%;
     }
 }
-
 
     /* -- color just a dummy for jscolor **/
     /* avoids problems with the IDE reporting missing styles */

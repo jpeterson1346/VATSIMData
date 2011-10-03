@@ -1,5 +1,6 @@
 ﻿/**
 * @module vd.entity
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity', function(exports, require) {
 
@@ -154,7 +155,7 @@ namespace.module('vd.entity', function(exports, require) {
         // display    
         if (display) this._draw(forceRedraw);
         this.overlays.display(display);
-        if (center && display) globals.map.setCenter(sp);
+        if (center && display) globals.map.setCenter(this.latLng());
         this.displayed = display && this._drawn;
         for (var a = 0, len = this.atcs.length; a < len; a++) {
             var atc = this.atcs[a];

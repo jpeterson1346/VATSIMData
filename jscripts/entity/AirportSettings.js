@@ -1,14 +1,17 @@
 ﻿/**
 * @module vd.entity
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function (exports) {
 
     /**
     * @classdesc The settings for an Airport.
     * @constructor
-    * @param {Array} [options]
+    * @param {Object} [options]
+    * @author KWB
     */
     exports.AirportSettings = function (options) {
+        // set the values        
         this.set(options);
     };
 
@@ -17,33 +20,30 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Array} [options]
     */
     exports.AirportSettings.prototype.set = function (options) {
+        
+        // make sure we have an options object
+        options = Object.ifNotNullOrUndefined(options, { });
+
         /**
         * Display airports.
         * @type {Boolean}
         */
-        this.displayAirport = true;
+        this.displayAirport = Object.ifNotNullOrUndefined(options["displayAirport"], true);
         /**
         * Display airport vicinity.
         * @type {Boolean}
         */
-        this.displayAirportVicinity = true;
+        this.displayAirportVicinity = Object.ifNotNullOrUndefined(options["displayAirportVicinity"], true);
         /**
         * Display ATIS.
         * @type {Boolean}
         */
-        this.displayAtis = true;
+        this.displayAtis = Object.ifNotNullOrUndefined(options["displayAtis"], true);
         /**
         * Display Metar.
         * @type {Boolean}
         */
-        this.displayMetar = true;
-
-        // override with arguments
-        if (!Object.isNullOrUndefined(options)) {
-            for (var argName in options) {
-                this[argName] = options[argName];
-            }
-        }
+        this.displayMetar = Object.ifNotNullOrUndefined(options["displayMetar"], true);
     };
 
     /**

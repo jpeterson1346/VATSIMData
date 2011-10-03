@@ -165,8 +165,8 @@ namespace.module('vd.entity', function(exports, require) {
         // display
         if (display) this._draw(forceRedraw);
         this.overlays.display(display);
-        if (center && display) globals.map.setCenter(sp);
-        vd.entity.helper.Waypoints.displayWaypoints(this.waypoints, true, display, false, forceRedraw);
+        if (center && display) globals.map.setCenter(this.latLng());
+        vd.entity.helper.Waypoints.displayWaypoints(this.waypoints, display, false, forceRedraw, true);
         this.displayed = display && this._drawn;
     };
 
