@@ -52,7 +52,7 @@ namespace.module('vd.util', function (exports) {
     * Convert a value to a greyscale.
     * @param  {Number} value
     * @param  {maxValue} interval 0-maxValue
-    * @return {String} RGB colour string, e.g #CCCCCC
+    * @return {String} RGB color string, e.g #CCCCCC
     */
     exports.Utils.valueToGreyScale = function (value, maxValue) {
         if (value <= 0) return "#FFFFFF";
@@ -65,42 +65,42 @@ namespace.module('vd.util', function (exports) {
 
     /**
     * Convert a value to a greyscale.
-    * @param  {Number} colourH hue
-    * @param  {Number} colourS saturation
+    * @param  {Number} colorH hue
+    * @param  {Number} colorS saturation
     * @param  {maxValue} interval 0-maxValue
-    * @return {String} RGB colour string, e.g #CCCCCC
+    * @return {String} RGB color string, e.g #CCCCCC
     * @see <a href="http://stackoverflow.com/questions/1423925/changing-rgb-color-values-to-represent-a-value">Color representation</a>
     * @see http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascriptvar 
     */
-    exports.Utils.valueToGradient = function (colourH, colourS, value, maxValue) {
+    exports.Utils.valueToGradient = function (colorH, colorS, value, maxValue) {
         var v = value / maxValue;
         if (v > 1) v = 1;
         if (v < 0) v = 0;
         v = 1 - v;
-        var rgb = hsvToRgb(colourH, colourS, v); // HSV is same as HSB
+        var rgb = hsvToRgb(colorH, colorS, v); // HSV is same as HSB
         var r = "#" + exports.Utils.decsToHex(rgb, 2);
         return r;
     };
 
     /**
     * Return the candidate if valid, otherwise the default.
-    * @param {String} colourCandidate
+    * @param {String} colorCandidate
     * @param {String} defaultValue
     * @return {RgbColor}
     */
-    exports.Utils.getValidColour = function (colourCandidate, defaultValue) {
-        if (Object.isNullOrUndefined(colourCandidate)) return defaultValue;
-        var c = new RgbColor(colourCandidate);
+    exports.Utils.getValidColor = function (colorCandidate, defaultValue) {
+        if (Object.isNullOrUndefined(colorCandidate)) return defaultValue;
+        var c = new RgbColor(colorCandidate);
         return (c.ok) ? c : new RgbColor(defaultValue);
     };
 
     /**
-    * "Fixes" a hex string representing a colour, strips hash, toUpperCase()
+    * "Fixes" a hex string representing a color, strips hash, toUpperCase()
     * @param {String}  value
     * @param {Boolean} stripHash strip any leading #
     * @return {String}
     */
-    exports.Utils.fixHexColourValue = function (value, stripHash) {
+    exports.Utils.fixHexColorValue = function (value, stripHash) {
         var v = value.trim().toUpperCase();
         if (stripHash) v = v.replace(/^#*/, "");
         return v;
