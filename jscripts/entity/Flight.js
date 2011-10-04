@@ -326,14 +326,14 @@ namespace.module('vd.entity', function(exports, require) {
 
         // draw lines between waypoints
         if (this.flightSettings.displayWaypointLines && this.waypoints.length > 1) {
-            var colour = vd.util.Utils.valueToGradient(globals.styles.wpFlightWaypointBaseColourHsv[0], globals.styles.wpFlightWaypointBaseColourHsv[1], this.waypoints[0].altitude, 30000);
+            var color = vd.util.Utils.valueToGradient(globals.styles.wpFlightWaypointBaseColorHsv[0], globals.styles.wpFlightWaypointBaseColorHsv[1], this.waypoints[0].altitude, 30000);
             var path = vd.entity.helper.Waypoints.waypointsToLatLngPath(this.waypoints);
             var pw = this.waypoints[0].speedToWidth();
             var line = new google.maps.Polyline({
                     clickable: false,
                     geodesic: true,
                     path: path,
-                    strokeColor: colour,
+                    strokeColor: color,
                     strokeOpacity: globals.styles.wpFlightLineOpacity,
                     strokeWeight: pw,
                     zIndex: 0

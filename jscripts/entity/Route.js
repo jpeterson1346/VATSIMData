@@ -2,19 +2,20 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
 
     /**
-    * @classdesc Route, a route from startPoint to endPoint.
     * @constructor
+    * @classdesc Route, a route from startPoint to endPoint.
     * @param {Object} routeProperties
     * @param {RouteSettings} [routeSettings]
     * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @author KWB
     */
-    exports.Route = function (routeProperties, routeSettings) {
+    exports.Route = function(routeProperties, routeSettings) {
 
         // inherit attributes
         vd.entity.base.BaseEntityVatsimOnMap.call(this, routeProperties);
@@ -34,7 +35,7 @@ namespace.module('vd.entity', function (exports, require) {
     /**
     * Destructor.
     */
-    exports.Route.prototype.dispose = function () {
+    exports.Route.prototype.dispose = function() {
         vd.entity.helper.Waypoints.dispose(this.waypoints);
         this.overlays.clear();
         this.dispose$BaseEntityVatsimOnMap();
@@ -46,7 +47,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.Route.prototype.display = function (display, center, forceRedraw) {
+    exports.Route.prototype.display = function(display, center, forceRedraw) {
 
         // display checks
         display = display && this.routeSettings.displayRoute;
@@ -64,7 +65,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.Route.prototype._draw = function (forceRedraw) {
+    exports.Route.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
 
         // clean up
@@ -76,14 +77,14 @@ namespace.module('vd.entity', function (exports, require) {
         if (!Array.isNullOrEmpty(this.waypoints)) {
             var path = vd.entity.helper.Waypoints.waypointsToLatLngPath(this.waypoints);
             var line = new google.maps.Polyline({
-                clickable: false,
-                geodesic: true,
-                path: path,
-                strokeColor: globals.styles.wpRouteLineColour,
-                strokeOpacity: globals.styles.wpRouteLineOpacity,
-                strokeWeight: globals.styles.wpRouteLineStrokeWeight,
-                zIndex: 0
-            });
+                    clickable: false,
+                    geodesic: true,
+                    path: path,
+                    strokeColor: globals.styles.wpRouteLineColor,
+                    strokeOpacity: globals.styles.wpRouteLineOpacity,
+                    strokeWeight: globals.styles.wpRouteLineStrokeWeight,
+                    zIndex: 0
+                });
             this.overlays.add(line);
         }
 
@@ -95,7 +96,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Bounds of route.
     * @return {googge.maps.LatLngBounds}
     */
-    exports.Route.prototype.getBounds = function () {
+    exports.Route.prototype.getBounds = function() {
         return vd.entity.helper.Waypoints.getBounds(this.waypoints);
     };
 
@@ -103,7 +104,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.Route.prototype.toString = function () {
+    exports.Route.prototype.toString = function() {
         var s = "";
         s = s.appendIfNotEmpty(this.toString$BaseEntityVatsimOnMap(), " - ");
         return s;

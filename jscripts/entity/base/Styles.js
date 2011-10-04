@@ -8,7 +8,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @classdesc Styles for the entities.
     * @constructor
     * @author KWB
-    * @see <a href="http://www.w3schools.com/html/html_colors.asp">Colours</a>
+    * @see <a href="http://www.w3schools.com/html/html_colors.asp">Colors</a>
     */
     exports.Styles = function () {
 
@@ -45,9 +45,9 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpFlightLabelTextAlign = "left";
         this.wpFlightLabelFontSize = "7pt";
         this.wpFlightLabelFontColor = "black";
-        this.wpFlightWaypointBaseColour = null;
-        this.wpFlightWaypointBaseColourHsv = null;
-        this.setFlightWaypointColour("blue");
+        this.wpFlightWaypointBaseColor = null;
+        this.wpFlightWaypointBaseColorHsv = null;
+        this.setFlightWaypointColor("blue");
 
         // flight waypoint lines
         this.wpFlightLineOpacity = 0.5;
@@ -55,22 +55,22 @@ namespace.module('vd.entity.base', function (exports) {
         // waypoints Route
         this.wpRouteLabelBorder = "0px";
         this.wpRouteLabelPadding = "1px";
-        this.wpRouteLabelBackground = "white";
+        this.wpRouteLabelBackground = "red";
         this.wpRouteLabelOpacity = 1;
         this.wpRouteLabelTextAlign = "left";
         this.wpRouteLabelFontSize = "8pt";
-        this.wpRouteLabelFontColor = "black";
+        this.wpRouteLabelFontColor = "blue";
         this.wpRouteLineOpacity = 0.5;
-        this.wpRouteLineColour = "black";
-        this.wpRouteLineStrokeWeight = 2;
+        this.wpRouteLineColor = "red";
+        this.wpRouteLineStrokeWeight = 3;
     };
 
     /**
-    * Set the colour for the flight waypoints.
-    * @param {String} colour
+    * Set the color for the flight waypoints.
+    * @param {String} color
     */
-    exports.Styles.prototype.setFlightWaypointColour = function (colour) {
-        this.wpFlightWaypointBaseColour = new RgbColor(colour);
-        this.wpFlightWaypointBaseColourHsv = rgbToHsv(this.wpFlightWaypointBaseColour.r, this.wpFlightWaypointBaseColour.g, this.wpFlightWaypointBaseColour.b);
+    exports.Styles.prototype.setFlightWaypointColor = function (color) {
+        this.wpFlightWaypointBaseColor = new RgbColor(color);
+        this.wpFlightWaypointBaseColorHsv = rgbToHsv(this.wpFlightWaypointBaseColor.r, this.wpFlightWaypointBaseColor.g, this.wpFlightWaypointBaseColor.b);
     };
 });

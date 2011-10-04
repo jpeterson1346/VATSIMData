@@ -1,11 +1,13 @@
 ﻿/**
 * @module vd.entity.helper
+* @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity.helper', function (exports) {
 
     /**
     * @classdesc Metar information
     * @constructor
+    * @author KWB
     */
     exports.VatsimMetar = function() {
         // code goes here
@@ -14,7 +16,7 @@ namespace.module('vd.entity.helper', function (exports) {
     /**
     * Read metar from the VASTIM servers.
     * @param  {String} icao ICAO code such as EDDF, EDDL
-    * @return {String} metar
+    * @return {String} metar Metar information as read
     */
     exports.VatsimMetar.prototype.readFromVatsim = function(icao) {
         if (String.isNullOrEmpty(icao)) return null;
@@ -23,7 +25,7 @@ namespace.module('vd.entity.helper', function (exports) {
         var url;
         if (vd.util.UtilsWeb.isLocalServer()) {
             // local test mode
-            url = vd.util.UtilsWeb.replaceCurrentPage("data/metar.txt"); // full url required for Chrome
+            url = vd.util.UtilsWeb.replaceCurrentPage("data/Metar.txt"); // full url required for Chrome
         } else {
             // normal mode
             url = vd.util.UtilsWeb.replaceCurrentPage("php/VatsimProxy.php5?metar&id=") + icao.toUpperCase();

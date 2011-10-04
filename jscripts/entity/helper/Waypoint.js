@@ -147,7 +147,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
                     opacity: globals.styles.wpFlightLabelOpacity,
                     textAlign: globals.styles.wpFlightLabelTextAlign,
                     fontSize: globals.styles.wpFlightLabelFontSize,
-                    fontColor: globals.styles.wpFlightLabelFontColor,
+                    color: globals.styles.wpFlightLabelFontColor,
                     width: "auto",
                     "white-space": "nowrap",
                     zIndex: 0
@@ -170,7 +170,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
                     opacity: globals.styles.wpRouteLabelOpacity,
                     textAlign: globals.styles.wpRouteLabelTextAlign,
                     fontSize: globals.styles.wpRouteLabelFontSize,
-                    fontColor: globals.styles.wpRouteLabelFontColor,
+                    color: globals.styles.wpRouteLabelFontColor,
                     width: "auto",
                     "white-space": "nowrap",
                     zIndex: 0
