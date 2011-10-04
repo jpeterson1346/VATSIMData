@@ -92,6 +92,14 @@ namespace.module('vd.entity', function (exports, require) {
     };
 
     /**
+    * Bounds of route.
+    * @return {googge.maps.LatLngBounds}
+    */
+    exports.Route.prototype.getBounds = function () {
+        return vd.entity.helper.Waypoints.getBounds(this.waypoints);
+    };
+
+    /**
     * String representation.
     * @return {String}
     */

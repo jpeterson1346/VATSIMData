@@ -213,6 +213,8 @@ namespace.module('vd.page', function (exports) {
             if (!Object.isNullOrUndefined(this._shownRoute)) this._shownRoute.dispose();
             this._shownRoute = new vd.entity.Route({ waypoints: wps });
             this._shownRoute.display(true, true, true);
+            var bounds = this._shownRoute.getBounds();
+            if (!Object.isNullOrUndefined(bounds)) globals.map.fitBounds(bounds);
         }
     };
 
