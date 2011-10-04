@@ -63,4 +63,28 @@ namespace.module('vd.entity.helper', function (exports) {
             wp.dispose();
         }
     };
+
+    /**
+    * Get bounds.
+    * @param  {Array} waypoints Waypoints
+    * @return {google.maps.LatLngBounds}
+    */
+    exports.Waypoints.getBounds = function (waypoints) {
+        if (Array.isNullOrEmpty(waypoints) || waypoints.length < 2) return null;
+        var latMax = waypoints[0].latitude;
+        var latMin = latMax;
+        var lonMax = waypoints[0].longitude;
+        var lonMin = lonMax;
+
+        for (var i = 1, len = waypoints.length; i < len; i++) {
+            var wp = waypoints[i];
+            if (latMax < wp.latitude) latMax = wp.latitude;
+            if (latMin > wp.latitude) latMin = wp.latitude;
+            if (lonMax < wp.longitude) lonMax = wp.longitude;
+            if (lonMin > wp.longitude) lonMin = wp.longitude;
+        }
+        var sw = new google.maps.LatLng(latMin, lonMin);
+        var ne = new google.maps.LatLng(latMax, lonMax);
+        return new google.maps.LatLngBounds(sw, ne);
+    };
 });

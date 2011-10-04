@@ -21,11 +21,12 @@ namespace.module('vd.entity.helper', function(exports) {
         if (String.isNullOrEmpty(route)) return waypoints;
         var lines = route.split("\n");
         for (var l = 0, len = lines.length; l < len; l++) {
-            var line = lines[l];
+            var line = lines[l].cleanUp();
             if (String.isNullOrEmpty(line) || line.startsWith("==") || line.startsWith("--")) continue;
 
             // SUBAX |  51.865834 |  19.125000 |   31,8 NM | N869  |   INT   |   ---   |  251  
-            var lineParts = line.split("|");
+            var lineParts = (line.indexOf("|") > 0) ? line.split("|") : line.split(" ");
+            if (Array.isNullOrEmpty(lineParts)) continue;
             var lat = String.toNumber(lineParts[1], null);
             if (String.isNullOrEmpty(lat)) continue; // invalid line
             var lng = String.toNumber(lineParts[2], null);
@@ -65,7 +66,7 @@ namespace.module('vd.entity.helper', function(exports) {
     */
     exports.RouteParser.vatRouteDemoData = function() {
         var xmlhttp = new XMLHttpRequest();
-        var no = (Math.floor(Math.random() * 2) + 1).toString().leading(2, "0");
+        var no = (Math.floor(Math.random() * 3) + 1).toString().leading(2, "0");
         var dataFile = vd.util.UtilsWeb.replaceCurrentPage("data/VATRoute" + no + ".txt");
         xmlhttp.open("GET", dataFile, false);
         xmlhttp.send();

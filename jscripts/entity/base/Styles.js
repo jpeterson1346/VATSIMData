@@ -58,7 +58,7 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpRouteLabelBackground = "white";
         this.wpRouteLabelOpacity = 1;
         this.wpRouteLabelTextAlign = "left";
-        this.wpRouteLabelFontSize = "7pt";
+        this.wpRouteLabelFontSize = "8pt";
         this.wpRouteLabelFontColor = "black";
         this.wpRouteLineOpacity = 0.5;
         this.wpRouteLineColour = "black";
