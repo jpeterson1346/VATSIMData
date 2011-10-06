@@ -35,6 +35,16 @@ namespace.module('vd.entity.helper', function (exports) {
     * @const
     */
     exports.WaypointSettings.MarkerVor = "vor";
+    /** 
+    * Marker type constant.
+    * @const
+    */
+    exports.WaypointSettings.MarkerVorDme = "vordme";
+    /** 
+    * Marker type constant.
+    * @const
+    */
+    exports.WaypointSettings.MarkerDirect = "direct";
 
     /**
     * Set values on the same object.
@@ -44,6 +54,7 @@ namespace.module('vd.entity.helper', function (exports) {
 
         // make sure we have an options object
         options = Object.ifNotNullOrUndefined(options, {});
+        var no = options["flightWaypointsNumberMaximum"];
 
         /**
         * Display flight waypoints?
@@ -66,12 +77,7 @@ namespace.module('vd.entity.helper', function (exports) {
         */
         this.displayFlightWaypointsWhenGrounded = Object.ifNotNullOrUndefined(options["displayFlightWaypointsWhenGrounded"], false);
         /**
-        * Number of waypoints displayed (maximum). Null means all values.
-        * @type {Number}
-        */
-        var no = options["flightWaypointsNumberMaximum"];
-        /**
-        * Number of maximum waypoints for a flight.
+        * Number of maximum waypoints for a flight. Null means all values.
         * @type {Number}
         */
         this.flightWaypointsNumberMaximum = Object.isNumber(no) ? no * 1 : null;
@@ -80,6 +86,21 @@ namespace.module('vd.entity.helper', function (exports) {
         * @type {Boolean}
         */
         this.displayAirway = Object.ifNotNullOrUndefined(options["displayAirway"], true);
+        /**
+        * Display frequency?
+        * @type {Boolean}
+        */
+        this.displayFrequency = Object.ifNotNullOrUndefined(options["displayFrequency"], true);
+        /**
+        * Display distance?
+        * @type {Boolean}
+        */
+        this.displayDistance = Object.ifNotNullOrUndefined(options["displayDistance"], true);
+        /**
+        * Display course?
+        * @type {Boolean}
+        */
+        this.displayCourse = Object.ifNotNullOrUndefined(options["displayCourse"], true);
     };
 
     /**
@@ -96,8 +117,11 @@ namespace.module('vd.entity.helper', function (exports) {
             if (this.displayFlightAltitudeSpeed) c++;
             if (this.displayFlightCallsign) c++;
         } else if (type == exports.WaypointSettings.TypeRoute) {
-            c = 1;
+            c = 1; // name is always displayed
             if (this.displayAirway) c++;
+            if (this.displayFrequency) c++;
+            if (this.displayDistance) c++;
+            if (this.displayCourse) c++;
         }
         return c;
     };

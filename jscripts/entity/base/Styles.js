@@ -49,8 +49,9 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpFlightWaypointBaseColorHsv = null;
         this.setFlightWaypointColor("blue");
 
-        // flight waypoint lines
+        // flight waypoint lines / others
         this.wpFlightLineOpacity = 0.5;
+        this.wpMarkerIconSize = 20;
 
         // waypoints Route
         this.wpRouteLabelBorder = "0px";

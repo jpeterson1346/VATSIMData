@@ -441,6 +441,7 @@ namespace.module('vd.entity', function(exports, require) {
                 parentObject: this,
                 type: vd.entity.helper.WaypointSettings.TypeFlight,
                 name: this.callsign,
+                callsign: this.callsign,
                 latitude: this.latitude,
                 longitude: this.longitude,
                 groundspeed: this.groundspeed,

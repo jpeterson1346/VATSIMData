@@ -185,6 +185,15 @@ String.prototype.cleanUp = function() {
 };
 
 /**
+* Tabs to space.
+* @return {String} untabified String
+*/
+String.prototype.tabToSpace = function() {
+    if (this.indexOf("\t") < 0) return this;
+    return this.replace( /\t/g , ' ');
+};
+
+/**
 * Add leading characters
 * @return {String} string with leading characters, e.g. "12" -> "00012"
 */
@@ -309,7 +318,7 @@ Array.arrayValuesToNumber = function(array) {
 * Get the last element.
 * @return {Object} last element if array or null
 */
-Array.prototype.last = function () {
+Array.prototype.last = function() {
     if (this.length < 1) return null;
     return this[this.length - 1];
 };
