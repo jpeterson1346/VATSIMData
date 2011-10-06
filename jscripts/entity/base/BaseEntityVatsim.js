@@ -130,7 +130,7 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityVatsim.prototype.frequencyAndUnit = function () {
         if (!Object.isNumber(this.frequency)) return "?";
-        return this.frequency + "MHz";
+        return this.frequency < 1 ? (this.frequency * 1000) + "kHz" : this.frequency + "MHz";
     };
 
     /**

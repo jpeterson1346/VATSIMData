@@ -13,6 +13,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {Object} routeProperties
     * @param {RouteSettings} [routeSettings]
     * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @see vd.entity.module:helper.RouteParser
     * @author KWB
     */
     exports.Route = function(routeProperties, routeSettings) {
