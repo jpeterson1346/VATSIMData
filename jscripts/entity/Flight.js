@@ -341,7 +341,7 @@ namespace.module('vd.entity', function(exports, require) {
             this.overlays.add(line);
         }
 
-        // draw everything before rotaing the image
+        // draw everything before rotating the image
         this.overlays.display(true); // assign map
         if (!this._drawn) planeLabel.draw(); // 1st time force a draw, otherwise rotating the image will fail because an asyncronously drawn object has not all tags in place
 
