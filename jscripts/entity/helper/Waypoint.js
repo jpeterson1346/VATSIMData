@@ -121,13 +121,13 @@ namespace.module('vd.entity.helper', function (exports, require) {
                 imageUrl = "images/NDB.png";
                 break;
             case vd.entity.helper.WaypointSettings.MarkerVor:
-                imageUrl = "images/VOR.png";
+                imageUrl = "images/VOR20.png";
                 break;
             case vd.entity.helper.WaypointSettings.MarkerVorDme:
-                imageUrl = "images/VORDME.png";
+                imageUrl = "images/VORDME20.png";
                 break;
             case vd.entity.helper.WaypointSettings.MarkerDirect:
-                imageUrl = "images/WP.png";
+                imageUrl = "images/WP20.png";
                 break;
             default:
                 break;

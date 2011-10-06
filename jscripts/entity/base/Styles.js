@@ -51,7 +51,7 @@ namespace.module('vd.entity.base', function (exports) {
 
         // flight waypoint lines / others
         this.wpFlightLineOpacity = 0.5;
-        this.wpMarkerIconSize = 20;
+        this.wpMarkerIconSize = 12;
 
         // waypoints Route
         this.wpRouteLabelBorder = "0px";
