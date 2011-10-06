@@ -47,7 +47,7 @@ namespace.module('vd.entity.helper', function(exports) {
                 frequency = String.toNumber(lineParts[6].trim().replace(",", "."), null);
                 course = String.toNumber(lineParts[7].trim().replace(",", "."), null);
             } else {
-                // just separated by pace, a little tricky to find all fields
+                // just separated by space, a little tricky to find all fields
                 line = line.tabToSpace().cleanUp();
                 line = line.replace("VOR DME", "VORDME");
                 lineParts = line.split(" ");
@@ -85,7 +85,7 @@ namespace.module('vd.entity.helper', function(exports) {
             }
 
             // post fixes
-            if (marker == "NDB" && Object.isNumber(frequency)) frequency = frequency / 1000;
+            if (marker == "NDB" && Object.isNumber(frequency)) frequency = frequency / 1000; // kHz instead MHz
 
             // seems to be a valid waypoint
             var wp = new vd.entity.helper.Waypoint({

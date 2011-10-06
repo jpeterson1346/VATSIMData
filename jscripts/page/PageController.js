@@ -589,7 +589,11 @@ namespace.module('vd.page', function(exports) {
                 displayFlightWaypoints: document.getElementById("inputWaypointSettingsFlight").checked,
                 displayFlightCallsign: document.getElementById("inputWaypointSettingsFlightCallsign").checked,
                 displayFlightAltitudeSpeed: document.getElementById("inputWaypointSettingsFlightSpeedAltitudeHeading").checked,
-                flightWaypointsNumberMaximum: $("#inputWaypointSettingsFlightMaxNumber").val()
+                flightWaypointsNumberMaximum: $("#inputWaypointSettingsFlightMaxNumber").val(),
+                displayDistance: document.getElementById("inputRouteSettingsDistance").checked,
+                displayFrequency: document.getElementById("inputRouteSettingsFrequency").checked,
+                displayCourse: document.getElementById("inputRouteSettingsCourse").checked,
+                displayAirway: document.getElementById("inputRouteSettingsAirway").checked
             });
 
         // redisplay

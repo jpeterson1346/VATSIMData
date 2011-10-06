@@ -513,6 +513,39 @@
                             <input type="checkbox" disabled="disabled" checked="checked" name="ShowAreaAtc" id="inputAtcSettingsAreaAtc" onchange="ctr.vatsimClientSettingsChanged()" />
                         </td>
                     </tr>
+                    <tr class="ui-widget-header">
+                        <th colspan="4" class="sideBarHeader">
+                            Route
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Airway:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowRouteAirway" id="inputRouteSettingsAirway" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                        <td>
+                            Distance:
+                        </td>
+                        <td>
+                            <input type="checkbox" name="ShowRouteDistance" id="inputRouteSettingsDistance" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Frequency:
+                        </td>
+                        <td>
+                            <input type="checkbox" name="ShowRouteFrequency" id="inputRouteSettingsFrequency" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                        <td>
+                            True course:
+                        </td>
+                        <td>
+                            <input type="checkbox" name="ShowRouteTC" id="inputRouteSettingsCourse" onchange="ctr.vatsimClientSettingsChanged()" />
+                        </td>
+                    </tr>
                 </table>
                 <!-- tab entities display ends here -->
                 <!-- tab settings starts here -->
@@ -700,7 +733,7 @@
                     <tr class="ui-widget-content">
                         <td>
                             Paste your <a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlVATroute, true); ">VATRoute</a> here:
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.vatsimClientSettingsChanged( { toggleFlights: true } ); " title="Toggle flights visibility"><span class="ui-icon ui-icon-shuffle" title="Toggle flights visibility"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.vatsimClientSettingsChanged({ toggleFlights: true }); " title="Toggle flights visibility"><span class="ui-icon ui-icon-shuffle" title="Toggle flights visibility"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.hideRoute(); " title="Hide route"><span class="ui-icon ui-icon-cancel" title="Hide route"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.loadVatRouteDemoData(); " title="Demo data"><span class="ui-icon ui-icon-document" title="Demo data"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.showVatRoute(); " title="Display route"><span class="ui-icon ui-icon-circle-arrow-e" title="Display route"></span></button>
