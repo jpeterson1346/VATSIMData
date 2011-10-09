@@ -141,6 +141,11 @@ body
     font-size: 50%;
 }
 
+/* selects for ground overlays */
+.sideBarGroundOverlaySelect {
+    min-width: 175px;
+}
+
 /* -------------- map ------------*/
 /* where the altitude profile is placed */
 #mapAltitudeProfile

@@ -2,7 +2,7 @@
 * @module vd.entity.base
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function (exports) {
+namespace.module('vd.entity.base', function(exports) {
 
     /**
     * @constructor
@@ -10,7 +10,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Object} properties
     * @author KWB
     */
-    exports.BaseEntityVatsim = function (properties) {
+    exports.BaseEntityVatsim = function(properties) {
         /**
         * Unique object id (key)
         * @type {Number}
@@ -84,7 +84,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.BaseEntityVatsim.prototype.dispose = function () {
+    exports.BaseEntityVatsim.prototype.dispose = function() {
         // code goes here
     };
 
@@ -92,7 +92,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Property / value.
     * @return {Object} property / value pairs
     */
-    exports.BaseEntityVatsim.prototype.toPropertyValue = function () {
+    exports.BaseEntityVatsim.prototype.toPropertyValue = function() {
         var pv = new Array();
         pv["id"] = this.id;
         pv["callsign"] = this.callsign;
@@ -110,7 +110,7 @@ namespace.module('vd.entity.base', function (exports) {
     * QNH with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.qnhAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.qnhAndUnit = function() {
         if (!Object.isNumber(this.qnh)) return "?";
         return this.qnh + "hPa";
     };
@@ -119,7 +119,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Speed with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.groundspeedAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.groundspeedAndUnit = function() {
         if (this.groundspeed < 0) return "?";
         return ("km" == globals.unitDistance) ? "GS" + vd.util.UtilsCalc.ktsToKmh(this.groundspeed).toFixed(0) + "km/h" : "GS" + this.groundspeed + "kts";
     };
@@ -128,7 +128,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Frequency with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.frequencyAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.frequencyAndUnit = function() {
         if (!Object.isNumber(this.frequency)) return "?";
         return this.frequency < 1 ? (this.frequency * 1000) + "kHz" : this.frequency + "MHz";
     };
@@ -137,7 +137,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Visibility with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.visibilityAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.visibilityAndUnit = function() {
         if (!Object.isNumber(this.visibility)) return "?";
         return this.visibility + "XXX";
     };
@@ -146,7 +146,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Altitude with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.altitudeAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.altitudeAndUnit = function() {
         if (!Object.isNumber(this.altitude)) return "?";
         return ("m" == globals.unitAltitude) ? vd.util.UtilsCalc.ftToM(this.altitude).toFixed(0) + "m" : this.altitude + "ft";
     };
@@ -155,7 +155,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Heading with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.headingAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.headingAndUnit = function() {
         if (!Object.isNumber(this.heading)) return "?";
         return this.heading + "&deg;";
     };
@@ -164,7 +164,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Magnetic declination with unit.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.declinationAndUnit = function () {
+    exports.BaseEntityVatsim.prototype.declinationAndUnit = function() {
         var d = this.declination();
         if (!Object.isNumber(d)) return "?";
         return d + "&deg;";
@@ -174,7 +174,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Is this an entity being followed on the map?
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.isFollowed = function () {
+    exports.BaseEntityVatsim.prototype.isFollowed = function() {
         return this.id == globals.mapFollowVatsimId;
     };
 
@@ -182,7 +182,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Is this an entity which fullfils the filter criteria?
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.compliesWithFilter = function () {
+    exports.BaseEntityVatsim.prototype.compliesWithFilter = function() {
         return (!globals.filtered || globals.filter.contains(this));
     };
 
@@ -190,7 +190,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Is in filter?
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.isInFilter = function () {
+    exports.BaseEntityVatsim.prototype.isInFilter = function() {
         return (globals.filter.contains(this));
     };
 
@@ -198,7 +198,7 @@ namespace.module('vd.entity.base', function (exports) {
     * String representation.
     * @return {String}
     */
-    exports.BaseEntityVatsim.prototype.toString = function () {
+    exports.BaseEntityVatsim.prototype.toString = function() {
         var s = "objId:" + this.objectId;
         s = s.appendIfNotEmpty([this.id, this.name], " ");
         return s;
@@ -208,7 +208,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Equals another object.
     * @return {Boolean}
     */
-    exports.BaseEntityVatsim.prototype.equals = function (otherEntity) {
+    exports.BaseEntityVatsim.prototype.equals = function(otherEntity) {
         if (otherEntity == this) return true;
         if (Object.isNullOrUndefined(otherEntity)) return false;
         if (this.objectId == otherEntity.objectId) return true;
@@ -221,10 +221,10 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {String} objectId
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByObjectId = function (entites, objectId) {
-        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(objectId)) return null;
-        for (var be = 0, len = entites.length; be < len; be++) {
-            var baseEntity = entites[be];
+    exports.BaseEntityVatsim.findByObjectId = function(entities, objectId) {
+        if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(objectId)) return null;
+        for (var be = 0, len = entities.length; be < len; be++) {
+            var baseEntity = entities[be];
             if (objectId == baseEntity.objectId) return baseEntity;
         }
         return null;
@@ -236,7 +236,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {String} id
     * @return {Array} BaseEntityVatsim objects
     */
-    exports.BaseEntityVatsim.findById = function (entites, id) {
+    exports.BaseEntityVatsim.findById = function(entites, id) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
         var entities = new Array();
         for (var e = 0, len = entites.length; e < len; e++) {
@@ -252,24 +252,53 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {String} id
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByIdFirst = function (entites, id) {
-        var entities = exports.BaseEntityVatsim.findById(entites, id);
-        return (Array.isNullOrEmpty(entities)) ? null : entities[0];
+    exports.BaseEntityVatsim.findByIdFirst = function(entities, id) {
+        var baseEntities = exports.BaseEntityVatsim.findById(entities, id);
+        return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
     };
 
     /**
-    * Find the entity by callsign.
+    * Find the entity by the callsign
+    * @param  {Array}  entities Array of entities
+    * @param  {String} callsign
+    * @return {Array} BaseEntityVatsim objects
+    */
+    exports.BaseEntityVatsim.findByCallsign = function(entities, callsign) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(callsign)) return baseEntities;
+        callsign = callsign.toUpperCase();
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (callsign == baseEntity.callsign) baseEntities.push(baseEntity);
+        }
+        return baseEntities;
+    };
+
+    /**
+    * Find the first entity by callsign.
     * @param {Array} entities Array of entities
     * @param {String} callsign
     * @return {BaseEntityVatsim}
     */
-    exports.BaseEntityVatsim.findByCallsign = function (entites, callsign) {
-        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(callsign)) return null;
-        var cs = callsign.toUpperCase();
-        for (var e = 0, len = entites.length; e < len; e++) {
-            var baseEntity = entites[e];
-            if (cs == baseEntity.callsign.toUpperCase()) return baseEntity;
+    exports.BaseEntityVatsim.findByCallsignFirst = function(entities, callsign) {
+        if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(callsign)) return null;
+        var baseEntities = vd.entity.base.BaseEntityVatsim.findByCallsign(entities, callsign);
+        return Array.isNullOrEmpty(baseEntities) ? null : baseEntities[0];
+    };
+
+    /**
+    * Find the entity by name
+    * @param  {Array}  entities Array of entities
+    * @param  {String} name
+    * @return {Array} BaseEntityVatsim objects
+    */
+    exports.BaseEntityVatsim.findByName = function(entities, name) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(name)) return baseEntities;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (name == baseEntity.name) baseEntities.push(baseEntity);
         }
-        return null;
+        return baseEntities;
     };
 });

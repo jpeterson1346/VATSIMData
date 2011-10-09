@@ -395,7 +395,7 @@ namespace.module('vd.entity', function(exports, require) {
             var exisitingAirportsCopy = existingAirports.slice();
             for (var a = 0, len = newAirports.length; a < len; a++) {
                 var newAirport = newAirports[a];
-                var foundInExistingAirports = vd.entity.base.BaseEntityVatsim.findByCallsign(exisitingAirportsCopy, newAirport.callsign);
+                var foundInExistingAirports = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(exisitingAirportsCopy, newAirport.callsign);
                 if (Object.isNullOrUndefined(foundInExistingAirports)) {
                     airports.push(newAirport);
                 } else {
@@ -426,9 +426,9 @@ namespace.module('vd.entity', function(exports, require) {
         for (var f = 0, len = flights.length; f < len; f++) {
             var flight = flights[f];
             if (!flight.hasFlightplan()) continue;
-            var airportDep = vd.entity.base.BaseEntityVatsim.findByCallsign(airports, flight.flightplan.from);
+            var airportDep = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(airports, flight.flightplan.from);
             if (!Object.isNullOrUndefined(airportDep)) airportDep.addFlightDeparting(flight);
-            var airportArr = vd.entity.base.BaseEntityVatsim.findByCallsign(airports, flight.flightplan.to);
+            var airportArr = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(airports, flight.flightplan.to);
             if (!Object.isNullOrUndefined(airportArr)) airportArr.addFlightArriving(flight);
             flight.flightplan.airportDeparting = airportDep;
             flight.flightplan.airportArriving = airportArr;
