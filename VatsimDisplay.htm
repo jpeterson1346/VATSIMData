@@ -43,12 +43,15 @@
         <script type="text/javascript" src="jscripts/entity/helper/Edge.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Flightplan.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/RouteParser.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/helper/GroundOverlays.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Waypoint.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/Waypoints.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/VatsimMetar.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/WaypointSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/FlightSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Flight.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/GroundOverlaySettings.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/GroundOverlay.js"> </script>
         <script type="text/javascript" src="jscripts/entity/AirportSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Airport.js"> </script>
         <script type="text/javascript" src="jscripts/entity/VatsimClients.js"> </script>
@@ -84,6 +87,7 @@
                     var _gaq = _gaq || [];
                     _gaq.push(['_setAccount', 'UA-26175113-1']);
                     _gaq.push(['_setDomainName', 'klausbasan.de']);
+                    _gaq.push(['_setAllowLinker', true]);
                     _gaq.push(['_trackPageview']);
 
                     (function() {
@@ -108,6 +112,7 @@
                     <option>Entities</option>
                     <option>Settings</option>
                     <option>Data</option>
+                    <option>Overlays</option>
                     <option>Route</option>
                     <option>About</option>
                     <option>Credits</option>
@@ -738,6 +743,34 @@
                     </tr>
                 </table>
                 <!-- tab data (flight/atc) ends here -->
+                <!-- overlay start -->
+                <table id="sideBarOverlays" class="sideBarStandard">
+                    <tr class="ui-widget-header">
+                        <th colspan="2" class="sideBarHeader">
+                            Overlays
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Airport:
+                        </td>
+                        <td>
+                            <select id="inputGroundOverlaysAirport" class="sideBarGroundOverlaySelect" onchange="ctr.loadOverlayChartList();"></select>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.loadOverlayChartList(); " title="Refresh chart list"><span class="ui-icon ui-icon-arrowrefresh-1-e" title="Refresh chart list"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Charts:
+                        </td>
+                        <td>
+                            <select id="inputGroundOverlaysAirportCharts" class="sideBarGroundOverlaySelect" onchange="ctr.displayOverlayChart();"></select>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.displayOverlayChart(); " title="Display ground overlay"><span class="ui-icon ui-icon-plus" title="Display ground overlay"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.hideOverlayChart(); " title="Hide ground overlay"><span class="ui-icon ui-icon-minus" title="Hide ground overlay"></span></button>
+                        </td>
+                    </tr>
+                </table>
+                <!-- overlay end -->
                 <!-- route start -->
                 <table id="sideBarRoute" class="sideBarStandard">
                     <tr class="ui-widget-header">

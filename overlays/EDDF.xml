@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<entity icao="EDDF">
+  <chart>
+    <type>iac</type>
+    <name>IAC RW07C ILC or LOC</name>
+    <file>
+      EDDF_IAC_RW07C_ILS_or_LOC.png
+    </file>
+    <offsets>
+      <x>0</x>
+      <y>0</y>
+    </offsets>
+    <bounds>
+      <sw>
+        <lat>49.7</lat>
+        <lng>7.8</lng>
+      </sw>
+      <ne>
+        <lat>50.4</lat>
+        <lng>9.0</lng>
+      </ne>
+    </bounds>
+  </chart>
+  <chart>
+    <type>iac</type>
+    <name>IAC RW07C NDB</name>
+    <file>
+      EDDF_IAC_RW07C_NDB.png
+    </file>
+    <offsets>
+      <x>0</x>
+      <y>0</y>
+    </offsets>
+    <bounds>
+      <sw>
+        <lat>49.7</lat>
+        <lng>7.8</lng>
+      </sw>
+      <ne>
+        <lat>50.4</lat>
+        <lng>9.0</lng>
+      </ne>
+    </bounds>
+  </chart>
+  <chart>
+    <type>iac</type>
+    <name>IAC RW07C RNav Y</name>
+    <file>
+      EDDF_IAC_RW07C_RNAV_Y.png
+    </file>
+    <offsets>
+      <x>0</x>
+      <y>0</y>
+    </offsets>
+  </chart>
+  <chart>
+    <type>iac</type>
+    <name>IAC RW07C RNav Z</name>
+    <file>
+      EDDF_IAC_RW07C_RNAV_Z.png
+    </file>
+    <bounds>
+      <sw>
+        <lat>49.7</lat>
+        <lng>7.8</lng>
+      </sw>
+      <ne>
+        <lat>50.4</lat>
+        <lng>9.0</lng>
+      </ne>
+    </bounds>
+  </chart>
+  <chart>
+    <type>iac</type>
+    <name>IAC RW07C VOR</name>
+    <file>
+      EDDF_IAC_RW07C_VOR.png
+    </file>
+    <bounds>
+      <sw>
+        <lat>49.7</lat>
+        <lng>7.8</lng>
+      </sw>
+      <ne>
+        <lat>50.4</lat>
+        <lng>9.0</lng>
+      </ne>
+    </bounds>
+  </chart>
+</entity>
