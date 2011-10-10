@@ -4,87 +4,54 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C ILC or LOC</name>
-    <file>
-      EDDF_IAC_RW07C_ILS_or_LOC.png
-    </file>
-    <offsets>
-      <x>0</x>
-      <y>0</y>
-    </offsets>
+    <image>
+      <file>
+        EDDF_IAC_RW07C_ILS_or_LOC.png
+      </file>
+      <size>
+        <x>1240</x>
+        <y>1754</y>
+      </size>
+    </image>
     <bounds>
       <sw>
         <lat>49.7</lat>
         <lng>7.8</lng>
+        <x>101</x>
+        <y>1145</y>
       </sw>
       <ne>
         <lat>50.4</lat>
         <lng>9.0</lng>
+        <x>1119</x>
+        <y>220</y>
       </ne>
     </bounds>
   </chart>
   <chart>
     <type>iac</type>
     <name>IAC RW07C NDB</name>
-    <file>
-      EDDF_IAC_RW07C_NDB.png
-    </file>
-    <offsets>
-      <x>0</x>
-      <y>0</y>
-    </offsets>
+    <image>
+      <file>
+        EDDF_IAC_RW07C_NDB.png
+      </file>
+      <size>
+        <x>1240</x>
+        <y>1754</y>
+      </size>
+    </image>
     <bounds>
       <sw>
         <lat>49.7</lat>
         <lng>7.8</lng>
+        <x>101</x>
+        <y>1145</y>
       </sw>
       <ne>
         <lat>50.4</lat>
         <lng>9.0</lng>
-      </ne>
-    </bounds>
-  </chart>
-  <chart>
-    <type>iac</type>
-    <name>IAC RW07C RNav Y</name>
-    <file>
-      EDDF_IAC_RW07C_RNAV_Y.png
-    </file>
-    <offsets>
-      <x>0</x>
-      <y>0</y>
-    </offsets>
-  </chart>
-  <chart>
-    <type>iac</type>
-    <name>IAC RW07C RNav Z</name>
-    <file>
-      EDDF_IAC_RW07C_RNAV_Z.png
-    </file>
-    <bounds>
-      <sw>
-        <lat>49.7</lat>
-        <lng>7.8</lng>
-      </sw>
-      <ne>
-        <lat>50.4</lat>
-        <lng>9.0</lng>
-      </ne>
-    </bounds>
-  </chart>
-  <chart>
-    <type>iac</type>
-    <name>IAC RW07C VOR</name>
-    <file>
-      EDDF_IAC_RW07C_VOR.png
-    </file>
-    <bounds>
-      <sw>
-        <lat>49.7</lat>
-        <lng>7.8</lng>
-      </sw>
-      <ne>
-        <lat>50.4</lat>
-        <lng>9.0</lng>
+        <x>1119</x>
+        <y>220</y>
       </ne>
     </bounds>
   </chart>

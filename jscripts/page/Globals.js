@@ -78,6 +78,7 @@ namespace.module('vd.page', function (exports) {
         // (Grounds) overlays
         this.groundOverlaySettings = new vd.entity.GroundOverlaySettings();
         this.groundOverlays = new vd.entity.helper.GroundOverlays(this.map);
+        this.groundOverlayHideZoomLevel = 6;
 
         // data grids
         this.gridSelectedVatsimClient = null;
