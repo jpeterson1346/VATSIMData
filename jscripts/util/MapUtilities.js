@@ -92,8 +92,7 @@ namespace.module('vd.util', function(exports) {
         for (var e in entities) {
             var ce = entities[e];
             if (ce == entity || (onlyDisplayed && !ce.displayed)) continue;
-            var edge = new vd.entity.helper.Edge({ from: entity, to: ce });
-            edge.calculatePixelDistance();
+            var edge = new vd.entity.helper.Edge({ from: entity, to: ce, calculatePixelDistance: true });
             if (edge.isWithinPixelDistance(threshold)) edges.push(edge);
         }
         return edges;

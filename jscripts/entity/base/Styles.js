@@ -64,6 +64,10 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpRouteLineOpacity = 0.5;
         this.wpRouteLineColor = "red";
         this.wpRouteLineStrokeWeight = 3;
+
+        // ground overlays
+        this.groundOverlayOpacity = 1;
+        this.groundOverlayBackground = "transparent";
     };
 
     /**

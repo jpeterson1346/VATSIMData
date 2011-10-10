@@ -2,7 +2,7 @@
 * @module vd.gm
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.helper', function (exports) {
+namespace.module('vd.entity.helper', function(exports) {
 
     /**
     * @constructor
@@ -11,7 +11,7 @@ namespace.module('vd.entity.helper', function (exports) {
     * @author KWB
     * @see <a href="http://code.google.com/apis/maps/documentation/javascript/overlays.html#GroundOverlays">Google Map ground overlay Example</a>
     */
-    exports.GroundOverlays = function (map) {
+    exports.GroundOverlays = function(map) {
 
         /**
         * All airports with overlays (by ICAO code).
@@ -28,14 +28,14 @@ namespace.module('vd.entity.helper', function (exports) {
     * Set the corresponding map.
     * @param {google.maps.Map}
     */
-    exports.GroundOverlays.prototype.setMap = function (map) {
+    exports.GroundOverlays.prototype.setMap = function(map) {
         this.map = map;
     };
 
     /**
     * Read the overlays.
     */
-    exports.GroundOverlays.prototype.read = function () {
+    exports.GroundOverlays.prototype.read = function() {
         var xmlhttp = new XMLHttpRequest();
         var url = vd.util.UtilsWeb.replaceCurrentPage("overlays/Overlays.xml");
         xmlhttp.open("GET", url, false);
@@ -62,7 +62,7 @@ namespace.module('vd.entity.helper', function (exports) {
     * @return {Array} 0..n overlay entries
     * @see vd.module:entity.GroundOverlay
     */
-    exports.GroundOverlays.prototype.readGroundOverlays = function (icao) {
+    exports.GroundOverlays.prototype.readGroundOverlays = function(icao) {
         var groundOverlays = new Array();
         if (String.isNullOrEmpty(icao)) return groundOverlays;
         icao = icao.toUpperCase();

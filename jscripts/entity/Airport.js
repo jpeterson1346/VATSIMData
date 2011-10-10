@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function(exports, require) {
+namespace.module('vd.entity', function (exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -14,7 +14,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {AirportSettings} [airportSettings]
     * @extends vd.entity.module:base.BaseEntityVatsimOnMap
     */
-    exports.Airport = function(airportProperties, airportSettings) {
+    exports.Airport = function (airportProperties, airportSettings) {
 
         // inherit attributes
         vd.entity.base.BaseEntityVatsimOnMap.call(this, airportProperties);
@@ -66,7 +66,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.Airport.prototype.dispose = function() {
+    exports.Airport.prototype.dispose = function () {
         this.display(false, false, false);
         if (!Object.isNullOrUndefined(this._popUpLabel)) {
             this._popUpLabel.eventCloseHookIn = null;
@@ -85,7 +85,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Add a new group member
     * @param {vd.entity.helper.Atc} atc
     */
-    exports.Airport.prototype.addAtc = function(atc) {
+    exports.Airport.prototype.addAtc = function (atc) {
         this.atcs.push(atc);
         this._calculateLatLonElvAverage();
         atc.Airport = this;
@@ -96,7 +96,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Retrieve the metar information.
     * @return {String} metar
     */
-    exports.Airport.prototype.metar = function() {
+    exports.Airport.prototype.metar = function () {
         return globals.metar.readFromVatsim(this.callsign);
     };
 
@@ -105,7 +105,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param  {vd.entity.Airport|Object} newFlightInformation with the appropriate data
     * @return {Boolean} updated?
     */
-    exports.Airport.prototype.update = function(newAirportInformation) {
+    exports.Airport.prototype.update = function (newAirportInformation) {
         this.altitude = newAirportInformation.altitude;
         this.atcs = newAirportInformation.atcs;
         this.setLatitudeLongitude(newAirportInformation.latitude, newAirportInformation.longitude);
@@ -118,7 +118,7 @@ namespace.module('vd.entity', function(exports, require) {
     * based on the given ATC.
     * @private
     */
-    exports.Airport.prototype._calculateLatLonElvAverage = function() {
+    exports.Airport.prototype._calculateLatLonElvAverage = function () {
 
         if (this.atcs.length < 1) return;
         var lat = 0;
@@ -136,7 +136,7 @@ namespace.module('vd.entity', function(exports, require) {
         this.latitude = lat;
         this.longitude = lon;
         this.elevation = elv;
-        this.vicinity = this.getBounds(5, 5);
+        this.vicinity = this.getVicinity(5, 5);
     };
 
     /**
@@ -145,11 +145,11 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.Airport.prototype.display = function(display, center, forceRedraw) {
+    exports.Airport.prototype.display = function (display, center, forceRedraw) {
 
         // display checks
         display = display && this.airportSettings.displayAirport;
-        display = display && (globals.map.getZoom() > globals.airportHideZoomLevel); // too small to be displayed
+        display = display && this.displayedAtZoomLevel(); // too small to be displayed?
         var isInBounds = this.isInBounds();
 
         // display    
@@ -165,11 +165,19 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
+    * Display this entity at the current map zoom level.
+    * @return {Boolean}
+    */
+    exports.Airport.prototype.displayedAtZoomLevel = function () {
+        return globals.map.getZoom() > globals.airportHideZoomLevel;
+    };
+
+    /**
     * Draw the entity.
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.Airport.prototype._draw = function(forceRedraw) {
+    exports.Airport.prototype._draw = function (forceRedraw) {
         if (!forceRedraw && this._drawn) return;
         var latlng = this.latLng();
 
@@ -208,10 +216,10 @@ namespace.module('vd.entity', function(exports, require) {
             // only one I got reliable working.
             var me = this;
             if (Object.isNullOrUndefined(this._airportLabel.eventMouseDownHookIn)) {
-                this._airportLabel.eventMouseDownHookIn = function() {
+                this._airportLabel.eventMouseDownHookIn = function () {
                     me._displayPopUp();
                 };
-                this._airportLabel.eventCloseHookIn = function() {
+                this._airportLabel.eventCloseHookIn = function () {
                     me._displayPopUp();
                 };
             }
@@ -230,7 +238,7 @@ namespace.module('vd.entity', function(exports, require) {
     //
     // Pop up further information about ATC
     //
-    exports.Airport.prototype._displayPopUp = function() {
+    exports.Airport.prototype._displayPopUp = function () {
         if (Array.isNullOrEmpty(this.atcs)) return;
         if (Object.isNullOrUndefined(this._popUpLabel)) {
             var me = this;
@@ -251,7 +259,7 @@ namespace.module('vd.entity', function(exports, require) {
             popUpLabel.open(globals.map);
             this.overlays.add(popUpLabel);
             this._popUpLabel = popUpLabel;
-            this._popUpLabel.eventCloseHookIn = function() {
+            this._popUpLabel.eventCloseHookIn = function () {
                 me._displayPopUp();
             };
         } else {
@@ -264,7 +272,7 @@ namespace.module('vd.entity', function(exports, require) {
 
     // Build the content for the pop up.
     // @return {String}
-    exports.Airport.prototype._popUpContent = function() {
+    exports.Airport.prototype._popUpContent = function () {
         if (Array.isNullOrEmpty(this.atcs)) return null;
         if (this.airportSettings.displayedElements() < 1) return null;
         var content = "";
@@ -302,7 +310,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Get the box style.
     * @return {google.maps.BoxStyle} 
     */
-    exports.Airport.prototype._boxStyle = function() {
+    exports.Airport.prototype._boxStyle = function () {
         return {
             border: globals.styles.airportLabelBorder,
             padding: globals.styles.airportLabelPadding,
@@ -322,7 +330,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Get the ATIS.
     * @return {String} 
     */
-    exports.Airport.prototype.atis = function() {
+    exports.Airport.prototype.atis = function () {
         if (Array.isNullOrEmpty(this.atcs)) return null;
         var atisAtcs = vd.entity.helper.Atc.findByType(this.atcs, vd.entity.helper.Atc.TypeAtis);
         if (Array.isNullOrEmpty(atisAtcs)) return null;
@@ -335,7 +343,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Contains the flight as departing flight?
     * @return {Boolean}
     */
-    exports.Airport.prototype.containsFlightDeparting = function(flight) {
+    exports.Airport.prototype.containsFlightDeparting = function (flight) {
         return this.flightsDeparting.contains(flight);
     };
 
@@ -343,7 +351,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Contains the flight as arriving flight?
     * @return {Boolean}
     */
-    exports.Airport.prototype.containsFlightArriving = function(flight) {
+    exports.Airport.prototype.containsFlightArriving = function (flight) {
         return this.flightsArriving.contains(flight);
     };
 
@@ -351,7 +359,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Add a flight.
     * @return {Boolean} added / not added (likely already existing)
     */
-    exports.Airport.prototype.addFlightDeparting = function(flight) {
+    exports.Airport.prototype.addFlightDeparting = function (flight) {
         if (this.flightsDeparting.contains(flight)) return false;
         this.flightsDeparting.push(flight);
         return true;
@@ -361,7 +369,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Add a flight.
     * @return {Boolean} added / not added (likely already existing)
     */
-    exports.Airport.prototype.addFlightArriving = function(flight) {
+    exports.Airport.prototype.addFlightArriving = function (flight) {
         if (this.flightsArriving.contains(flight)) return false;
         this.flightsArriving.push(flight);
         return true;
@@ -371,7 +379,7 @@ namespace.module('vd.entity', function(exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.Airport.prototype.toString = function() {
+    exports.Airport.prototype.toString = function () {
         var s = this.name;
         s = s.appendIfNotEmpty(this.toString$BaseEntityVatsimOnMap(), " - ");
         return s;
@@ -384,7 +392,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {Array} [flights] link with flights if provided
     * @return {Array} updated current airports
     */
-    exports.Airport.updateAirports = function(existingAirports, newAirports, flights) {
+    exports.Airport.updateAirports = function (existingAirports, newAirports, flights) {
         var airports;
         if (Array.isNullOrEmpty(newAirports))
             airports = existingAirports;
@@ -420,7 +428,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {Array} airports
     * @param {Array} flights
     */
-    exports.Airport.attachFlights = function(airports, flights) {
+    exports.Airport.attachFlights = function (airports, flights) {
         if (Array.isNullOrEmpty(airports)) return;
         if (Array.isNullOrEmpty(flights)) return;
         for (var f = 0, len = flights.length; f < len; f++) {
