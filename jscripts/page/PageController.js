@@ -75,6 +75,12 @@ namespace.module('vd.page', function(exports) {
         * @private
         */
         this._groundOverlayDisplayed = null;
+        /**
+        * Markers.
+        * @type {Array} Array of markers
+        * @private
+        */
+        this._markers = new vd.gm.OverlayGroup("PageMarkes", null);
     };
     // #endregion ------------ Constructor ------------
 
@@ -324,6 +330,30 @@ namespace.module('vd.page', function(exports) {
     };
 
     /**
+    * Display a marker for latitude / longitude.
+    */
+    exports.PageController.prototype.addLatLngMarker = function() {
+        var elat = document.getElementById("inputLatitude");
+        var elon = document.getElementById("inputLongitude");
+        if (!vd.util.UtilsCalc.isValidlatLon(elat.value, elon.value)) return;
+        var latLng = new google.maps.LatLng(elat.value, elon.value);
+        var latLngFormatted = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
+        var title = latLngFormatted["lat"] + "/" + latLngFormatted["lng"];
+        var markerOptions = { position: latLng, map: globals.map, title: "HK", clickable: false, flat: true, cursor: title };
+        var marker = new google.maps.Marker(markerOptions);
+        this._markers.add(marker);
+        this._markers.display(true);
+        globals.map.setCenter(latLng);
+    };
+
+    /**
+    * Display a marker for latitude / longitude.
+    */
+    exports.PageController.prototype.removeLatLngMarkers = function() {
+        this._markers.clear();
+    };
+
+    /**
     * New location.
     * @param {Boolean}            center
     * @param {google.maps.LatLng} [latLng]
@@ -536,11 +566,6 @@ namespace.module('vd.page', function(exports) {
                 }, globals.collectiveBoundsChangedInterval, true, "Bounds changed event");
         else
             this._boundsChangedCollectedEvent.fire();
-
-        // get new elevations
-        if (Array.isNullOrEmpty(globals.clients.flights)) return;
-        var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(globals.clients.flights);
-        vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
     };
 
     /**
@@ -658,7 +683,7 @@ namespace.module('vd.page', function(exports) {
     * @param {Boolean} refresh
     * @see vd.module:page.PageController#_initColorInputs
     */
-    exports.PageController.prototype.ColorSettingsChanged = function(refresh) {
+    exports.PageController.prototype.colorSettingsChanged = function(refresh) {
         refresh = Object.ifNotNullOrUndefined(refresh, true);
         globals.styles.setFlightWaypointColor($("#inputFlightSettingsWaypointLinesColor").val());
         globals.styles.flightLabelBackground = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColor").val(), globals.styles.flightLabelBackground).toHex();
@@ -765,6 +790,7 @@ namespace.module('vd.page', function(exports) {
             this._groundOverlays.append(selectedOverlays);
         }
         var names = vd.entity.GroundOverlay.names(selectedOverlays);
+        document.getElementById("inputGroundOverlaysAirportCharts").options.length = 0;
         vd.util.UtilsWeb.selectAddOptions("inputGroundOverlaysAirportCharts", names);
     };
 
@@ -778,6 +804,7 @@ namespace.module('vd.page', function(exports) {
             this.displayInfo("No ground overlay charts can be displayed");
             return;
         }
+        this.removeOverlayChart();
         this._groundOverlayDisplayed = selectedOverlays[0];
         this._groundOverlayDisplayed.display(true, true, true);
     };
@@ -789,6 +816,21 @@ namespace.module('vd.page', function(exports) {
         if (Object.isNullOrUndefined(this._groundOverlayDisplayed)) return;
         this._groundOverlayDisplayed.display(false);
         this._groundOverlayDisplayed = null;
+    };
+
+    /**
+    * Settings for overlay chart has been changed.
+    */
+    exports.PageController.prototype.groundOverlayChanged = function() {
+        globals.styles.groundOverlayOpacity = String.toNumber(vd.util.UtilsWeb.getSelectedValue("inputGroundOverlayOpacity"), globals.styles.groundOverlayOpacity);
+        if (vd.util.UtilsWeb.checked("inputGroundOverlayBackgroundTransparent"))
+            globals.styles.groundOverlayBackground = "transparent";
+        else
+            globals.styles.groundOverlayBackground = vd.util.Utils.getValidColor($("#inputGroundOverlayBackgroundColor").val(), globals.styles.groundOverlayBackground).toHex();
+
+        // redisplay
+        if (Object.isNullOrUndefined(this._groundOverlayDisplayed)) return;
+        this._groundOverlayDisplayed.display(true, false, true);
     };
     // #endregion ------------ public part events ------------
 
@@ -961,6 +1003,7 @@ namespace.module('vd.page', function(exports) {
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
         globals.assignMap(new google.maps.Map(document.getElementById("mapCanvas"), mapOptions));
+        this._markers.map = globals.map;
         google.maps.event.addListener(globals.map, 'bounds_changed',
             function() { me.boundsChangedEvent(); }
         ); // zoom_changed, dragend
@@ -1002,7 +1045,7 @@ namespace.module('vd.page', function(exports) {
     /** 
     * Init the color input fields.
     * @private
-    * @see vd.module:page.PageController#ColorSettingsChanged
+    * @see vd.module:page.PageController#colorSettingsChanged
     */
     exports.PageController.prototype._initColorInputs = function() {
         $("#inputFlightSettingsWaypointLinesColor").val(vd.util.Utils.fixHexColorValue(globals.styles.wpFlightWaypointBaseColor.toHex(), true));
@@ -1015,6 +1058,7 @@ namespace.module('vd.page', function(exports) {
         $("#inputRouteSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelBackground, "CCCCCC").toHex(), true));
         $("#inputRouteSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputRouteSettingRouteLineColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLineColor, "CCCCCC").toHex(), true));
+        $("#inputGroundOverlayBackgroundColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.groundOverlayBackground, "CCCCCC").toHex(), true));
     };
 
     /**
@@ -1327,6 +1371,8 @@ namespace.module('vd.page', function(exports) {
     exports.PageController.prototype._initGroundOverlays = function() {
         var airportIcaos = globals.groundOverlays.airports;
         vd.util.UtilsWeb.selectAddOptions("inputGroundOverlaysAirport", airportIcaos);
+        var opacities = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+        vd.util.UtilsWeb.selectAddOptions("inputGroundOverlayOpacity", opacities, globals.styles.groundOverlayOpacity);
     };
 
     /**
@@ -1532,6 +1578,12 @@ namespace.module('vd.page', function(exports) {
                 globals.mapOldCenter = globals.map.getCenter();
                 globals.mapOldZoom = globals.map.getZoom();
                 globals.clients.display(true, true);
+                if (!Object.isNullOrUndefined(this._groundOverlayDisplayed)) this._groundOverlayDisplayed.display(true, false, true);
+
+                // get new elevations
+                if (Array.isNullOrEmpty(globals.clients.flights)) return;
+                var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(globals.clients.flights);
+                vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
 
                 // update grids / altitude profile
                 this.updateGrids();

@@ -2,13 +2,13 @@
 * @module vd.util
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function(exports) {
+namespace.module('vd.util', function (exports) {
 
     /**
     * Utilities for the maps.
     * @constructor
     */
-    exports.UtilsMap = function() {
+    exports.UtilsMap = function () {
         // code goes here
     };
 
@@ -18,13 +18,14 @@ namespace.module('vd.util', function(exports) {
     * @param {Number} [precision]
     * @return {Array} array with formatted strings latitude/longitude
     */
-    exports.UtilsMap.formatLatLngValues = function(latLng, precision) {
+    exports.UtilsMap.formatLatLngValues = function (latLng, precision) {
         precision = precision == null ? 6 : precision;
         var lat = latLng.lat().toFixed(precision);
         var lng = latLng.lng().toFixed(precision);
         var r = new Array();
         r["lat"] = lat;
         r["lng"] = lng;
+        r["lon"] = lng;
         return r;
     };
 
@@ -35,7 +36,7 @@ namespace.module('vd.util', function(exports) {
     * @param {Number} lat2
     * @param {Number} lng2
     **/
-    exports.UtilsMap.hasSameLocation = function(lat1, lng1, lat2, lng2) {
+    exports.UtilsMap.hasSameLocation = function (lat1, lng1, lat2, lng2) {
         if (lat1 == lat2 && lng1 == lng2) return true;
         // try formatting
         if (lat1.toFixed(globals.coordinatesDigitsCalculation) != lat2.toFixed(globals.coordinatesDigitsCalculation)) return false;
@@ -48,7 +49,7 @@ namespace.module('vd.util', function(exports) {
     * @param  {google.maps.latLngBounds} bounds
     * @return {Array}
     */
-    exports.UtilsMap.boundsToPath = function(bounds) {
+    exports.UtilsMap.boundsToPath = function (bounds) {
         bounds = Object.ifNotNullOrUndefined(bounds, globals.map);
         var ne = bounds.getNorthEast();
         var sw = bounds.getSouthWest();
@@ -65,7 +66,7 @@ namespace.module('vd.util', function(exports) {
     * @param {Boolean} onlyDisplayed check only displayed entities, faster
     * @return {Array} array of {see vd.entity.helper.Edge}
     */
-    exports.UtilsMap.entitiesWithinPointDistance = function(entity, checkEntities, threshold, onlyDisplayed) {
+    exports.UtilsMap.entitiesWithinPointDistance = function (entity, checkEntities, threshold, onlyDisplayed) {
         onlyDisplayed = Object.isNullOrUndefined(onlyDisplayed) ? true : onlyDisplayed;
         var edges = new Array();
         for (var e in checkEntities) {
@@ -86,7 +87,7 @@ namespace.module('vd.util', function(exports) {
     * @param {Boolean} [onlyDisplayed] check only displayed entities, faster
     * @return {Array} array of {see vd.entity.helper.Edge}
     */
-    exports.UtilsMap.entitiesWithinPixelDistance = function(entity, entities, threshold, onlyDisplayed) {
+    exports.UtilsMap.entitiesWithinPixelDistance = function (entity, entities, threshold, onlyDisplayed) {
         onlyDisplayed = Object.ifNotNullOrUndefined(onlyDisplayed, true);
         var edges = new Array();
         for (var e in entities) {
@@ -103,7 +104,7 @@ namespace.module('vd.util', function(exports) {
     * @param {LatLon} latLon
     * @return google.maps.LatLng
     */
-    exports.UtilsMap.latLonToLatLng = function(latLon) {
+    exports.UtilsMap.latLonToLatLng = function (latLon) {
         return new google.maps.LatLng(latLon.lat(), latLon.lon());
     };
 });

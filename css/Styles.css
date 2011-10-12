@@ -139,11 +139,12 @@ body
     margin: 2px 2px 2px 2px;
     font-family: Courier;
     font-size: 50%;
+    text-align: left;
 }
 
 /* selects for ground overlays */
 .sideBarGroundOverlaySelect {
-    min-width: 175px;
+    min-width: 150px;
 }
 
 /* -------------- map ------------*/
