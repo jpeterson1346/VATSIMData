@@ -240,21 +240,23 @@
                         <td>
                             Latitude:
                         </td>
-                        <td colspan="2">
+                        <td>
                             <input name="latitude" id="inputLatitude" type="text" size="6" onkeydown=" ctr.onEnter(event, function() { ctr.newLocation(true); }); "/>
                         </td>
-                        <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.reverseLookup() " onkeydown=" if (event.keyCode == 13) ctr.reverseLookup(); " title="Where is this?"><span class="ui-icon ui-icon-search" title="Where is this?"></span></button>
+                        <td colspan="2">
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.addLatLngMarker() "title="Place a marker"><span class="ui-icon ui-icon-flag" title="Place a marker"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.reverseLookup() " title="Where is this?"><span class="ui-icon ui-icon-search" title="Where is this?"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
                             Longitude:
                         </td>
-                        <td colspan="2">
+                        <td>
                             <input name="longitude" id="inputLongitude" type="text" size="6" onkeydown=" ctr.onEnter(event, function() { ctr.newLocation(true); }); "/>
                         </td>
-                        <td>
+                        <td colspan="2">
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.removeLatLngMarkers() "title="Remove markers"><span class="ui-icon ui-icon-trash" title="Remove markers"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.newLocation(true) " onkeydown=" if (event.keyCode == 13) ctr.newLocation(true); "><span class="ui-icon ui-icon-check" title="Go to a new location"></span></button>
                         </td>
                     </tr>
@@ -624,8 +626,8 @@
                             Flight labels:
                         </td>
                         <td colspan="3">
-                            <input name="flightLabelsColor" id="inputFlightSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="flightLabelsColor" id="inputFlightSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -633,8 +635,8 @@
                             .. when followed:
                         </td>
                         <td colspan="3">
-                            <input name="flightLabelsColorIfFollowed" id="inputFlightSettingLabelsColorIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="flightLabelsColorIfFollowed" id="inputFlightSettingLabelsColorIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -642,8 +644,8 @@
                             .. when filtered:
                         </td>
                         <td colspan="3">
-                            <input name="flightLabelsColorIfFiltered" id="inputFlightSettingLabelsColorIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="flightLabelsColorIfFiltered" id="inputFlightSettingLabelsColorIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -651,8 +653,8 @@
                             Flight labels font:
                         </td>
                         <td colspan="3">
-                            <input name="flightLabelsFontColor" id="inputFlightSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="flightLabelsFontColor" id="inputFlightSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -660,8 +662,8 @@
                             Airport labels:
                         </td>
                         <td colspan="3">
-                            <input name="airportLabelsColor" id="inputAirportSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="airportLabelsColor" id="inputAirportSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -669,15 +671,15 @@
                             Airport labels font:
                         </td>
                         <td colspan="3">
-                            <input name="airportLabelsFontColor" id="inputAirportSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="airportLabelsFontColor" id="inputAirportSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td>Wp.-Lines:</td>
                         <td colspan="3">
-                            <input name="waypointLinesColor" id="inputFlightSettingsWaypointLinesColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="waypointLinesColor" id="inputFlightSettingsWaypointLinesColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -692,8 +694,8 @@
                             Route labels:
                         </td>
                         <td colspan="3">
-                            <input name="routeLabelsFontColor" id="inputRouteSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="routeLabelsFontColor" id="inputRouteSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -701,8 +703,8 @@
                             Route labels font:
                         </td>
                         <td colspan="3">
-                            <input name="routeLabelsFontColor" id="inputRouteSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="routeLabelsFontColor" id="inputRouteSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -710,8 +712,8 @@
                             Route:
                         </td>
                         <td colspan="3">
-                            <input name="routeColor" id="inputRouteSettingRouteLineColor" onkeydown=" ctr.onEnter(event, 'ctr.ColorSettingsChanged()'); " class="color" type="text" size="8"/>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.ColorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input name="routeColor" id="inputRouteSettingRouteLineColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                 </table>
@@ -766,7 +768,36 @@
                         <td>
                             <select id="inputGroundOverlaysAirportCharts" class="sideBarGroundOverlaySelect" onchange="ctr.displayOverlayChart();"></select>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.displayOverlayChart(); " title="Display ground overlay"><span class="ui-icon ui-icon-plus" title="Display ground overlay"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                        </td>
+                        <td>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.removeOverlayChart(); " title="Hide ground overlay"><span class="ui-icon ui-icon-minus" title="Hide ground overlay"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-header">
+                        <th colspan="2" class="sideBarHeader">
+                            Ground overlay setup
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Background:
+                        </td>
+                        <td>
+                            <input name="groundOverlayBackgroundColor" id="inputGroundOverlayBackgroundColor" onkeydown=" ctr.onEnter(event, 'ctr.groundOverlayChanged()'); " class="color" type="text" size="8"/>
+                            <input type="checkbox" id="inputGroundOverlayBackgroundTransparent" onchange="ctr.groundOverlayChanged();" />transp.
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.groundOverlayChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Opacity:
+                        </td>
+                        <td>
+                            <select id="inputGroundOverlayOpacity" onchange="ctr.groundOverlayChanged();"></select>
                         </td>
                     </tr>
                 </table>
@@ -780,12 +811,16 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
-                            Paste your <a href="javascript: vd.util.UtilsWeb.newLocation(globals.urlVATroute, true); ">VATRoute</a> here:
+                            <button class="ui-button sideBarRightAlign" onclick=" vd.util.UtilsWeb.newLocation(globals.urlVATroute, true); " title="VATroute"><span class="ui-icon ui-icon-extlink" title="VATroute"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.vatsimClientSettingsChanged({ toggleFlights: true }); " title="Toggle flights visibility"><span class="ui-icon ui-icon-shuffle" title="Toggle flights visibility"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.hideRoute(); " title="Hide route"><span class="ui-icon ui-icon-cancel" title="Hide route"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.loadVatRouteDemoData(); " title="Demo data"><span class="ui-icon ui-icon-document" title="Demo data"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.showVatRoute(); " title="Display route"><span class="ui-icon ui-icon-circle-arrow-e" title="Display route"></span></button>
-                            <textarea id="inputVatRoute" rows="5" cols="40" title="Paste your VATroute here" class="sideBarRouteInput"></textarea>                                
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            <textarea id="inputVatRoute" rows="5" cols="40" title="Paste your VATroute here" class="sideBarRouteInput">Paste your VATRoute here.</textarea>                                
                         </td>
                     </tr>
                 </table>

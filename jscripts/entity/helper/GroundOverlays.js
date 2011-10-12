@@ -46,7 +46,7 @@ namespace.module('vd.entity.helper', function(exports) {
             if (!Object.isNullOrUndefined(airportsNode) && !Object.isNullOrUndefined(airportsNode.childNodes)) {
                 for (var a = 0, len = airportsNode.childNodes.length; a < len; a++) {
                     var apNode = airportsNode.childNodes[a];
-                    if (Object.isNullOrUndefined(apNode)) continue;
+                    if (Object.isNullOrUndefined(apNode) || Object.isNullOrUndefined(apNode.firstChild)) continue;
                     var airportIcao = apNode.firstChild.data.trim();
                     if (!String.isNullOrEmpty(airportIcao)) this.airports.push(airportIcao);
                 }
@@ -77,6 +77,7 @@ namespace.module('vd.entity.helper', function(exports) {
                 for (var c = 0, len = entityNode.childNodes.length; c < len; c++) {
                     var chartNode = entityNode.childNodes[c];
                     if (Object.isNullOrUndefined(chartNode)) continue;
+                    if (Object.isNullOrUndefined(chartNode.firstChild)) continue; // eliminate pure text nodes on Firefox / Chrome
                     var go = new vd.entity.GroundOverlay({ map: this.map, callsign: icao });
                     if (go.setFromXmlNode(chartNode)) {
                         // valid ground overlay, add

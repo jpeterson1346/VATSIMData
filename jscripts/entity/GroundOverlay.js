@@ -50,12 +50,12 @@ namespace.module('vd.entity', function (exports, require) {
         * South west offset.
         * @type {Number}
         */
-        this.swOffsetX = 0;
+        this.swPositionX = 0;
         /**
         * South west offset.
         * @type {Number}
         */
-        this.swOffsetY = 0;
+        this.swPositionY = 0;
         /**
         * North east coordinates.
         * @type {google.maps.latLng}
@@ -70,12 +70,12 @@ namespace.module('vd.entity', function (exports, require) {
         * North east offset.
         * @type {Number}
         */
-        this.neOffsetX = 0;
+        this.nePositionX = 0;
         /**
         * North east offset.
         * @type {Number}
         */
-        this.neOffsetY = 0;
+        this.nePositionY = 0;
         /**
         * Overlay (image) url.
         * @type {String}
@@ -100,12 +100,12 @@ namespace.module('vd.entity', function (exports, require) {
         * Size of the bounds area.
         * @type {Number}
         */
-        this.boundsSizeX = null;
+        this.imageBoundsSizeX = null;
         /**
         * Size of the bounds area.
         * @type {Number}
         */
-        this.boundsSizeY = null;
+        this.imageBoundsSizeY = null;
         /**
         * Size of the bounds area on the map.
         * @type {Number}
@@ -149,9 +149,12 @@ namespace.module('vd.entity', function (exports, require) {
             var c = this.vicinity.getCenter();
             this.latitude = c.lat();
             this.longitude = c.lng();
+
+            // calculate the missining corners
             this.se = new google.maps.LatLng(this.sw.lat(), this.ne.lng());
             this.nw = new google.maps.LatLng(this.ne.lat(), this.sw.lng());
 
+            // calculate the pixel size of the described area, use edge for this purpose 
             var sw = new vd.entity.base.BaseEntityMap({ latitude: this.sw.lat(), longitude: this.sw.lng(), map: this.map });
             var se = new vd.entity.base.BaseEntityMap({ latitude: this.se.lat(), longitude: this.se.lng(), map: this.map });
             var ne = new vd.entity.base.BaseEntityMap({ latitude: this.ne.lat(), longitude: this.ne.lng(), map: this.map });
@@ -159,8 +162,10 @@ namespace.module('vd.entity', function (exports, require) {
             this._edgeY = new vd.entity.helper.Edge({ from: se, to: ne, calculatePixelDistance: true });
             this.mapBoundsSizeX = this._edgeX.pixelDistance;
             this.mapBoundsSizeY = this._edgeY.pixelDistance;
-            this.boundsSizeX = Math.abs(this.neOffsetX - this.swOffsetX);
-            this.boundsSizeY = Math.abs(this.neOffsetY - this.swOffsetY);
+
+            // the pixel size of image which represent the described bounds
+            this.imageBoundsSizeX = Math.abs(this.nePositionX - this.swPositionX);
+            this.imageBoundsSizeY = Math.abs(this.nePositionY - this.swPositionY);
         }
     };
 
@@ -186,7 +191,7 @@ namespace.module('vd.entity', function (exports, require) {
         for (var c = 0, len = node.childNodes.length; c < len; c++) {
             var childNode = node.childNodes[c];
             var property = childNode.tagName;
-            if (String.isNullOrEmpty(property)) globals.log.error("Missing property in GroundOverlay node");
+            if (String.isNullOrEmpty(property)) continue; // Firefox / Chrome check if TextNode
             switch (property.toLowerCase()) {
                 case "type":
                     value = childNode.firstChild.data.trim();
@@ -221,10 +226,10 @@ namespace.module('vd.entity', function (exports, require) {
                     this.sw = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
-                    this.swOffsetX = String.toNumber(value, 0);
+                    this.swPositionX = String.toNumber(value, 0);
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
-                    this.swOffsetY = String.toNumber(value, 0);
+                    this.swPositionY = String.toNumber(value, 0);
 
                     // NE
                     childNode = node.childNodes[c];
@@ -240,10 +245,10 @@ namespace.module('vd.entity', function (exports, require) {
                     this.ne = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
-                    this.neOffsetX = String.toNumber(value, 0);
+                    this.nePositionX = String.toNumber(value, 0);
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
-                    this.neOffsetY = String.toNumber(value, 0);
+                    this.nePositionY = String.toNumber(value, 0);
                     break;
             }
         }
@@ -307,10 +312,10 @@ namespace.module('vd.entity', function (exports, require) {
             this.overlays.clear();
         }
 
-        // recalculate pixel sizes and ratio, can be changed due to zoom
+        // recalculate pixel sizes and ratio, it can be changed due to zoom
         this._calculateMapSize();
-        var imageRatioX = this.mapBoundsSizeX / this.boundsSizeX;
-        var imageRatioY = this.mapBoundsSizeY / this.boundsSizeY;
+        var imageRatioX = this.mapBoundsSizeX / this.imageBoundsSizeX;
+        var imageRatioY = this.mapBoundsSizeY / this.imageBoundsSizeY;
         this._setImage(imageRatioX, imageRatioY);
 
         /**
@@ -321,8 +326,9 @@ namespace.module('vd.entity', function (exports, require) {
         var groundOverlay = new google.maps.GroundOverlay(this.url, this.vicinity, groundOverlayOptions);
         */
 
-        var offsetX = (this.swOffsetX - this.imageSizeX) * imageRatioX / 2;
-        var offsetY = (this.neOffsetY - this.imageSizeY) * imageRatioY / 2;
+        var offsetX = (this.swPositionX - this.imageSizeX) * imageRatioX / 2;
+        var offsetY = (this.nePositionY - this.imageSizeY) * imageRatioY / 2;
+        var center = this.latLng();
         var groundOverlayBoxStyle = {
             background: globals.styles.groundOverlayBackground,
             opacity: globals.styles.groundOverlayOpacity
@@ -333,7 +339,7 @@ namespace.module('vd.entity', function (exports, require) {
             disableAutoPan: true,
             pixelOffset: new google.maps.Size(offsetX, offsetY),
             closeBoxURL: "",
-            position: this.latLng()
+            position: center
         };
         var groundOverlay = new InfoBox(groundOverlayOptions);
         this.overlays.add(groundOverlay);
@@ -364,7 +370,8 @@ namespace.module('vd.entity', function (exports, require) {
     * @return {Boolean}
     */
     exports.GroundOverlay.prototype.displayedAtZoomLevel = function () {
-        return globals.map.getZoom() > globals.groundOverlayHideZoomLevel;
+        var z = globals.map.getZoom();
+        return z > globals.groundOverlayHideZoomLevel;
     };
 
     /**
