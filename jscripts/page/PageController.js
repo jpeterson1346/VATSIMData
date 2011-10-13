@@ -339,7 +339,7 @@ namespace.module('vd.page', function(exports) {
         var latLng = new google.maps.LatLng(elat.value, elon.value);
         var latLngFormatted = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
         var title = latLngFormatted["lat"] + "/" + latLngFormatted["lng"];
-        var markerOptions = { position: latLng, map: globals.map, title: "HK", clickable: false, flat: true, cursor: title };
+        var markerOptions = { position: latLng, map: globals.map, title: title };
         var marker = new google.maps.Marker(markerOptions);
         this._markers.add(marker);
         this._markers.display(true);
@@ -739,7 +739,7 @@ namespace.module('vd.page', function(exports) {
     /**
     * Redisplay the clients (after some delay in the background).
     * @param {Boolean} forceRedraw
-    **/
+    */
     exports.PageController.prototype.backgroundRefresh = function(forceRedraw) {
         var me = this;
         if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
@@ -796,9 +796,11 @@ namespace.module('vd.page', function(exports) {
 
     /**
     * Display overlay chart.
+    * @param {Boolean} [center]
     */
-    exports.PageController.prototype.displayOverlayChart = function() {
+    exports.PageController.prototype.displayOverlayChart = function(center) {
         var name = vd.util.UtilsWeb.getSelectedValue("inputGroundOverlaysAirportCharts");
+        center = Object.ifNotNullOrUndefined(center, true);
         var selectedOverlays = vd.entity.base.BaseEntityVatsim.findByName(this._groundOverlays, name); // already in memory
         if (Array.isNullOrEmpty(selectedOverlays)) {
             this.displayInfo("No ground overlay charts can be displayed");
@@ -806,7 +808,7 @@ namespace.module('vd.page', function(exports) {
         }
         this.removeOverlayChart();
         this._groundOverlayDisplayed = selectedOverlays[0];
-        this._groundOverlayDisplayed.display(true, true, true);
+        this._groundOverlayDisplayed.display(true, center, true);
     };
 
     /**
@@ -830,7 +832,7 @@ namespace.module('vd.page', function(exports) {
 
         // redisplay
         if (Object.isNullOrUndefined(this._groundOverlayDisplayed)) return;
-        this._groundOverlayDisplayed.display(true, false, true);
+        this.displayOverlayChart(false);
     };
     // #endregion ------------ public part events ------------
 
@@ -1003,12 +1005,12 @@ namespace.module('vd.page', function(exports) {
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
         globals.assignMap(new google.maps.Map(document.getElementById("mapCanvas"), mapOptions));
-        this._markers.map = globals.map;
         google.maps.event.addListener(globals.map, 'bounds_changed',
             function() { me.boundsChangedEvent(); }
         ); // zoom_changed, dragend
         this._displayLocationAndBounds();
         this.newLocation(true, latLng);
+        this._markers.map = globals.map;
 
         // check (by call back) whether we can expect geo location to be working
         // for performance reason I do not yet set the new position -> updates all flights etc.
