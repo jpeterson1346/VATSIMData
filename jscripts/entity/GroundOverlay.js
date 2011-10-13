@@ -37,45 +37,15 @@ namespace.module('vd.entity', function (exports, require) {
         */
         this.objectId = globals.register(this);
         /**
-        * South west coordinates.
-        * @type {google.maps.latLng}
-        */
-        this.sw = Object.ifNotNullOrUndefined(groundOverlayProperties["sw"], null);
-        /**
         * South east coordinates.
         * @type {google.maps.latLng}
         */
         this.se = null; // will be calculated
         /**
-        * South west offset.
-        * @type {Number}
-        */
-        this.swPositionX = 0;
-        /**
-        * South west offset.
-        * @type {Number}
-        */
-        this.swPositionY = 0;
-        /**
-        * North east coordinates.
-        * @type {google.maps.latLng}
-        */
-        this.ne = Object.ifNotNullOrUndefined(groundOverlayProperties["ne"], null);
-        /**
         * North west coordinates.
         * @type {google.maps.latLng}
         */
         this.nw = null; // will be calculated
-        /**
-        * North east offset.
-        * @type {Number}
-        */
-        this.nePositionX = 0;
-        /**
-        * North east offset.
-        * @type {Number}
-        */
-        this.nePositionY = 0;
         /**
         * Overlay (image) url.
         * @type {String}
@@ -97,22 +67,34 @@ namespace.module('vd.entity', function (exports, require) {
         */
         this.imageSizeY = Object.ifNotNullOrUndefined(groundOverlayProperties["offsety"], null);
         /**
-        * Size of the bounds area.
+        * Size of the described bounds area.
         * @type {Number}
         */
         this.imageBoundsSizeX = null;
         /**
-        * Size of the bounds area.
+        * Size of the described bounds area.
         * @type {Number}
         */
         this.imageBoundsSizeY = null;
         /**
+        * Center position offset of the bounds.
+        * @type {Number}
+        */
+        this.boundsCenterPositionX = null; // calculated
+        /**
+        * Center position offset of the bounds.
+        * @type {Number}
+        */
+        this.boundsCenterPositionY = null; // calculated
+        /**
         * Size of the bounds area on the map.
+        * This is the x dimension at the current zoom level for the described area.
         * @type {Number}
         */
         this.mapBoundsSizeX = null;
         /**
         * Size of the bounds area on the map.
+        * This is the y dimension at the current zoom level for the described area.
         * @type {Number}
         */
         this.mapBoundsSizeY = null;
@@ -136,7 +118,44 @@ namespace.module('vd.entity', function (exports, require) {
         this._img = null;
 
         // further settings
-        this._calculateProperties();
+        this.set(groundOverlayProperties);
+    };
+
+    /**
+    * Set the properties.
+    * @param {Object} groundOverlayProperties
+    */
+    exports.GroundOverlay.prototype.set = function (groundOverlayProperties) {
+        /**
+        * South west coordinates.
+        * @type {google.maps.latLng}
+        */
+        this.sw = Object.ifNotNullOrUndefined(groundOverlayProperties["sw"], null);
+        /**
+        * South west offset.
+        * @type {Number}
+        */
+        this.boundsSwPositionX = String.toNumber(groundOverlayProperties["boundsSwPositionX"], null);
+        /**
+        * South west offset.
+        * @type {Number}
+        */
+        this.boundsSwPositionY = String.toNumber(groundOverlayProperties["boundsSwPositionY"], null);
+        /**
+        * North east coordinates.
+        * @type {google.maps.latLng}
+        */
+        this.ne = Object.ifNotNullOrUndefined(groundOverlayProperties["ne"], null);
+        /**
+        * North east offset.
+        * @type {Number}
+        */
+        this.boundsNePositionX = String.toNumber(groundOverlayProperties["boundsNePositionX"], null);
+        /**
+        * North east offset.
+        * @type {Number}
+        */
+        this.boundsNePositionY = String.toNumber(groundOverlayProperties["boundsNePositionY"], null);
     };
 
     /**
@@ -145,10 +164,16 @@ namespace.module('vd.entity', function (exports, require) {
     */
     exports.GroundOverlay.prototype._calculateProperties = function () {
         if (!Object.isNullOrUndefined(this.sw) && !Object.isNullOrUndefined(this.ne)) {
+
+            // set the described area as vicinity ("bounds of the overlay")
             this.vicinity = new google.maps.LatLngBounds(this.sw, this.ne);
+
+            // calculate the center of the bounds (not the center of the chart)
             var c = this.vicinity.getCenter();
             this.latitude = c.lat();
             this.longitude = c.lng();
+            this.boundsCenterPositionX = (this.boundsSwPositionX + this.boundsNePositionX) / 2;
+            this.boundsCenterPositionY = (this.boundsSwPositionY + this.boundsNePositionY) / 2;
 
             // calculate the missining corners
             this.se = new google.maps.LatLng(this.sw.lat(), this.ne.lng());
@@ -164,20 +189,9 @@ namespace.module('vd.entity', function (exports, require) {
             this.mapBoundsSizeY = this._edgeY.pixelDistance;
 
             // the pixel size of image which represent the described bounds
-            this.imageBoundsSizeX = Math.abs(this.nePositionX - this.swPositionX);
-            this.imageBoundsSizeY = Math.abs(this.nePositionY - this.swPositionY);
+            this.imageBoundsSizeX = Math.abs(this.boundsNePositionX - this.boundsSwPositionX);
+            this.imageBoundsSizeY = Math.abs(this.boundsNePositionY - this.boundsSwPositionY);
         }
-    };
-
-    /**
-    * (Re)calculate properties.
-    * @private
-    */
-    exports.GroundOverlay.prototype._calculateMapSize = function () {
-        this._edgeX.calculatePixelDistance();
-        this._edgeY.calculatePixelDistance();
-        this.mapBoundsSizeX = this._edgeX.pixelDistance;
-        this.mapBoundsSizeY = this._edgeY.pixelDistance;
     };
 
     /**
@@ -226,10 +240,10 @@ namespace.module('vd.entity', function (exports, require) {
                     this.sw = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
-                    this.swPositionX = String.toNumber(value, 0);
+                    this.boundsSwPositionX = String.toNumber(value, 0);
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
-                    this.swPositionY = String.toNumber(value, 0);
+                    this.boundsSwPositionY = String.toNumber(value, 0);
 
                     // NE
                     childNode = node.childNodes[c];
@@ -245,16 +259,13 @@ namespace.module('vd.entity', function (exports, require) {
                     this.ne = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
-                    this.nePositionX = String.toNumber(value, 0);
+                    this.boundsNePositionX = String.toNumber(value, 0);
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
-                    this.nePositionY = String.toNumber(value, 0);
+                    this.boundsNePositionY = String.toNumber(value, 0);
                     break;
             }
         }
-
-        // further settings
-        this._calculateProperties();
 
         // end        
         return true;
@@ -287,6 +298,8 @@ namespace.module('vd.entity', function (exports, require) {
     exports.GroundOverlay.prototype.display = function (display, center, forceRedraw) {
 
         // display checks
+        center = Object.ifNotNullOrUndefined(center, false);
+        forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, forceRedraw);
         display = display && this.groundOverlaySettings.displayOverlays;
         display = display && this.displayedAtZoomLevel(); // too small to be displayed
         var isInBounds = this.isInBounds();
@@ -312,22 +325,18 @@ namespace.module('vd.entity', function (exports, require) {
             this.overlays.clear();
         }
 
+        // generate map ground overlay
+        // Basically I wanted to display this as GM ground overlay http://code.google.com/apis/maps/documentation/javascript/overlays.html#GroundOverlays
+        // However, using infobox offers more options
+
         // recalculate pixel sizes and ratio, it can be changed due to zoom
-        this._calculateMapSize();
+        this._calculateProperties();
         var imageRatioX = this.mapBoundsSizeX / this.imageBoundsSizeX;
         var imageRatioY = this.mapBoundsSizeY / this.imageBoundsSizeY;
         this._setImage(imageRatioX, imageRatioY);
 
-        /**
-        // generate map ground overlay
-        // Basically I wanted to display this as GM ground overlay http://code.google.com/apis/maps/documentation/javascript/overlays.html#GroundOverlays
-        // However, using infobox offers more options
-        var groundOverlayOptions = { clickable: false, map: this.map };
-        var groundOverlay = new google.maps.GroundOverlay(this.url, this.vicinity, groundOverlayOptions);
-        */
-
-        var offsetX = (this.swPositionX - this.imageSizeX) * imageRatioX / 2;
-        var offsetY = (this.nePositionY - this.imageSizeY) * imageRatioY / 2;
+        var offsetX = -this.boundsCenterPositionX * imageRatioX;
+        var offsetY = -this.boundsCenterPositionY * imageRatioY;
         var center = this.latLng();
         var groundOverlayBoxStyle = {
             background: globals.styles.groundOverlayBackground,
