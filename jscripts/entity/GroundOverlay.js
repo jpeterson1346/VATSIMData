@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -15,7 +15,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @author KWB
     * @since 2011-10-10
     */
-    exports.GroundOverlay = function (groundOverlayProperties, groundOverlaySettings) {
+    exports.GroundOverlay = function(groundOverlayProperties, groundOverlaySettings) {
 
         // inherit attributes
         vd.entity.base.BaseEntityVatsimOnMap.call(this, groundOverlayProperties);
@@ -125,7 +125,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Set the properties.
     * @param {Object} groundOverlayProperties
     */
-    exports.GroundOverlay.prototype.set = function (groundOverlayProperties) {
+    exports.GroundOverlay.prototype.set = function(groundOverlayProperties) {
         /**
         * South west coordinates.
         * @type {google.maps.latLng}
@@ -156,13 +156,21 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {Number}
         */
         this.boundsNePositionY = String.toNumber(groundOverlayProperties["boundsNePositionY"], null);
+        /**
+        * Further info URL.
+        */
+        this.infoUrl = null;
+        /**
+        * Original chart URL.
+        */
+        this.originalChartUrl = null;
     };
 
     /**
     * Calculate properties.
     * @private
     */
-    exports.GroundOverlay.prototype._calculateProperties = function () {
+    exports.GroundOverlay.prototype._calculateProperties = function() {
         if (!Object.isNullOrUndefined(this.sw) && !Object.isNullOrUndefined(this.ne)) {
 
             // set the described area as vicinity ("bounds of the overlay")
@@ -199,36 +207,38 @@ namespace.module('vd.entity', function (exports, require) {
     * @param  {IXMLDOMNode} node
     * @return {Boolean} set successful/failed
     */
-    exports.GroundOverlay.prototype.setFromXmlNode = function (node) {
+    exports.GroundOverlay.prototype.setFromXmlNode = function(node) {
         if (Object.isNullOrUndefined(node)) return false;
         var value, subNode, lat, lng;
         for (var c = 0, len = node.childNodes.length; c < len; c++) {
             var childNode = node.childNodes[c];
             var property = childNode.tagName;
             if (String.isNullOrEmpty(property)) continue; // Firefox / Chrome check if TextNode
-            switch (property.toLowerCase()) {
-                case "type":
-                    value = childNode.firstChild.data.trim();
-                    this.type = value.toUpperCase();
-                    break;
-                case "name":
-                    value = childNode.firstChild.data.trim();
-                    this.name = value;
-                    break;
-                case "image":
-                    subNode = childNode.getElementsByTagName("file")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
-                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.imageSizeX = String.toNumber(value, 0);
-                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.imageSizeY = String.toNumber(value, 0);
-                    break;
-                case "bounds":
+            property = property.toLowerCase();
+            switch (property) {
+            case "type":
+                value = childNode.firstChild.data.trim();
+                this.type = value.toUpperCase();
+                break;
+            case "name":
+                value = childNode.firstChild.data.trim();
+                this.name = value;
+                break;
+            case "image":
+                subNode = childNode.getElementsByTagName("file")[0];
+                value = subNode.firstChild.data.trim();
+                this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
+                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
+                value = subNode.firstChild.data.trim();
+                this.imageSizeX = String.toNumber(value, 0);
+                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
+                value = subNode.firstChild.data.trim();
+                this.imageSizeY = String.toNumber(value, 0);
+                break;
+            case "bounds":
                     // SW
-                    childNode = childNode.getElementsByTagName("sw")[0];
+                childNode = childNode.getElementsByTagName("sw")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
                     subNode = childNode.getElementsByTagName("lat")[0];
                     value = subNode.firstChild.data.trim();
                     lat = String.toNumber(value, null);
@@ -244,10 +254,12 @@ namespace.module('vd.entity', function (exports, require) {
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
                     this.boundsSwPositionY = String.toNumber(value, 0);
+                }
 
                     // NE
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("ne")[0];
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("ne")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
                     subNode = childNode.getElementsByTagName("lat")[0];
                     value = subNode.firstChild.data.trim();
                     lat = String.toNumber(value, null);
@@ -263,7 +275,16 @@ namespace.module('vd.entity', function (exports, require) {
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
                     this.boundsNePositionY = String.toNumber(value, 0);
-                    break;
+                }
+                break;
+            case "originalchart":
+                value = childNode.firstChild.data.trim();
+                this.originalChartUrl = value;
+                break;
+            case "info":
+                value = childNode.firstChild.data.trim();
+                this.infoUrl = value;
+                break;
             }
         }
 
@@ -275,7 +296,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.GroundOverlay.prototype.toString = function () {
+    exports.GroundOverlay.prototype.toString = function() {
         var s = this.toString$BaseEntityVatsimOnMap();
         return s;
     };
@@ -284,7 +305,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.GroundOverlay.prototype.dispose = function () {
+    exports.GroundOverlay.prototype.dispose = function() {
         this.display(false, false, false);
         this.dispose$BaseEntityVatsimOnMap();
     };
@@ -295,7 +316,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.GroundOverlay.prototype.display = function (display, center, forceRedraw) {
+    exports.GroundOverlay.prototype.display = function(display, center, forceRedraw) {
 
         // display checks
         center = Object.ifNotNullOrUndefined(center, false);
@@ -317,7 +338,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.GroundOverlay.prototype._draw = function (forceRedraw) {
+    exports.GroundOverlay.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
 
         // clean up
@@ -363,7 +384,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Number} ratioY
     * @private
     */
-    exports.GroundOverlay.prototype._setImage = function (ratioX, ratioY) {
+    exports.GroundOverlay.prototype._setImage = function(ratioX, ratioY) {
         if (Object.isNullOrUndefined(this._img)) {
             this._img = document.createElement('img');
             this._img.alt = this.toString();
@@ -378,7 +399,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display this entity at the current map zoom level.
     * @return {Boolean}
     */
-    exports.GroundOverlay.prototype.displayedAtZoomLevel = function () {
+    exports.GroundOverlay.prototype.displayedAtZoomLevel = function() {
         var z = globals.map.getZoom();
         return z > globals.groundOverlayHideZoomLevel;
     };
@@ -387,7 +408,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Get an array of all names of the provided ground overlays.
     * @param {Array} names of the overlays
     */
-    exports.GroundOverlay.names = function (overlays) {
+    exports.GroundOverlay.names = function(overlays) {
         var names = new Array();
         for (var o = 0, len = overlays.length; o < len; o++) {
             names.push(overlays[o].name);
