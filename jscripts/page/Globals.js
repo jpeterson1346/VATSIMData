@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function (exports) {
+namespace.module('vd.page', function(exports) {
 
     /**
     * @classdesc
@@ -11,7 +11,7 @@ namespace.module('vd.page', function (exports) {
     * @constructor
     * @author KWB
     */
-    exports.Globals = function () {
+    exports.Globals = function() {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
@@ -78,7 +78,8 @@ namespace.module('vd.page', function (exports) {
         // (Grounds) overlays
         this.groundOverlaySettings = new vd.entity.GroundOverlaySettings();
         this.groundOverlays = new vd.entity.helper.GroundOverlays(this.map);
-        this.groundOverlayHideZoomLevel = 8;
+        this.groundOverlayMinPixelX = 200; // instead of a zoom level we decide on pixel size
+        this.groundOverlayMinPixelY = 200;
 
         // data grids
         this.gridSelectedVatsimClient = null;
@@ -156,7 +157,7 @@ namespace.module('vd.page', function (exports) {
     * Assign a new / other map.
     * @param {google.maps.Map} map
     **/
-    exports.Globals.prototype.assignMap = function (map) {
+    exports.Globals.prototype.assignMap = function(map) {
         this.clients.clearOverlays(); // re-entry, clean up
         this.map = map;
         this.objects = new Array();
@@ -164,7 +165,7 @@ namespace.module('vd.page', function (exports) {
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
-        this.mapOverlayView.draw = function () {
+        this.mapOverlayView.draw = function() {
             if (!this.ready) {
                 this.ready = true;
                 google.maps.event.trigger(this, 'ready');
@@ -177,7 +178,7 @@ namespace.module('vd.page', function (exports) {
     * @param {LatLng} latLng position to be checked.
     * @see Globals#map
     */
-    exports.Globals.prototype.isInBounds = function (latLng) {
+    exports.Globals.prototype.isInBounds = function(latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
@@ -186,7 +187,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Object} newObject: to be registered object
     * @return {Number} objectId
     */
-    exports.Globals.prototype.register = function (newObject) {
+    exports.Globals.prototype.register = function(newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
         this.objects[id] = newObject;
@@ -198,7 +199,7 @@ namespace.module('vd.page', function (exports) {
     * on temporary objects.
     * @return {Number} objectId
     */
-    exports.Globals.prototype.getObjectId = function () {
+    exports.Globals.prototype.getObjectId = function() {
         var id = this._idCounter++;
         return id;
     };
@@ -208,14 +209,14 @@ namespace.module('vd.page', function (exports) {
     * @param  {Number} id
     * @return {Object}
     */
-    exports.Globals.prototype.getObject = function (id) {
+    exports.Globals.prototype.getObject = function(id) {
         return this.objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetClients = function () {
+    exports.Globals.prototype.resetClients = function() {
         if (!Object.isNullOrUndefined(this.clients)) this.clients.display(false, true);
         this.clients = new vd.entity.VatsimClients();
     };
@@ -225,7 +226,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Array} ids
     * @return {Array} 0..n objects
     */
-    exports.Globals.prototype.getObjects = function (ids) {
+    exports.Globals.prototype.getObjects = function(ids) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
         for (var id in ids) {
@@ -239,7 +240,7 @@ namespace.module('vd.page', function (exports) {
     * Init the version (by version.txt).
     * @private
     */
-    exports.Globals.prototype._initVersion = function () {
+    exports.Globals.prototype._initVersion = function() {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", url, false);
@@ -251,7 +252,7 @@ namespace.module('vd.page', function (exports) {
     * Init the logger.
     * @private
     */
-    exports.Globals.prototype._initLogger = function () {
+    exports.Globals.prototype._initLogger = function() {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();

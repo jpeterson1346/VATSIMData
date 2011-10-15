@@ -214,23 +214,22 @@
         EDDF_GND.png
       </file>
       <size>
-        <x>2923</x>
+        <x>2924</x>
         <y>2067</y>
       </size>
     </image>
     <bounds>
-      <sw>
-        <lat>50.0</lat>
-        <lng>8.526</lng>
-        <x>325</x>
-        <y>2016</y>
-      </sw>
-      <ne>
-        <lat>50.045</lat>
-        <lng>8.586</lng>
-        <x>2385</x>
-        <y>836</y>
-      </ne>
+      <center>
+        <lat>50.032</lat>
+        <lng>8.535</lng>
+        <x>676</x>
+        <y>544</y>
+      </center>
     </bounds>
+    <resolution>
+      <!-- meter / pixel -->
+      <x>2.873563218390805</x>
+      <y>2.873563218390805</y>
+    </resolution>
   </chart>
 </entity>
