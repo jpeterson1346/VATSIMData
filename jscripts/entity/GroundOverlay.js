@@ -184,6 +184,11 @@ namespace.module('vd.entity', function(exports, require) {
         * @type {Number} 
         */
         this.resolutionY = String.toNumber(groundOverlayProperties["resolutionY"], null);
+        /**
+        * Rotate image by x degrees.
+        * @type {Number} 
+        */
+        this.rotate = String.toNumber(groundOverlayProperties["rotate"], 0);
     };
 
     /**
@@ -482,6 +487,7 @@ namespace.module('vd.entity', function(exports, require) {
         }
         this._img.width = this.imageSizeX * this._currentImageRatioX;
         this._img.height = this.imageSizeY * this._currentImageRatioY;
+        if (Object.isNumber(this.rotate) && this.rotate != 0) $(this._img).rotate(this.rotate);
     };
 
     /**
