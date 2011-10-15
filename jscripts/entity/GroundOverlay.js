@@ -77,16 +77,6 @@ namespace.module('vd.entity', function(exports, require) {
         */
         this.imageBoundsSizeY = null;
         /**
-        * Center position offset of the bounds.
-        * @type {Number}
-        */
-        this.boundsCenterPositionX = null; // calculated
-        /**
-        * Center position offset of the bounds.
-        * @type {Number}
-        */
-        this.boundsCenterPositionY = null; // calculated
-        /**
         * Size of the bounds area on the map.
         * This is the x dimension at the current zoom level for the described area.
         * @type {Number}
@@ -116,6 +106,16 @@ namespace.module('vd.entity', function(exports, require) {
         * @private
         */
         this._img = null;
+        /**
+        * Ratio (scale) of the current image.
+        * @type {Number}
+        */
+        this._currentImageRatioX = null;
+        /**
+        * Ratio (scale) of the current image.
+        * @type {Number}
+        */
+        this._currentImageRatioY = null;
 
         // further settings
         this.set(groundOverlayProperties);
@@ -164,6 +164,26 @@ namespace.module('vd.entity', function(exports, require) {
         * Original chart URL.
         */
         this.originalChartUrl = null;
+        /**
+        * Center position offset of the bounds.
+        * @type {Number}
+        */
+        this.boundsCenterPositionX = String.toNumber(groundOverlayProperties["boundsCenterPositionX"], null);
+        /**
+        * Center position offset of the bounds.
+        * @type {Number}
+        */
+        this.boundsCenterPositionY = String.toNumber(groundOverlayProperties["boundsCenterPositionY"], null);
+        /**
+        * Resolution x / meter per pixel
+        * @type {Number} 
+        */
+        this.resolutionX = String.toNumber(groundOverlayProperties["resolutionX"], null);
+        /**
+        * Resolution y / meter per pixel
+        * @type {Number} 
+        */
+        this.resolutionY = String.toNumber(groundOverlayProperties["resolutionY"], null);
     };
 
     /**
@@ -171,18 +191,57 @@ namespace.module('vd.entity', function(exports, require) {
     * @private
     */
     exports.GroundOverlay.prototype._calculateProperties = function() {
-        if (!Object.isNullOrUndefined(this.sw) && !Object.isNullOrUndefined(this.ne)) {
+        if (Object.isNumber(this.resolutionX)) {
+            // defined by resolution and center
+            // calculate SW/NE
+            var centerLanLon = null;
+            if (Object.isNullOrUndefined(this.sw)) {
+                centerLanLon = new LatLon(this.latitude, this.longitude);
+                var distanceKm = (this.boundsCenterPositionX * this.resolutionX / 1000);
+                var targetLanLon = centerLanLon.destinationPoint(270, distanceKm);
+                distanceKm = ((this.imageSizeY - this.boundsCenterPositionY) * this.resolutionY / 1000);
+                targetLanLon = targetLanLon.destinationPoint(180, distanceKm);
+                this.sw = vd.util.UtilsMap.latLonToLatLng(targetLanLon);
+            }
+            if (Object.isNullOrUndefined(this.ne)) {
+                centerLanLon = Object.ifNotNullOrUndefined(centerLanLon, new LatLon(this.latitude, this.longitude));
+                distanceKm = ((this.imageSizeX - this.boundsCenterPositionX) * this.resolutionX / 1000);
+                targetLanLon = centerLanLon.destinationPoint(90, distanceKm);
+                distanceKm = (this.boundsCenterPositionY * this.resolutionY / 1000);
+                targetLanLon = targetLanLon.destinationPoint(0, distanceKm);
+                this.ne = vd.util.UtilsMap.latLonToLatLng(targetLanLon);
+            }
 
-            // set the described area as vicinity ("bounds of the overlay")
-            this.vicinity = new google.maps.LatLngBounds(this.sw, this.ne);
+            if (Object.isNullOrUndefined(this.vicinity)) {
 
+                // the pixel size within image which represent the described bounds
+                this.imageBoundsSizeX = this.imageSizeX;
+                this.imageBoundsSizeY = this.imageSizeY;
+
+                // set the described area as vicinity ("bounds of the overlay")
+                this.vicinity = new google.maps.LatLngBounds(this.sw, this.ne);
+            }
+        } else {
+            // defined by NE/SW
             // calculate the center of the bounds (not the center of the chart)
-            var c = this.vicinity.getCenter();
-            this.latitude = c.lat();
-            this.longitude = c.lng();
-            this.boundsCenterPositionX = (this.boundsSwPositionX + this.boundsNePositionX) / 2;
-            this.boundsCenterPositionY = (this.boundsSwPositionY + this.boundsNePositionY) / 2;
+            if (!Object.isNumber(this.latitude)) {
+                // set the described area as vicinity ("bounds of the overlay")
+                this.vicinity = new google.maps.LatLngBounds(this.sw, this.ne);
 
+                // set center
+                var c = this.vicinity.getCenter();
+                this.latitude = c.lat();
+                this.longitude = c.lng();
+                this.boundsCenterPositionX = (this.boundsSwPositionX + this.boundsNePositionX) / 2;
+                this.boundsCenterPositionY = (this.boundsSwPositionY + this.boundsNePositionY) / 2;
+
+                // the pixel size within image which represent the described bounds
+                this.imageBoundsSizeX = this.boundsNePositionX - this.boundsSwPositionX;
+                this.imageBoundsSizeY = this.boundsSwPositionY - this.boundsNePositionY;
+            }
+        }
+
+        if (Object.isNullOrUndefined(this.se)) {
             // calculate the missining corners
             this.se = new google.maps.LatLng(this.sw.lat(), this.ne.lng());
             this.nw = new google.maps.LatLng(this.ne.lat(), this.sw.lng());
@@ -193,13 +252,16 @@ namespace.module('vd.entity', function(exports, require) {
             var ne = new vd.entity.base.BaseEntityMap({ latitude: this.ne.lat(), longitude: this.ne.lng(), map: this.map });
             this._edgeX = new vd.entity.helper.Edge({ from: sw, to: se, calculatePixelDistance: true });
             this._edgeY = new vd.entity.helper.Edge({ from: se, to: ne, calculatePixelDistance: true });
-            this.mapBoundsSizeX = this._edgeX.pixelDistance;
-            this.mapBoundsSizeY = this._edgeY.pixelDistance;
-
-            // the pixel size of image which represent the described bounds
-            this.imageBoundsSizeX = Math.abs(this.boundsNePositionX - this.boundsSwPositionX);
-            this.imageBoundsSizeY = Math.abs(this.boundsNePositionY - this.boundsSwPositionY);
+        } else {
+            this._edgeX.calculatePixelDistance();
+            this._edgeY.calculatePixelDistance();
         }
+
+        // set map sizes
+        this.mapBoundsSizeX = this._edgeX.pixelDistance;
+        this.mapBoundsSizeY = this._edgeY.pixelDistance;
+        this._currentImageRatioX = this.mapBoundsSizeX / this.imageBoundsSizeX;
+        this._currentImageRatioY = this.mapBoundsSizeY / this.imageBoundsSizeY;
     };
 
     /**
@@ -246,7 +308,7 @@ namespace.module('vd.entity', function(exports, require) {
                     subNode = childNode.getElementsByTagName("lng")[0];
                     value = subNode.firstChild.data.trim();
                     lng = String.toNumber(value, null);
-                    if (!Object.isNumber(lat)) globals.log.error("Overlay, SW missing longitude value");
+                    if (!Object.isNumber(lng)) globals.log.error("Overlay, SW missing longitude value");
                     this.sw = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
@@ -267,7 +329,7 @@ namespace.module('vd.entity', function(exports, require) {
                     subNode = childNode.getElementsByTagName("lng")[0];
                     value = subNode.firstChild.data.trim();
                     lng = String.toNumber(value, null);
-                    if (!Object.isNumber(lat)) globals.log.error("Overlay, NE missing longitude value");
+                    if (!Object.isNumber(lng)) globals.log.error("Overlay, NE missing longitude value");
                     this.ne = new google.maps.LatLng(lat, lng);
                     subNode = childNode.getElementsByTagName("x")[0];
                     value = subNode.firstChild.data.trim();
@@ -275,6 +337,26 @@ namespace.module('vd.entity', function(exports, require) {
                     subNode = childNode.getElementsByTagName("y")[0];
                     value = subNode.firstChild.data.trim();
                     this.boundsNePositionY = String.toNumber(value, 0);
+                }
+
+                    // Center
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("center")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    subNode = childNode.getElementsByTagName("lat")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.latitude = String.toNumber(value, null);
+                    if (!Object.isNumber(this.latitude)) globals.log.error("Overlay, center missing latitude value");
+                    subNode = childNode.getElementsByTagName("lng")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.longitude = String.toNumber(value, null);
+                    if (!Object.isNumber(this.longitude)) globals.log.error("Overlay, center missing longitude value");
+                    subNode = childNode.getElementsByTagName("x")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.boundsCenterPositionX = String.toNumber(value, 0);
+                    subNode = childNode.getElementsByTagName("y")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.boundsCenterPositionY = String.toNumber(value, 0);
                 }
                 break;
             case "originalchart":
@@ -284,6 +366,15 @@ namespace.module('vd.entity', function(exports, require) {
             case "info":
                 value = childNode.firstChild.data.trim();
                 this.infoUrl = value;
+                break;
+            case "resolution":
+                childNode = childNode.getElementsByTagName("x")[0];
+                value = childNode.firstChild.data.trim();
+                this.resolutionX = String.toNumber(value, null); // meter per pixel
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("y")[0];
+                value = childNode.firstChild.data.trim();
+                this.resolutionY = String.toNumber(value, null); // meter per pixel
                 break;
             }
         }
@@ -322,9 +413,12 @@ namespace.module('vd.entity', function(exports, require) {
         center = Object.ifNotNullOrUndefined(center, false);
         forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, forceRedraw);
         display = display && this.groundOverlaySettings.displayOverlays;
-        display = display && this.displayedAtZoomLevel(); // too small to be displayed
         var isInBounds = this.isInBounds();
         display = display && (isInBounds || center);
+        if (display) {
+            this._calculateProperties();
+            display = display && this.displayedAtZoomLevel();
+        }
 
         // display    
         if (display) this._draw(forceRedraw);
@@ -351,13 +445,10 @@ namespace.module('vd.entity', function(exports, require) {
         // However, using infobox offers more options
 
         // recalculate pixel sizes and ratio, it can be changed due to zoom
-        this._calculateProperties();
-        var imageRatioX = this.mapBoundsSizeX / this.imageBoundsSizeX;
-        var imageRatioY = this.mapBoundsSizeY / this.imageBoundsSizeY;
-        this._setImage(imageRatioX, imageRatioY);
+        this._setImage();
 
-        var offsetX = -this.boundsCenterPositionX * imageRatioX;
-        var offsetY = -this.boundsCenterPositionY * imageRatioY;
+        var offsetX = -this.boundsCenterPositionX * this._currentImageRatioX;
+        var offsetY = -this.boundsCenterPositionY * this._currentImageRatioY;
         var center = this.latLng();
         var groundOverlayBoxStyle = {
             background: globals.styles.groundOverlayBackground,
@@ -380,19 +471,17 @@ namespace.module('vd.entity', function(exports, require) {
 
     /**
     * Adjust the image.
-    * @param {Number} ratioX
-    * @param {Number} ratioY
     * @private
     */
-    exports.GroundOverlay.prototype._setImage = function(ratioX, ratioY) {
+    exports.GroundOverlay.prototype._setImage = function() {
         if (Object.isNullOrUndefined(this._img)) {
             this._img = document.createElement('img');
             this._img.alt = this.toString();
             this._img.id = this.entity + " " + this.objectId;
             this._img.src = this.url;
         }
-        this._img.width = this.imageSizeX * ratioX;
-        this._img.height = this.imageSizeY * ratioY;
+        this._img.width = this.imageSizeX * this._currentImageRatioX;
+        this._img.height = this.imageSizeY * this._currentImageRatioY;
     };
 
     /**
@@ -400,8 +489,8 @@ namespace.module('vd.entity', function(exports, require) {
     * @return {Boolean}
     */
     exports.GroundOverlay.prototype.displayedAtZoomLevel = function() {
-        var z = globals.map.getZoom();
-        return z > globals.groundOverlayHideZoomLevel;
+        return ((this._currentImageRatioX * this.imageSizeX) > globals.groundOverlayMinPixelX) &&
+            ((this._currentImageRatioY * this.imageSizeY) > globals.groundOverlayMinPixelY);
     };
 
     /**
