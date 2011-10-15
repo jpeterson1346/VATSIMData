@@ -4,6 +4,8 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C ILC or LOC</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_IAC_RWY07C.pdf</originalChart>
     <image>
       <file>
         EDDF_IAC_RW07C_ILS_or_LOC.png
@@ -31,6 +33,8 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C NDB</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_IAC_RWY07C.pdf</originalChart>
     <image>
       <file>
         EDDF_IAC_RW07C_NDB.png
@@ -58,6 +62,8 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C RNAV Y</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_IAC_RWY07C.pdf</originalChart>
     <image>
       <file>
         EDDF_IAC_RW07C_RNAV_Y.png
@@ -85,6 +91,8 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C RNAV Z</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_IAC_RWY07C.pdf</originalChart>
     <image>
       <file>
         EDDF_IAC_RW07C_RNAV_Z.png
@@ -112,6 +120,8 @@
   <chart>
     <type>iac</type>
     <name>IAC RW07C VOR</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_IAC_RWY07C.pdf</originalChart>
     <image>
       <file>
         EDDF_IAC_RW07C_VOR.png
@@ -139,6 +149,8 @@
   <chart>
     <type>trans</type>
     <name>Transition RW07C East</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_TRANSITION_RWY07.pdf</originalChart>
     <image>
       <file>
         EDDF_TRANSITION_RWY07_EAST.png
@@ -166,6 +178,8 @@
   <chart>
     <type>trans</type>
     <name>Transition RW07C West</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_TRANSITION_RWY07.pdf</originalChart>
     <image>
       <file>
         EDDF_TRANSITION_RWY07_WEST.png
@@ -193,6 +207,8 @@
   <chart>
     <type>trans</type>
     <name>EDDF Ground</name>
+    <info>http://www.vacc-sag.org/airport/EDDF</info>
+    <originalChart>http://nav.vatsim-germany.org/files/edgg/charts/eddf/public/EDDF_GND.pdf</originalChart>
     <image>
       <file>
         EDDF_GND.png

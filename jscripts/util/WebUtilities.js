@@ -210,7 +210,7 @@ namespace.module('vd.util', function (exports) {
     };
 
     /**
-    * Fixing the id string.
+    * Fixing the id string (remove leading #).
     * @param  {String} id
     * @return {String} fixedId
     * @private

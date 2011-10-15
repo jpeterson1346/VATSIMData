@@ -74,7 +74,7 @@ namespace.module('vd.page', function(exports) {
         * @type {vd.module.GroundOverlay}
         * @private
         */
-        this._groundOverlayDisplayed = null;
+        this.groundOverlayDisplayed = null;
         /**
         * Markers.
         * @type {Array} Array of markers
@@ -807,17 +807,19 @@ namespace.module('vd.page', function(exports) {
             return;
         }
         this.removeOverlayChart();
-        this._groundOverlayDisplayed = selectedOverlays[0];
-        this._groundOverlayDisplayed.display(true, center, true);
+        this.groundOverlayDisplayed = selectedOverlays[0];
+        this.groundOverlayDisplayed.display(true, center, true);
+        this._groundOverlayUrls();
     };
 
     /**
     * Remove (hide) overlay chart.
     */
     exports.PageController.prototype.removeOverlayChart = function() {
-        if (Object.isNullOrUndefined(this._groundOverlayDisplayed)) return;
-        this._groundOverlayDisplayed.display(false);
-        this._groundOverlayDisplayed = null;
+        if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
+        this.groundOverlayDisplayed.display(false);
+        this.groundOverlayDisplayed = null;
+        this._groundOverlayUrls();
     };
 
     /**
@@ -831,7 +833,7 @@ namespace.module('vd.page', function(exports) {
             globals.styles.groundOverlayBackground = vd.util.Utils.getValidColor($("#inputGroundOverlayBackgroundColor").val(), globals.styles.groundOverlayBackground).toHex();
 
         // redisplay
-        if (Object.isNullOrUndefined(this._groundOverlayDisplayed)) return;
+        if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
         this.displayOverlayChart(false);
     };
     // #endregion ------------ public part events ------------
@@ -1375,6 +1377,7 @@ namespace.module('vd.page', function(exports) {
         vd.util.UtilsWeb.selectAddOptions("inputGroundOverlaysAirport", airportIcaos);
         var opacities = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
         vd.util.UtilsWeb.selectAddOptions("inputGroundOverlayOpacity", opacities, globals.styles.groundOverlayOpacity);
+        this._groundOverlayUrls();
     };
 
     /**
@@ -1554,6 +1557,29 @@ namespace.module('vd.page', function(exports) {
         var w = $("#sideBar").width();
         return globals.sideBarWideWidth < w;
     };
+
+    /**
+    * Enable / disable the ground overlay URLs
+    */
+    exports.PageController.prototype._groundOverlayUrls = function() {
+        var god = document.getElementById("inputGroundOverlayDetails");
+        var golv = document.getElementById("inputGroundOverlayChartLatestVersion");
+
+        if (!Object.isNullOrUndefined(this.groundOverlayDisplayed) && !String.isNullOrEmpty(this.groundOverlayDisplayed.infoUrl)) {
+            $(god).unbind('click', false);
+            god.style.opacity = 1;
+        } else {
+            $(god).bind('click', false);
+            god.style.opacity = 0.3;
+        }
+        if (!Object.isNullOrUndefined(this.groundOverlayDisplayed) && !String.isNullOrEmpty(this.groundOverlayDisplayed.originalChartUrl)) {
+            $(golv).unbind('click', false);
+            golv.style.opacity = 1;
+        } else {
+            $(golv).bind('click', false);
+            golv.style.opacity = 0.3;
+        }
+    };
     // #endregion ------------ private part general ------------
 
     // #region ------------ private part events ------------
@@ -1580,7 +1606,7 @@ namespace.module('vd.page', function(exports) {
                 globals.mapOldCenter = globals.map.getCenter();
                 globals.mapOldZoom = globals.map.getZoom();
                 globals.clients.display(true, true);
-                if (!Object.isNullOrUndefined(this._groundOverlayDisplayed)) this._groundOverlayDisplayed.display(true, false, true);
+                if (!Object.isNullOrUndefined(this.groundOverlayDisplayed)) this.groundOverlayDisplayed.display(true, false, true);
 
                 // get new elevations
                 if (Array.isNullOrEmpty(globals.clients.flights)) return;
