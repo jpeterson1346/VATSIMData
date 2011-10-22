@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <airports>
   <icao>KSTL</icao>
+  <icao>EDDF</icao>
   <!--  <icao>TEST</icao> -->
 </airports>

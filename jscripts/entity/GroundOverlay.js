@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function(exports, require) {
+namespace.module('vd.entity', function (exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -15,7 +15,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @author KWB
     * @since 2011-10-10
     */
-    exports.GroundOverlay = function(groundOverlayProperties, groundOverlaySettings) {
+    exports.GroundOverlay = function (groundOverlayProperties, groundOverlaySettings) {
 
         // inherit attributes
         vd.entity.base.BaseEntityVatsimOnMap.call(this, groundOverlayProperties);
@@ -125,7 +125,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Set the properties.
     * @param {Object} groundOverlayProperties
     */
-    exports.GroundOverlay.prototype.set = function(groundOverlayProperties) {
+    exports.GroundOverlay.prototype.set = function (groundOverlayProperties) {
         /**
         * South west coordinates.
         * @type {google.maps.latLng}
@@ -142,6 +142,21 @@ namespace.module('vd.entity', function(exports, require) {
         */
         this.boundsSwPositionY = String.toNumber(groundOverlayProperties["boundsSwPositionY"], null);
         /**
+        * South east coordinates.
+        * @type {google.maps.latLng}
+        */
+        this.se = Object.ifNotNullOrUndefined(groundOverlayProperties["se"], null);
+        /**
+        * South east offset.
+        * @type {Number}
+        */
+        this.boundsSePositionX = String.toNumber(groundOverlayProperties["boundsSePositionX"], null);
+        /**
+        * South east offset.
+        * @type {Number}
+        */
+        this.boundsSePositionY = String.toNumber(groundOverlayProperties["boundsSePositionY"], null);
+        /**
         * North east coordinates.
         * @type {google.maps.latLng}
         */
@@ -156,6 +171,21 @@ namespace.module('vd.entity', function(exports, require) {
         * @type {Number}
         */
         this.boundsNePositionY = String.toNumber(groundOverlayProperties["boundsNePositionY"], null);
+        /**
+        * North west coordinates.
+        * @type {google.maps.latLng}
+        */
+        this.nw = Object.ifNotNullOrUndefined(groundOverlayProperties["nw"], null);
+        /**
+        * North west offset.
+        * @type {Number}
+        */
+        this.boundsNwPositionX = String.toNumber(groundOverlayProperties["boundsNwPositionX"], null);
+        /**
+        * North west offset.
+        * @type {Number}
+        */
+        this.boundsNwPositionY = String.toNumber(groundOverlayProperties["boundsNwPositionY"], null);
         /**
         * Further info URL.
         */
@@ -192,10 +222,10 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * Calculate properties.
+    * Calculate properties (missing coordinates, etc).
     * @private
     */
-    exports.GroundOverlay.prototype._calculateProperties = function() {
+    exports.GroundOverlay.prototype._calculateProperties = function () {
         if (Object.isNumber(this.resolutionX)) {
             // defined by resolution and center
             // calculate SW/NE
@@ -227,6 +257,18 @@ namespace.module('vd.entity', function(exports, require) {
                 this.vicinity = new google.maps.LatLngBounds(this.sw, this.ne);
             }
         } else {
+            // defined by NW/SE instead of NE / SE?
+            if (Object.isNullOrUndefined(this.sw)) {
+                // calculate the missining corners
+                this.sw = new google.maps.LatLng(this.se.lat(), this.nw.lng());
+                this.ne = new google.maps.LatLng(this.nw.lat(), this.se.lng());
+
+                this.boundsCenterPositionX = (this.boundsSePositionX + this.boundsNwPositionX) / 2;
+                this.boundsCenterPositionY = (this.boundsSePositionY + this.boundsNwPositionY) / 2;
+                this.imageBoundsSizeX = this.boundsSePositionX - this.boundsNwPositionX;
+                this.imageBoundsSizeY = this.boundsSePositionY - this.boundsNwPositionY;
+            }
+
             // defined by NE/SW
             // calculate the center of the bounds (not the center of the chart)
             if (!Object.isNumber(this.latitude)) {
@@ -237,21 +279,26 @@ namespace.module('vd.entity', function(exports, require) {
                 var c = this.vicinity.getCenter();
                 this.latitude = c.lat();
                 this.longitude = c.lng();
-                this.boundsCenterPositionX = (this.boundsSwPositionX + this.boundsNePositionX) / 2;
-                this.boundsCenterPositionY = (this.boundsSwPositionY + this.boundsNePositionY) / 2;
 
                 // the pixel size within image which represent the described bounds
-                this.imageBoundsSizeX = this.boundsNePositionX - this.boundsSwPositionX;
-                this.imageBoundsSizeY = this.boundsSwPositionY - this.boundsNePositionY;
+                if (!Object.isNumber(this.imageBoundsSizeX)) {
+                    this.boundsCenterPositionX = (this.boundsSwPositionX + this.boundsNePositionX) / 2;
+                    this.boundsCenterPositionY = (this.boundsSwPositionY + this.boundsNePositionY) / 2;
+                    this.imageBoundsSizeX = this.boundsNePositionX - this.boundsSwPositionX;
+                    this.imageBoundsSizeY = this.boundsSwPositionY - this.boundsNePositionY;
+                }
             }
         }
 
+        // calculate SE / NW
         if (Object.isNullOrUndefined(this.se)) {
             // calculate the missining corners
             this.se = new google.maps.LatLng(this.sw.lat(), this.ne.lng());
             this.nw = new google.maps.LatLng(this.ne.lat(), this.sw.lng());
+        }
 
-            // calculate the pixel size of the described area, use edge for this purpose 
+        // calculate the pixel size of the described area, use edge for this purpose 
+        if (Object.isNullOrUndefined(this._edgeX)) {
             var sw = new vd.entity.base.BaseEntityMap({ latitude: this.sw.lat(), longitude: this.sw.lng(), map: this.map });
             var se = new vd.entity.base.BaseEntityMap({ latitude: this.se.lat(), longitude: this.se.lng(), map: this.map });
             var ne = new vd.entity.base.BaseEntityMap({ latitude: this.ne.lat(), longitude: this.ne.lng(), map: this.map });
@@ -274,113 +321,106 @@ namespace.module('vd.entity', function(exports, require) {
     * @param  {IXMLDOMNode} node
     * @return {Boolean} set successful/failed
     */
-    exports.GroundOverlay.prototype.setFromXmlNode = function(node) {
+    exports.GroundOverlay.prototype.setFromXmlNode = function (node) {
         if (Object.isNullOrUndefined(node)) return false;
-        var value, subNode, lat, lng;
+        var value, subNode, pos;
         for (var c = 0, len = node.childNodes.length; c < len; c++) {
             var childNode = node.childNodes[c];
             var property = childNode.tagName;
             if (String.isNullOrEmpty(property)) continue; // Firefox / Chrome check if TextNode
             property = property.toLowerCase();
             switch (property) {
-            case "type":
-                value = childNode.firstChild.data.trim();
-                this.type = value.toUpperCase();
-                break;
-            case "name":
-                value = childNode.firstChild.data.trim();
-                this.name = value;
-                break;
-            case "image":
-                subNode = childNode.getElementsByTagName("file")[0];
-                value = subNode.firstChild.data.trim();
-                this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
-                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
-                value = subNode.firstChild.data.trim();
-                this.imageSizeX = String.toNumber(value, 0);
-                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
-                value = subNode.firstChild.data.trim();
-                this.imageSizeY = String.toNumber(value, 0);
-                break;
-            case "bounds":
+                case "type":
+                    value = childNode.firstChild.data.trim();
+                    this.type = value.toUpperCase();
+                    break;
+                case "name":
+                    value = childNode.firstChild.data.trim();
+                    this.name = value;
+                    break;
+                case "image":
+                    subNode = childNode.getElementsByTagName("file")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
+                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.imageSizeX = String.toNumber(value, 0);
+                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
+                    value = subNode.firstChild.data.trim();
+                    this.imageSizeY = String.toNumber(value, 0);
+                    break;
+                case "bounds":
                     // SW
-                childNode = childNode.getElementsByTagName("sw")[0];
-                if (!Object.isNullOrUndefined(childNode)) {
-                    subNode = childNode.getElementsByTagName("lat")[0];
-                    value = subNode.firstChild.data.trim();
-                    lat = String.toNumber(value, null);
-                    if (!Object.isNumber(lat)) globals.log.error("Overlay, SW missing latitude value");
-                    subNode = childNode.getElementsByTagName("lng")[0];
-                    value = subNode.firstChild.data.trim();
-                    lng = String.toNumber(value, null);
-                    if (!Object.isNumber(lng)) globals.log.error("Overlay, SW missing longitude value");
-                    this.sw = new google.maps.LatLng(lat, lng);
-                    subNode = childNode.getElementsByTagName("x")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsSwPositionX = String.toNumber(value, 0);
-                    subNode = childNode.getElementsByTagName("y")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsSwPositionY = String.toNumber(value, 0);
-                }
+                    childNode = childNode.getElementsByTagName("sw")[0];
+                    if (!Object.isNullOrUndefined(childNode)) {
+                        pos = this._parsePositionNode(childNode);
+                        this.sw = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                        this.boundsSwPositionX = pos["x"];
+                        this.boundsSwPositionY = pos["y"];
+                    }
+
+                    // SE
+                    childNode = node.childNodes[c];
+                    childNode = childNode.getElementsByTagName("se")[0];
+                    if (!Object.isNullOrUndefined(childNode)) {
+                        pos = this._parsePositionNode(childNode);
+                        this.se = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                        this.boundsSePositionX = pos["x"];
+                        this.boundsSePositionY = pos["y"];
+                    }
 
                     // NE
-                childNode = node.childNodes[c];
-                childNode = childNode.getElementsByTagName("ne")[0];
-                if (!Object.isNullOrUndefined(childNode)) {
-                    subNode = childNode.getElementsByTagName("lat")[0];
-                    value = subNode.firstChild.data.trim();
-                    lat = String.toNumber(value, null);
-                    if (!Object.isNumber(lat)) globals.log.error("Overlay, NE missing latitude value");
-                    subNode = childNode.getElementsByTagName("lng")[0];
-                    value = subNode.firstChild.data.trim();
-                    lng = String.toNumber(value, null);
-                    if (!Object.isNumber(lng)) globals.log.error("Overlay, NE missing longitude value");
-                    this.ne = new google.maps.LatLng(lat, lng);
-                    subNode = childNode.getElementsByTagName("x")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsNePositionX = String.toNumber(value, 0);
-                    subNode = childNode.getElementsByTagName("y")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsNePositionY = String.toNumber(value, 0);
-                }
+                    childNode = node.childNodes[c];
+                    childNode = childNode.getElementsByTagName("ne")[0];
+                    if (!Object.isNullOrUndefined(childNode)) {
+                        pos = this._parsePositionNode(childNode);
+                        this.ne = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                        this.boundsNePositionX = pos["x"];
+                        this.boundsNePositionY = pos["y"];
+                    }
+
+                    // NW
+                    childNode = node.childNodes[c];
+                    childNode = childNode.getElementsByTagName("nw")[0];
+                    if (!Object.isNullOrUndefined(childNode)) {
+                        pos = this._parsePositionNode(childNode);
+                        this.nw = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                        this.boundsNwPositionX = pos["x"];
+                        this.boundsNwPositionY = pos["y"];
+                    }
 
                     // Center
-                childNode = node.childNodes[c];
-                childNode = childNode.getElementsByTagName("center")[0];
-                if (!Object.isNullOrUndefined(childNode)) {
-                    subNode = childNode.getElementsByTagName("lat")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.latitude = String.toNumber(value, null);
-                    if (!Object.isNumber(this.latitude)) globals.log.error("Overlay, center missing latitude value");
-                    subNode = childNode.getElementsByTagName("lng")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.longitude = String.toNumber(value, null);
-                    if (!Object.isNumber(this.longitude)) globals.log.error("Overlay, center missing longitude value");
-                    subNode = childNode.getElementsByTagName("x")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsCenterPositionX = String.toNumber(value, 0);
-                    subNode = childNode.getElementsByTagName("y")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.boundsCenterPositionY = String.toNumber(value, 0);
-                }
-                break;
-            case "originalchart":
-                value = childNode.firstChild.data.trim();
-                this.originalChartUrl = value;
-                break;
-            case "info":
-                value = childNode.firstChild.data.trim();
-                this.infoUrl = value;
-                break;
-            case "resolution":
-                childNode = childNode.getElementsByTagName("x")[0];
-                value = childNode.firstChild.data.trim();
-                this.resolutionX = String.toNumber(value, null); // meter per pixel
-                childNode = node.childNodes[c];
-                childNode = childNode.getElementsByTagName("y")[0];
-                value = childNode.firstChild.data.trim();
-                this.resolutionY = String.toNumber(value, null); // meter per pixel
-                break;
+                    childNode = node.childNodes[c];
+                    childNode = childNode.getElementsByTagName("center")[0];
+                    if (!Object.isNullOrUndefined(childNode)) {
+                        pos = this._parsePositionNode(childNode);
+                        this.longitude = pos["lng"];
+                        this.latitude = pos["lat"];
+                        this.boundsCenterPositionX = pos["x"];
+                        this.boundsCenterPositionY = pos["y"];
+                    }
+                    break;
+                case "originalchart":
+                    if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
+                        value = childNode.firstChild.data.trim();
+                        this.originalChartUrl = value;
+                    }
+                    break;
+                case "info":
+                    if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
+                        value = childNode.firstChild.data.trim();
+                        this.infoUrl = value;
+                    }
+                    break;
+                case "resolution":
+                    childNode = childNode.getElementsByTagName("x")[0];
+                    value = childNode.firstChild.data.trim();
+                    this.resolutionX = String.toNumber(value, null); // meter per pixel
+                    childNode = node.childNodes[c];
+                    childNode = childNode.getElementsByTagName("y")[0];
+                    value = childNode.firstChild.data.trim();
+                    this.resolutionY = String.toNumber(value, null); // meter per pixel
+                    break;
             }
         }
 
@@ -389,10 +429,40 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
+    * Parse a position, e.g. SW to lat/lng/x/y.
+    * @param  {IXMLDOMNode} node
+    * @return {Object} with properties lat/lng/x/y
+    * @private
+    */
+    exports.GroundOverlay.prototype._parsePositionNode = function (childNode) {
+        var ret = { x: null, y: null, lat: null, lng: null };
+        var subNode, value, lat, lng;
+        if (!Object.isNullOrUndefined(childNode)) {
+            subNode = childNode.getElementsByTagName("lat")[0];
+            value = subNode.firstChild.data.trim();
+            lat = String.toNumber(value, null);
+            if (!Object.isNumber(lat)) globals.log.error("Overlay, missing latitude value");
+            subNode = childNode.getElementsByTagName("lng")[0];
+            value = subNode.firstChild.data.trim();
+            lng = String.toNumber(value, null);
+            if (!Object.isNumber(lng)) globals.log.error("Overlay, missing longitude value");
+            ret["lat"] = lat;
+            ret["lng"] = lng;
+            subNode = childNode.getElementsByTagName("x")[0];
+            value = subNode.firstChild.data.trim();
+            ret["x"] = String.toNumber(value, 0);
+            subNode = childNode.getElementsByTagName("y")[0];
+            value = subNode.firstChild.data.trim();
+            ret["y"] = String.toNumber(value, 0);
+        }
+        return ret;
+    };
+
+    /**
     * String representation.
     * @return {String}
     */
-    exports.GroundOverlay.prototype.toString = function() {
+    exports.GroundOverlay.prototype.toString = function () {
         var s = this.toString$BaseEntityVatsimOnMap();
         return s;
     };
@@ -401,7 +471,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.GroundOverlay.prototype.dispose = function() {
+    exports.GroundOverlay.prototype.dispose = function () {
         this.display(false, false, false);
         this.dispose$BaseEntityVatsimOnMap();
     };
@@ -412,7 +482,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.GroundOverlay.prototype.display = function(display, center, forceRedraw) {
+    exports.GroundOverlay.prototype.display = function (display, center, forceRedraw) {
 
         // display checks
         center = Object.ifNotNullOrUndefined(center, false);
@@ -437,7 +507,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.GroundOverlay.prototype._draw = function(forceRedraw) {
+    exports.GroundOverlay.prototype._draw = function (forceRedraw) {
         if (!forceRedraw && this._drawn) return;
 
         // clean up
@@ -478,7 +548,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Adjust the image.
     * @private
     */
-    exports.GroundOverlay.prototype._setImage = function() {
+    exports.GroundOverlay.prototype._setImage = function () {
         if (Object.isNullOrUndefined(this._img)) {
             this._img = document.createElement('img');
             this._img.alt = this.toString();
@@ -494,7 +564,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Display this entity at the current map zoom level.
     * @return {Boolean}
     */
-    exports.GroundOverlay.prototype.displayedAtZoomLevel = function() {
+    exports.GroundOverlay.prototype.displayedAtZoomLevel = function () {
         return ((this._currentImageRatioX * this.imageSizeX) > globals.groundOverlayMinPixelX) &&
             ((this._currentImageRatioY * this.imageSizeY) > globals.groundOverlayMinPixelY);
     };
@@ -503,7 +573,7 @@ namespace.module('vd.entity', function(exports, require) {
     * Get an array of all names of the provided ground overlays.
     * @param {Array} names of the overlays
     */
-    exports.GroundOverlay.names = function(overlays) {
+    exports.GroundOverlay.names = function (overlays) {
         var names = new Array();
         for (var o = 0, len = overlays.length; o < len; o++) {
             names.push(overlays[o].name);
