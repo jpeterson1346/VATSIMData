@@ -1,11 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<entity icao="EDDF">
+<entity icao="KSTL">
   <chart>
     <type>rnav</type>
     <name>KSTL RNav 12R GPS</name>
     <originalChart>
+      <![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
+      ]]>
     </originalChart>
     <image>
       <file>
@@ -35,7 +37,9 @@
     <type>rnav</type>
     <name>KSTL RNav 30L GPS</name>
     <originalChart>
+      <![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
+      ]]>
     </originalChart>
     <image>
       <file>
