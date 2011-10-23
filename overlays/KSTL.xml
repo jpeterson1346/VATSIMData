@@ -4,11 +4,9 @@
   <chart>
     <type>rnav</type>
     <name>KSTL RNav 12R GPS</name>
-    <originalChart>
-      <![CDATA[
+    <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
-      ]]>
-    </originalChart>
+    ]]></originalChart>
     <image>
       <file>
         KSTL_RNAV(GPS)_RWY12R_AMDT1_NDBR.png
@@ -36,11 +34,9 @@
   <chart>
     <type>rnav</type>
     <name>KSTL RNav 30L GPS</name>
-    <originalChart>
-      <![CDATA[
+    <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
-      ]]>
-    </originalChart>
+    ]]></originalChart>
     <image>
       <file>
         KSTL_RNAV(GPS)_RWY30L_AMDT1_NDBR.png

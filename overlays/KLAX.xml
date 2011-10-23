@@ -1,17 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <entity icao="KSTL">
+  <!-- CDATA must be in the same line as the tag, otherwise ot displaying in FF -->
   <chart>
     <type>rnav</type>
     <name>KLAX RNav 25R NDB</name>
     <info>
       http://www.laartcc.org/airport_charts/KLAX
     </info>
-    <originalChart>
-      <![CDATA[
+    <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=LAX&stateSearch=&select=&submit1=Search
-      ]]>
-    </originalChart>
+    ]]></originalChart>
     <image>
       <file>
         KLAX_RNAV(GPS)_RWY25R_AMDT2_NDBR.png
@@ -46,11 +45,9 @@
     <info>
       http://www.laartcc.org/airport_charts/KLAX
     </info>
-    <originalChart>
-      <![CDATA[
+    <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=LAX&stateSearch=&select=&submit1=Search
-      ]]>
-    </originalChart>
+    ]]></originalChart>
     <image>
       <file>
         KLAX_RNAV(RNP)_Z_RWY24L_AMDT1A_NDBR.png
