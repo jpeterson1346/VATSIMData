@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -15,7 +15,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @author KWB
     * @since 2011-10-10
     */
-    exports.GroundOverlay = function (groundOverlayProperties, groundOverlaySettings) {
+    exports.GroundOverlay = function(groundOverlayProperties, groundOverlaySettings) {
 
         // inherit attributes
         vd.entity.base.BaseEntityVatsimOnMap.call(this, groundOverlayProperties);
@@ -125,7 +125,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Set the properties.
     * @param {Object} groundOverlayProperties
     */
-    exports.GroundOverlay.prototype.set = function (groundOverlayProperties) {
+    exports.GroundOverlay.prototype.set = function(groundOverlayProperties) {
         /**
         * South west coordinates.
         * @type {google.maps.latLng}
@@ -225,7 +225,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Calculate properties (missing coordinates, etc).
     * @private
     */
-    exports.GroundOverlay.prototype._calculateProperties = function () {
+    exports.GroundOverlay.prototype._calculateProperties = function() {
         if (Object.isNumber(this.resolutionX)) {
             // defined by resolution and center
             // calculate SW/NE
@@ -321,7 +321,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param  {IXMLDOMNode} node
     * @return {Boolean} set successful/failed
     */
-    exports.GroundOverlay.prototype.setFromXmlNode = function (node) {
+    exports.GroundOverlay.prototype.setFromXmlNode = function(node) {
         if (Object.isNullOrUndefined(node)) return false;
         var value, subNode, pos;
         for (var c = 0, len = node.childNodes.length; c < len; c++) {
@@ -330,97 +330,97 @@ namespace.module('vd.entity', function (exports, require) {
             if (String.isNullOrEmpty(property)) continue; // Firefox / Chrome check if TextNode
             property = property.toLowerCase();
             switch (property) {
-                case "type":
-                    value = childNode.firstChild.data.trim();
-                    this.type = value.toUpperCase();
-                    break;
-                case "name":
-                    value = childNode.firstChild.data.trim();
-                    this.name = value;
-                    break;
-                case "image":
-                    subNode = childNode.getElementsByTagName("file")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
-                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.imageSizeX = String.toNumber(value, 0);
-                    subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
-                    value = subNode.firstChild.data.trim();
-                    this.imageSizeY = String.toNumber(value, 0);
-                    break;
-                case "bounds":
+            case "type":
+                value = childNode.firstChild.data.trim();
+                this.type = value.toUpperCase();
+                break;
+            case "name":
+                value = childNode.firstChild.data.trim();
+                this.name = value;
+                break;
+            case "image":
+                subNode = childNode.getElementsByTagName("file")[0];
+                value = subNode.firstChild.data.trim();
+                this.url = value.startsWith("http") ? value : vd.util.UtilsWeb.replaceCurrentPage("overlays/" + value);
+                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("x")[0];
+                value = subNode.firstChild.data.trim();
+                this.imageSizeX = String.toNumber(value, 0);
+                subNode = childNode.getElementsByTagName("size")[0].getElementsByTagName("y")[0];
+                value = subNode.firstChild.data.trim();
+                this.imageSizeY = String.toNumber(value, 0);
+                break;
+            case "bounds":
                     // SW
-                    childNode = childNode.getElementsByTagName("sw")[0];
-                    if (!Object.isNullOrUndefined(childNode)) {
-                        pos = this._parsePositionNode(childNode);
-                        this.sw = new google.maps.LatLng(pos["lat"], pos["lng"]);
-                        this.boundsSwPositionX = pos["x"];
-                        this.boundsSwPositionY = pos["y"];
-                    }
+                childNode = childNode.getElementsByTagName("sw")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    pos = this._parsePositionNode(childNode);
+                    this.sw = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                    this.boundsSwPositionX = pos["x"];
+                    this.boundsSwPositionY = pos["y"];
+                }
 
                     // SE
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("se")[0];
-                    if (!Object.isNullOrUndefined(childNode)) {
-                        pos = this._parsePositionNode(childNode);
-                        this.se = new google.maps.LatLng(pos["lat"], pos["lng"]);
-                        this.boundsSePositionX = pos["x"];
-                        this.boundsSePositionY = pos["y"];
-                    }
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("se")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    pos = this._parsePositionNode(childNode);
+                    this.se = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                    this.boundsSePositionX = pos["x"];
+                    this.boundsSePositionY = pos["y"];
+                }
 
                     // NE
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("ne")[0];
-                    if (!Object.isNullOrUndefined(childNode)) {
-                        pos = this._parsePositionNode(childNode);
-                        this.ne = new google.maps.LatLng(pos["lat"], pos["lng"]);
-                        this.boundsNePositionX = pos["x"];
-                        this.boundsNePositionY = pos["y"];
-                    }
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("ne")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    pos = this._parsePositionNode(childNode);
+                    this.ne = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                    this.boundsNePositionX = pos["x"];
+                    this.boundsNePositionY = pos["y"];
+                }
 
                     // NW
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("nw")[0];
-                    if (!Object.isNullOrUndefined(childNode)) {
-                        pos = this._parsePositionNode(childNode);
-                        this.nw = new google.maps.LatLng(pos["lat"], pos["lng"]);
-                        this.boundsNwPositionX = pos["x"];
-                        this.boundsNwPositionY = pos["y"];
-                    }
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("nw")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    pos = this._parsePositionNode(childNode);
+                    this.nw = new google.maps.LatLng(pos["lat"], pos["lng"]);
+                    this.boundsNwPositionX = pos["x"];
+                    this.boundsNwPositionY = pos["y"];
+                }
 
                     // Center
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("center")[0];
-                    if (!Object.isNullOrUndefined(childNode)) {
-                        pos = this._parsePositionNode(childNode);
-                        this.longitude = pos["lng"];
-                        this.latitude = pos["lat"];
-                        this.boundsCenterPositionX = pos["x"];
-                        this.boundsCenterPositionY = pos["y"];
-                    }
-                    break;
-                case "originalchart":
-                    if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
-                        value = childNode.firstChild.data.trim();
-                        this.originalChartUrl = value;
-                    }
-                    break;
-                case "info":
-                    if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
-                        value = childNode.firstChild.data.trim();
-                        this.infoUrl = value;
-                    }
-                    break;
-                case "resolution":
-                    childNode = childNode.getElementsByTagName("x")[0];
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("center")[0];
+                if (!Object.isNullOrUndefined(childNode)) {
+                    pos = this._parsePositionNode(childNode);
+                    this.longitude = pos["lng"];
+                    this.latitude = pos["lat"];
+                    this.boundsCenterPositionX = pos["x"];
+                    this.boundsCenterPositionY = pos["y"];
+                }
+                break;
+            case "originalchart":
+                if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
                     value = childNode.firstChild.data.trim();
-                    this.resolutionX = String.toNumber(value, null); // meter per pixel
-                    childNode = node.childNodes[c];
-                    childNode = childNode.getElementsByTagName("y")[0];
+                    this.originalChartUrl = value;
+                }
+                break;
+            case "info":
+                if (!Object.isNullOrUndefined(childNode.firstChild) && !Object.isNullOrUndefined(childNode.firstChild.data)) {
                     value = childNode.firstChild.data.trim();
-                    this.resolutionY = String.toNumber(value, null); // meter per pixel
-                    break;
+                    this.infoUrl = value;
+                }
+                break;
+            case "resolution":
+                childNode = childNode.getElementsByTagName("x")[0];
+                value = childNode.firstChild.data.trim();
+                this.resolutionX = String.toNumber(value, null); // meter per pixel
+                childNode = node.childNodes[c];
+                childNode = childNode.getElementsByTagName("y")[0];
+                value = childNode.firstChild.data.trim();
+                this.resolutionY = String.toNumber(value, null); // meter per pixel
+                break;
             }
         }
 
@@ -434,7 +434,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @return {Object} with properties lat/lng/x/y
     * @private
     */
-    exports.GroundOverlay.prototype._parsePositionNode = function (childNode) {
+    exports.GroundOverlay.prototype._parsePositionNode = function(childNode) {
         var ret = { x: null, y: null, lat: null, lng: null };
         var subNode, value, lat, lng;
         if (!Object.isNullOrUndefined(childNode)) {
@@ -462,7 +462,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.GroundOverlay.prototype.toString = function () {
+    exports.GroundOverlay.prototype.toString = function() {
         var s = this.toString$BaseEntityVatsimOnMap();
         return s;
     };
@@ -471,7 +471,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.GroundOverlay.prototype.dispose = function () {
+    exports.GroundOverlay.prototype.dispose = function() {
         this.display(false, false, false);
         this.dispose$BaseEntityVatsimOnMap();
     };
@@ -482,7 +482,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.GroundOverlay.prototype.display = function (display, center, forceRedraw) {
+    exports.GroundOverlay.prototype.display = function(display, center, forceRedraw) {
 
         // display checks
         center = Object.ifNotNullOrUndefined(center, false);
@@ -507,7 +507,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.GroundOverlay.prototype._draw = function (forceRedraw) {
+    exports.GroundOverlay.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
 
         // clean up
@@ -548,7 +548,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Adjust the image.
     * @private
     */
-    exports.GroundOverlay.prototype._setImage = function () {
+    exports.GroundOverlay.prototype._setImage = function() {
         if (Object.isNullOrUndefined(this._img)) {
             this._img = document.createElement('img');
             this._img.alt = this.toString();
@@ -564,7 +564,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display this entity at the current map zoom level.
     * @return {Boolean}
     */
-    exports.GroundOverlay.prototype.displayedAtZoomLevel = function () {
+    exports.GroundOverlay.prototype.displayedAtZoomLevel = function() {
         return ((this._currentImageRatioX * this.imageSizeX) > globals.groundOverlayMinPixelX) &&
             ((this._currentImageRatioY * this.imageSizeY) > globals.groundOverlayMinPixelY);
     };
@@ -573,7 +573,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Get an array of all names of the provided ground overlays.
     * @param {Array} names of the overlays
     */
-    exports.GroundOverlay.names = function (overlays) {
+    exports.GroundOverlay.names = function(overlays) {
         var names = new Array();
         for (var o = 0, len = overlays.length; o < len; o++) {
             names.push(overlays[o].name);
