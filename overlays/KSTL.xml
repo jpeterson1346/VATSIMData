@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<entity icao="KSTL">
+  <chart>
+    <type>rnav</type>
+    <name>KSTL RNav 12R GPS</name>
+    <originalChart>
+      <![CDATA[
+      http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
+      ]]>
+    </originalChart>
+    <image>
+      <file>
+        KSTL_RNAV(GPS)_RWY12R_AMDT1_NDBR.png
+      </file>
+      <size>
+        <x>1074</x>
+        <y>1650</y>
+      </size>
+    </image>
+    <bounds>
+      <nw>
+        <lat>38.894456</lat>
+        <lng>-90.665711</lng>
+        <x>180</x>
+        <y>570</y>
+      </nw>
+      <se>
+        <lat>38.753220</lat>
+        <lng>-90.377772</lng>
+        <x>572</x>
+        <y>816</y>
+      </se>
+    </bounds>
+  </chart>
+  <chart>
+    <type>rnav</type>
+    <name>KSTL RNav 30L GPS</name>
+    <originalChart>
+      <![CDATA[
+      http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
+      ]]>
+    </originalChart>
+    <image>
+      <file>
+        KSTL_RNAV(GPS)_RWY30L_AMDT1_NDBR.png
+      </file>
+      <size>
+        <x>1075</x>
+        <y>1650</y>
+      </size>
+    </image>
+    <bounds>
+      <se>
+        <!-- FONTI -->
+        <lat>38.622497</lat>
+        <lng>-90.113569</lng>
+        <x>719</x>
+        <y>827</y>
+      </se>
+      <nw>
+        <!-- 30L -->
+        <lat>38.738078</lat>
+        <lng>-90.347061</lng>
+        <x>403</x>
+        <y>623</y>
+      </nw>
+    </bounds>
+  </chart>
+</entity>
