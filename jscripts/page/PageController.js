@@ -81,6 +81,12 @@ namespace.module('vd.page', function (exports) {
         * @private
         */
         this._markers = new vd.gm.OverlayGroup("PageMarkes", null);
+        /**
+        * The Google Analytics object.
+        * @type {Object}
+        * @protected
+        */
+        this._gaq = null;
     };
     // #endregion ------------ Constructor ------------
 
@@ -442,8 +448,11 @@ namespace.module('vd.page', function (exports) {
             if (selected.startsWith("S")) this._displayAltitudeColorBar(); // force redraw
         }
 
-        // resisizing
+        // resizing
         this.windowResizeEvent(); // force resize
+
+        // Google Analytics
+        this._googleAnalyticsEvent("tabChanged", selected);
     };
 
     /**
@@ -1580,6 +1589,16 @@ namespace.module('vd.page', function (exports) {
             $(golv).bind('click', false);
             golv.style.opacity = 0.3;
         }
+    };
+
+    /**
+    * Google Analytics events.
+    * @param {String} label
+    * @param {String} value
+    * @see <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html">Google Analytics Events</a>
+    */
+    exports.PageController.prototype._googleAnalyticsEvent = function (label, value) {
+        this._gaq.push(['_trackEvent', 'VatGM', label, value]);
     };
     // #endregion ------------ private part general ------------
 
