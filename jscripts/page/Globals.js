@@ -152,6 +152,9 @@ namespace.module('vd.page', function (exports) {
         this.urlProjectProvideCharts = "http://vatgm.codeplex.com/wikipage?title=Ground%20overlay%20charts";
         this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
         this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
+
+        // Google Analytics object
+        this.gaq = null;
     };
 
     /**
@@ -247,6 +250,18 @@ namespace.module('vd.page', function (exports) {
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
         if (xmlhttp.status == 200) this.version = xmlhttp.responseText;
+    };
+
+    /**
+    * Google Analytics events.
+    * @param {String} action
+    * @param {String} label
+    * @param {Number} value (MUST be an INTEGER)
+    * @see <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html">Google Analytics Events</a>
+    */
+    exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
+        value = Object.ifNotNullOrUndefined(value, 0);
+        this.gaq.push(['_trackEvent', 'VatGM', action, label, value]);
     };
 
     /**
