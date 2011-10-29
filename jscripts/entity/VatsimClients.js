@@ -114,9 +114,10 @@ namespace.module('vd.entity', function (exports) {
         if (xmlhttp.status == 200) {
             var xml = xmlhttp.responseText;
             var r = this._parseVatsimDataFile(xml);
-            if (r == exports.VatsimClients.Ok)
-                this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
-            else if (r == exports.VatsimClients.NoNewData)
+            if (r == exports.VatsimClients.Ok) {
+                var rtEntry = this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
+                globals.googleAnalyticsEvent("readFromVatsim", "", rtEntry.timeDifference);
+            } else if (r == exports.VatsimClients.NoNewData)
                 globals.log.trace("VATSIM Data loaded but no new data");
             else
                 globals.log.error("Parsing VATSIM data failed");
@@ -283,7 +284,7 @@ namespace.module('vd.entity', function (exports) {
                 globals.log.error("Parsing clients, flights undefined");
                 return exports.VatsimClients.ParsingFailed;
             }
-            
+
             // set airports        
             this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
             if (Object.isNullOrUndefined(this.airports)) {
