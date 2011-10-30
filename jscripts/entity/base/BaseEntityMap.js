@@ -153,6 +153,18 @@ namespace.module('vd.entity.base', function(exports) {
         return this._isInBounds;
     };
 
+    /**
+    * Zoom the map to the object's vicinity (if there is any).
+    * @param {google.maps.Map} [map]
+    * @return {Boolean} true if zoom worked
+    */
+    exports.BaseEntityMap.prototype.zoomMapToVicinity = function(map) {
+        if (Object.isNullOrUndefined(this.vicinity)) return false;
+        map = Object.ifNotNullOrUndefined(map, globals.map);
+        map.fitBounds(this.vicinity);
+        return true;
+    };
+
     /*
     * Magnetic declination (degrees).
     * @return {Number}

@@ -498,7 +498,9 @@ namespace.module('vd.entity', function(exports, require) {
         // display    
         if (display) this._draw(forceRedraw);
         this.overlays.display(display);
-        if (center && display) globals.map.setCenter(this.latLng());
+        
+        // always center, even if not displayed
+        if (center) globals.map.setCenter(this.latLng());
         this.displayed = display && this._drawn;
     };
 
@@ -561,7 +563,7 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     /**
-    * Display this entity at the current map zoom level.
+    * Display this entity at the current map zoom level?
     * @return {Boolean}
     */
     exports.GroundOverlay.prototype.displayedAtZoomLevel = function() {

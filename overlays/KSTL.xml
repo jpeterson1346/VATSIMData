@@ -3,7 +3,7 @@
 <entity icao="KSTL">
   <chart>
     <type>rnav</type>
-    <name>KSTL RNav 12R GPS</name>
+    <name>STL RNav 12R GPS</name>
     <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
     ]]></originalChart>
@@ -33,7 +33,7 @@
   </chart>
   <chart>
     <type>rnav</type>
-    <name>KSTL RNav 30L GPS</name>
+    <name>STL RNav 30L GPS</name>
     <originalChart><![CDATA[
       http://aeronav.faa.gov/ndbr.asp?search=&stateSearch=&select=St+Louis&submit1=Search
     ]]></originalChart>

@@ -4,7 +4,7 @@
   <!-- CDATA must be in the same line as the tag, otherwise ot displaying in FF -->
   <chart>
     <type>rnav</type>
-    <name>KLAX RNav 25R NDB</name>
+    <name>LAX RNav 25R NDB</name>
     <info>
       http://www.laartcc.org/airport_charts/KLAX
     </info>
@@ -39,9 +39,7 @@
   </chart>
   <chart>
     <type>rnav</type>
-    <name>
-      KLAX RNav 24L GPS NDB
-    </name>
+    <name>LAX RNav 24L GPS NDB</name>
     <info>
       http://www.laartcc.org/airport_charts/KLAX
     </info>
@@ -71,6 +69,36 @@
         <lng>-118.401664</lng>
         <x>144</x>
         <y>1059</y>
+      </sw>
+    </bounds>
+  </chart>
+  <chart>
+    <type>gnd</type>
+    <name>LAX Airport</name>
+    <info>
+      http://www.laartcc.org/airport_charts/KLAX
+    </info>
+    <image>
+      <file>
+        KLAX_Airport_Diagram.png
+      </file>
+      <size>
+        <x>2062</x>
+        <y>1343</y>
+      </size>
+    </image>
+    <bounds>
+      <ne>
+        <lat>33.95</lat>
+        <lng>-118.383333</lng>
+        <x>1743</x>
+        <y>324</y>
+      </ne>
+      <sw>
+        <lat>33.933333</lat>
+        <lng>-118.433333</lng>
+        <x>281</x>
+        <y>910</y>
       </sw>
     </bounds>
   </chart>
