@@ -846,6 +846,15 @@ namespace.module('vd.page', function (exports) {
         this.groundOverlayDisplayed.rotate = String.toNumber($("#inputGroundOverlayRotate").val(), 0);
         this.displayOverlayChart(false);
     };
+
+    /**
+    * Zoom to ground overlay.
+    * Nothing happens if there is no ground overlay.
+    */
+    exports.PageController.prototype.zoomToGroundOverlay = function () {
+        if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
+        this.groundOverlayDisplayed.zoomMapToVicinity();
+    };
     // #endregion ------------ public part events ------------
 
     // #region ------------ public part grids ------------
