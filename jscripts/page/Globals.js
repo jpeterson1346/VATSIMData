@@ -152,9 +152,6 @@ namespace.module('vd.page', function (exports) {
         this.urlProjectProvideCharts = "http://vatgm.codeplex.com/wikipage?title=Ground%20overlay%20charts";
         this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
         this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
-
-        // Google Analytics object
-        this.gaq = null;
     };
 
     /**
@@ -261,7 +258,9 @@ namespace.module('vd.page', function (exports) {
     */
     exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
         value = Object.ifNotNullOrUndefined(value, 0);
-        this.gaq.push(['_trackEvent', 'VatGM', action, label, value]);
+        // I have to use the global var _gaq here, because it will be changed
+        // see: http://stackoverflow.com/questions/7944860/google-analytics-events-when-are-they-send
+        _gaq.push(['_trackEvent', 'VatGM', action, label, value]);
     };
 
     /**
