@@ -9,4 +9,5 @@ globals         = typeof (globals)          === 'undefined' ? "dummy" : globals;
 google          = typeof (google)           === 'undefined' ? "dummy" : google;
 vd              = typeof (vd)               === 'undefined' ? "dummy" : vd;
 XMLHttpRequest  = typeof (XMLHttpRequest)   === 'undefined' ? "dummy" : XMLHttpRequest;
+_gaq = _gaq || [];
 // #endregion Fixes for ReSharper
