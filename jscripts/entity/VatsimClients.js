@@ -116,7 +116,7 @@ namespace.module('vd.entity', function (exports) {
             var r = this._parseVatsimDataFile(xml);
             if (r == exports.VatsimClients.Ok) {
                 var rtEntry = this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
-                globals.googleAnalyticsEvent("readFromVatsim", "", rtEntry.timeDifference);
+                globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
             } else if (r == exports.VatsimClients.NoNewData)
                 globals.log.trace("VATSIM Data loaded but no new data");
             else
