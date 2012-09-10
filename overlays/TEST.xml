@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<entity icao="TEST">
+  <chart>
+    <type>test</type>
+    <name>Test: No offset</name>
+    <image>
+      <file>
+        TEST500X500.png
+      </file>
+      <size>
+        <x>500</x>
+        <y>500</y>
+      </size>
+    </image>
+    <bounds>
+      <sw>
+        <lat>49.9</lat>
+        <lng>7.9</lng>
+        <x>0</x>
+        <y>500</y>
+      </sw>
+      <ne>
+        <lat>50.1</lat>
+        <lng>8.1</lng>
+        <x>500</x>
+        <y>0</y>
+      </ne>
+    </bounds>
+  </chart>
+  <chart>
+    <type>test</type>
+    <name>Test: 10</name>
+    <image>
+      <file>
+        Test500x500.png
+      </file>
+      <size>
+        <x>500</x>
+        <y>500</y>
+      </size>
+    </image>
+    <bounds>
+      <sw>
+        <lat>49.9</lat>
+        <lng>7.9</lng>
+        <x>10</x>
+        <y>490</y>
+      </sw>
+      <ne>
+        <lat>50.1</lat>
+        <lng>8.1</lng>
+        <x>490</x>
+        <y>10</y>
+      </ne>
+    </bounds>
+  </chart>
+</entity>

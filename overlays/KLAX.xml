@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<entity icao="KSTL">
+  <!-- CDATA must be in the same line as the tag, otherwise ot displaying in FF -->
+  <chart>
+    <type>rnav</type>
+    <name>LAX RNav 25R NDB</name>
+    <info>
+      http://www.laartcc.org/airport_charts/KLAX
+    </info>
+    <originalChart><![CDATA[
+      http://aeronav.faa.gov/ndbr.asp?search=LAX&stateSearch=&select=&submit1=Search
+    ]]></originalChart>
+    <image>
+      <file>
+        KLAX_RNAV(GPS)_RWY25R_AMDT2_NDBR.png
+      </file>
+      <size>
+        <x>1343</x>
+        <y>2062</y>
+      </size>
+    </image>
+    <bounds>
+      <ne>
+        <!-- BCOVE -->
+        <lat>34.015958</lat>
+        <lng>-117.610842</lng>
+        <x>1092</x>
+        <y>836</y>
+      </ne>
+      <sw>
+        <!-- 25R -->
+        <lat>33.939553</lat>
+        <lng>-118.382906</lng>
+        <x>158</x>
+        <y>950</y>
+      </sw>
+    </bounds>
+  </chart>
+  <chart>
+    <type>rnav</type>
+    <name>LAX RNav 24L GPS NDB</name>
+    <info>
+      http://www.laartcc.org/airport_charts/KLAX
+    </info>
+    <originalChart><![CDATA[
+      http://aeronav.faa.gov/ndbr.asp?search=LAX&stateSearch=&select=&submit1=Search
+    ]]></originalChart>
+    <image>
+      <file>
+        KLAX_RNAV(RNP)_Z_RWY24L_AMDT1A_NDBR.png
+      </file>
+      <size>
+        <x>1343</x>
+        <y>2062</y>
+      </size>
+    </image>
+    <bounds>
+      <ne>
+        <!-- PFILA -->
+        <lat>34.020192</lat>
+        <lng>-117.697272</lng>
+        <x>992</x>
+        <y>955</y>
+      </ne>
+      <sw>
+        <!-- 24L -->
+        <lat>33.950189</lat>
+        <lng>-118.401664</lng>
+        <x>144</x>
+        <y>1059</y>
+      </sw>
+    </bounds>
+  </chart>
+  <chart>
+    <type>gnd</type>
+    <name>LAX Airport</name>
+    <info>
+      http://www.laartcc.org/airport_charts/KLAX
+    </info>
+    <image>
+      <file>
+        KLAX_Airport_Diagram.png
+      </file>
+      <size>
+        <x>2062</x>
+        <y>1343</y>
+      </size>
+    </image>
+    <bounds>
+      <ne>
+        <lat>33.95</lat>
+        <lng>-118.383333</lng>
+        <x>1743</x>
+        <y>324</y>
+      </ne>
+      <sw>
+        <lat>33.933333</lat>
+        <lng>-118.433333</lng>
+        <x>281</x>
+        <y>910</y>
+      </sw>
+    </bounds>
+  </chart>
+</entity>
