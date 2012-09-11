@@ -120,11 +120,13 @@ namespace.module('vd.page', function (exports) {
             function () {
                 me.loadAndDisplayVatsimClients(false);
                 if (globals.geolocationWorking) me._initGeoLocationPosition();
-            });
+            }
+        );
 
         // register resize event
         $(window).resize(function () { me.windowResizeEvent(); });
-    };
+
+    }; // initialize
 
     /**
     * Close the application.
@@ -1180,7 +1182,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
         // does for some reasons not work with id
-            { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
