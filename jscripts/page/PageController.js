@@ -163,6 +163,13 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
+    * Test FsxWs connection and update info.
+    */
+    exports.PageController.prototype.refreshFsxWsInfo = function() {
+        this._setFsxWsInfoFields();
+    };
+
+    /**
     * Load the VATSIM clients (flights, airports, ATC ...).
     * @param {Boolean} displayInfo
     * @param {Boolean} timerCalled
@@ -187,7 +194,7 @@ namespace.module('vd.page', function (exports) {
                     break;
             }
         }
-        this._setInfoFields(clients.info);
+        this._setVatsimInfoFields(clients.info);
         clients.display(true, true); // force redraw
         if (timerCalled) this.resetUpdateTimer(); // retrigger timer
 
@@ -689,6 +696,21 @@ namespace.module('vd.page', function (exports) {
         this.displayInfo("New log level is " + value + ".");
     };
 
+
+    /**
+    * The FSX settings have been changed.
+    * @param {Boolean} refresh
+    * @see vd.module:page.PageController#_initFsxWsSettings
+    */
+    exports.PageController.prototype.fsxWsSettingsChanged = function () {
+        var fsxWsLocation = $("#inputFsxWsLocation").val();
+        var fsxWsPort = $("#inputFsxWsPort").val();
+        globals.fsxWs.initServerValues(fsxWsLocation, fsxWsPort);
+
+        // back annotate GUI values
+        this._initFsxWsSettings();
+    };
+
     /**
     * The color settings have been changed.
     * @param {Boolean} refresh
@@ -1086,6 +1108,25 @@ namespace.module('vd.page', function (exports) {
         $("#inputGroundOverlayBackgroundColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.groundOverlayBackground, "CCCCCC").toHex(), true));
     };
 
+    /** 
+    * Init the FsxWs input fields.
+    * @private
+    * @see vd.module:page.PageController#fsxWsSettingsChanged
+    */
+    exports.PageController.prototype._initFsxWsSettings = function () {
+        if (Object.isNumber(globals.fsxWs.serverPort) && globals.fsxWs.serverPort >= 79)
+            $("#inputFsxWsPort").val(globals.fsxWs.serverPort);
+        else
+            $("#inputFsxWsPort").val("");
+
+        if (!String.isNullOrEmpty(globals.fsxWs.serverLocation))
+            $("#inputFsxWsLocation").val(globals.fsxWs.serverLocation);
+        else
+            $("#inputFsxWsLocation").val("");
+
+        this._setFsxWsInfoFields();
+    };
+
     /**
     * Init the side bar.
     * @private
@@ -1098,6 +1139,7 @@ namespace.module('vd.page', function (exports) {
         this.vatsimClientSettingsChanged({ initializeOnly: true }); // init the settings only
         this._initGrids();
         this._initColorInputs();
+        this._initFsxWsSettings();
         this._initLogLevels();
         this._initAbout();
         this._initGroundOverlays();
@@ -1546,11 +1588,27 @@ namespace.module('vd.page', function (exports) {
     * @param {String} info
     * @private
     */
-    exports.PageController.prototype._setInfoFields = function (vatsimFileInfo) {
+    exports.PageController.prototype._setVatsimInfoFields = function (vatsimFileInfo) {
         // file info
         var td = document.getElementById("inputDatafileInfo");
         $(td).empty();
         if (!String.isNullOrEmpty(vatsimFileInfo)) td.appendChild(document.createTextNode(vatsimFileInfo));
+    };
+
+    /**
+    * Set FsxWs file info.
+    * @private
+    */
+    exports.PageController.prototype._setFsxWsInfoFields = function () {
+        var td = document.getElementById("inputFsxWsURL");
+        $(td).empty();
+        if (String.isNullOrEmpty(globals.fsxWs.serverUrl))
+            td.appendChild(document.createTextNode("No connection info"));
+        else {
+            var info = globals.fsxWs.serverUrl;
+            info += globals.fsxWs.isAvailable() ? " (connected)" : "(disconnected)";
+            td.appendChild(document.createTextNode(info));
+        }
     };
 
     /**

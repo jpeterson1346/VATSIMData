@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports) {
+namespace.module('vd.entity', function(exports) {
 
     /**
     * @constructor
@@ -11,9 +11,10 @@ namespace.module('vd.entity', function (exports) {
     * Here data are parsed and the entity objects are created.
     * @see vd.module:entity.Airport
     * @see vd.module:entity.Flight
+    * @see vd.module:page.PageController main user of this "class", in order to display the clients (pilots/ATC)
     * @author KWB
     */
-    exports.VatsimClients = function () {
+    exports.VatsimClients = function() {
         /**
         * When this was last updated.
         * @type {String} 
@@ -105,10 +106,12 @@ namespace.module('vd.entity', function (exports) {
     * Read data from the VATSIM servers ("data file").
     * @return {Number} status, const values indicating if data was already available or something failed
     */
-    exports.VatsimClients.prototype.readFromVatsim = function () {
+    exports.VatsimClients.prototype.readFromVatsim = function() {
         this._statisticsRead.start();
         this._setDatafile();
+        // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
+        // ReSharper restore InconsistentNaming
         xmlhttp.open("GET", this.datafile, false);
         xmlhttp.send();
         if (xmlhttp.status == 200) {
@@ -133,7 +136,7 @@ namespace.module('vd.entity', function (exports) {
     * it uses the test files.
     * @private
     */
-    exports.VatsimClients.prototype._setDatafile = function () {
+    exports.VatsimClients.prototype._setDatafile = function() {
         // http://www.net-flyer.net/DataFeed/vatsim-data.txt
         if (vd.util.UtilsWeb.isLocalServer()) {
             // local test mode
@@ -151,7 +154,7 @@ namespace.module('vd.entity', function (exports) {
     * @param  {String} rawData from the request
     * @return {Number} status, e.g. whether data was already available or something failed
     */
-    exports.VatsimClients.prototype._parseVatsimDataFile = function (rawData) {
+    exports.VatsimClients.prototype._parseVatsimDataFile = function(rawData) {
 
         // init
         var statsEntry = new vd.util.RuntimeEntry("Parsing file (VatsimClients)");
@@ -204,7 +207,8 @@ namespace.module('vd.entity', function (exports) {
                                 route: String.isNullOrEmpty(clientElements[30]) ? null : clientElements[30].trim()
                             });
                         flightplans.push(flightplan);
-                    };
+                    }
+                    ;
                     var flight = new vd.entity.Flight(
                         {
                             flightplan: flightplan,
@@ -312,7 +316,7 @@ namespace.module('vd.entity', function (exports) {
     * Part of the parsing
     * @private
     */
-    exports.VatsimClients.prototype._splitGeneralSection = function (line) {
+    exports.VatsimClients.prototype._splitGeneralSection = function(line) {
         if (String.isNullOrEmpty(line)) return null;
         if (line.indexOf("=") < 0) return [line];
         var kv = line.split("=");
@@ -325,7 +329,7 @@ namespace.module('vd.entity', function (exports) {
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.VatsimClients.prototype.display = function (display, forceRedraw) {
+    exports.VatsimClients.prototype.display = function(display, forceRedraw) {
         var c = this.count();
         if (c < 1) return;
         forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, false);
@@ -339,7 +343,7 @@ namespace.module('vd.entity', function (exports) {
     /**
     * Clear all overlays of all clients.
     */
-    exports.VatsimClients.prototype.clearOverlays = function () {
+    exports.VatsimClients.prototype.clearOverlays = function() {
         if (this.count() < 1) return;
         this.display(false, false);
         var clients = this.allClients();
@@ -354,7 +358,7 @@ namespace.module('vd.entity', function (exports) {
     * this returns all of them.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.allClients = function () {
+    exports.VatsimClients.prototype.allClients = function() {
         var c = this.flights.concat(this.airports);
         c = c.concat(this.flightplans);
         c = c.concat(this.atcs);
@@ -365,7 +369,7 @@ namespace.module('vd.entity', function (exports) {
     * All primary clients, not the helper entities.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.clients = function () {
+    exports.VatsimClients.prototype.clients = function() {
         var c = this.flights.concat(this.airports);
         return c;
     };
@@ -374,7 +378,7 @@ namespace.module('vd.entity', function (exports) {
     * Number of primary clients.
     * @returns {Number}
     */
-    exports.VatsimClients.prototype.count = function () {
+    exports.VatsimClients.prototype.count = function() {
         return this.clients().length;
     };
 
@@ -383,7 +387,7 @@ namespace.module('vd.entity', function (exports) {
     * @param {Number} objectId
     * @returns {BaseEntityVatsim}
     */
-    exports.VatsimClients.prototype.findByObjectId = function (objectId) {
+    exports.VatsimClients.prototype.findByObjectId = function(objectId) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, objectId);
     };
@@ -393,7 +397,7 @@ namespace.module('vd.entity', function (exports) {
     * @param {Number} id
     * @returns {Array} BaseEntityVatsim
     */
-    exports.VatsimClients.prototype.findById = function (id) {
+    exports.VatsimClients.prototype.findById = function(id) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, id);
     };
@@ -404,7 +408,7 @@ namespace.module('vd.entity', function (exports) {
     * @returns {BaseEntityVatsim}
     * @see BaseEntityVatsim#findByIdFirst
     */
-    exports.VatsimClients.prototype.findByIdFirst = function (id) {
+    exports.VatsimClients.prototype.findByIdFirst = function(id) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityVatsim.findByIdFirst(clients, id);
     };
@@ -414,7 +418,7 @@ namespace.module('vd.entity', function (exports) {
     * @param {Boolean} displayed
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsDisplayed = function (displayed) {
+    exports.VatsimClients.prototype.findFlightsDisplayed = function(displayed) {
         return vd.entity.base.BaseEntityMap.findByDisplayed(this.flights, displayed);
     };
 
@@ -423,10 +427,9 @@ namespace.module('vd.entity', function (exports) {
     * @param {Boolean} inBounds
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsInBounds = function (inBounds) {
+    exports.VatsimClients.prototype.findFlightsInBounds = function(inBounds) {
         return vd.entity.base.BaseEntityMap.findInBounds(this.flights, inBounds);
     };
-
 
     /**
     * Reading OK.

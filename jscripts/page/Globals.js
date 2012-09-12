@@ -15,6 +15,7 @@ namespace.module('vd.page', function (exports) {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
+        this.queryParameters = vd.util.UtilsWeb.getQueryParameters();
 
         // version
         this.version = "N/A";
@@ -33,9 +34,12 @@ namespace.module('vd.page', function (exports) {
         this.clients = new vd.entity.VatsimClients();
         this.metar = new vd.entity.helper.VatsimMetar();
 
+        // FsxWs JSON objects from web service
+        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"]);
+
         // sidebar dimensions
         this.sideBarMinWidth = null;
-        this.sideBarWideWidth = 375; // when side bar is considered "wide"
+        this.sideBarWideWidth = 375; // threshold if side bar is considered "wide"
         this.sideBarLocationDisplay = null;
         this.sideBarSettingsDisplay = null;
         this.sideBarDataDisplay = null;
@@ -243,7 +247,9 @@ namespace.module('vd.page', function (exports) {
     */
     exports.Globals.prototype._initVersion = function () {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
+        // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
+        // ReSharper restore InconsistentNaming
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
         if (xmlhttp.status == 200) this.version = xmlhttp.responseText;

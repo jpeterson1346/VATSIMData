@@ -55,6 +55,7 @@
         <script type="text/javascript" src="jscripts/entity/AirportSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Airport.js"> </script>
         <script type="text/javascript" src="jscripts/entity/VatsimClients.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/FsxWs.js"> </script>
         <script type="text/javascript" src="jscripts/entity/RouteSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Route.js"> </script>
         <script type="text/javascript" src="jscripts/page/Globals.js"> </script>
@@ -107,7 +108,7 @@
                 VatGM - Who is flying ..? [Only for simulation] [<a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true);">Bug reporting</a>]
             </div>
             <div id="headerBar" class="ui-widget-header">
-                <select id="headerBarTabSelection" onchange="ctr.showHideInputAndTabs()">
+                <select id="headerBarTabSelection" onchange=" ctr.showHideInputAndTabs() ">
                     <option selected="selected">Map</option>
                     <option>Entities</option>
                     <option>Settings</option>
@@ -152,12 +153,23 @@
                             <button class="ui-button sideBarRightAlign" onclick=" vd.util.UtilsWeb.newLocation(globals.clients.datafile, true); " ><span class="ui-icon ui-icon-link" title="Show data file"></span></button>
                         </td>
                     </tr>
+                    <tr class="ui-widget-content sideBarTopAlign">
+                        <td>
+                            FSX Ws:
+                        </td>
+                        <td colspan="2">
+                            <div id="inputFsxWsURL">not set</div>
+                        </td>
+                        <td>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.refreshFsxWsInfo();" ><span class="ui-icon ui-icon-link" title="Test connection"></span></button>
+                        </td>
+                    </tr>
                     <tr class="ui-widget-content">
                         <td>
                             Load data:
                         </td>
                         <td colspan="3">
-                            <select id="inputTimerUpdate" onchange="ctr.resetUpdateTimer()">
+                            <select id="inputTimerUpdate" onchange=" ctr.resetUpdateTimer() ">
                                 <option value ="-1">never</option>
                                 <option value ="60" selected="selected">60s</option>
                                 <option value ="30">30s</option>
@@ -193,7 +205,7 @@
                             Place:
                         </td>
                         <td colspan="3">
-                            <select id="inputPlaceSelect" onchange="ctr.newPlace(true, vd.util.UtilsWeb.getSelectedValue('inputPlaceSelect'), 4);">
+                            <select id="inputPlaceSelect" onchange=" ctr.newPlace(true, vd.util.UtilsWeb.getSelectedValue('inputPlaceSelect'), 4); ">
                                 <option selected="selected" value=""> </option>
                                 <optgroup label="Africa" class="ui-widget-content">
                                     <option>North Africa</option>
@@ -318,7 +330,7 @@
                             Apply Filter:
                         </td>
                         <td colspan="2">
-                            <input name="applyFilter" id="inputApplyFilter" type="checkbox" onchange = " ctr.filterSettingsChanged() ;"/>
+                            <input name="applyFilter" id="inputApplyFilter" type="checkbox" onchange = " ctr.filterSettingsChanged(); "/>
                         </td>
                         <td>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: false }); " title="Show filter data"><span class="ui-icon ui-icon-link" title="Show filter data"></span></button>
@@ -338,13 +350,13 @@
                             Show Flights:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowFlight" id="inputFlightSettingsShowFlight" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowFlight" id="inputFlightSettingsShowFlight" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Show on gnd:
                         </td>
                         <td>
-                            <input type="checkbox" name="OnGround" id="inputFlightSettingsOnGround" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="OnGround" id="inputFlightSettingsOnGround" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -352,13 +364,13 @@
                             Require flightplan:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="RequireFlightplan" id="inputFlightSettingsRequireFlightplan" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="RequireFlightplan" id="inputFlightSettingsRequireFlightplan" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Height / m.dec.:
                         </td>
                         <td>
-                            <input type="checkbox" name="HeightAndDeclination" id="inputFlightSettingsHeightAndDeclination" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="HeightAndDeclination" id="inputFlightSettingsHeightAndDeclination" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -366,13 +378,13 @@
                             Callsign:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="Callsign" id="inputFlightSettingsCallsign" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="Callsign" id="inputFlightSettingsCallsign" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Pilot:
                         </td>
                         <td>
-                            <input type="checkbox" name="Pilot" id="inputFlightSettingsPilot" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="Pilot" id="inputFlightSettingsPilot" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -380,13 +392,13 @@
                             Id:
                         </td>
                         <td>
-                            <input type="checkbox" name="FlightId" id="inputFlightSettingsId" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="FlightId" id="inputFlightSettingsId" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Transponder:
                         </td>
                         <td>
-                            <input type="checkbox" name="Transponder" id="inputFlightSettingsTransponder" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="Transponder" id="inputFlightSettingsTransponder" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -394,13 +406,13 @@
                             Speed, alt.,hdg.:
                         </td>
                         <td>
-                            <input type="checkbox" name="SpeedAltHeading" id="inputFlightSettingsSpeedAltitudeHeading" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="SpeedAltHeading" id="inputFlightSettingsSpeedAltitudeHeading" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Aircraft:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="Aircraft" id="inputFlightSettingsAircraft" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="Aircraft" id="inputFlightSettingsAircraft" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -413,13 +425,13 @@
                             Waypoints:
                         </td>
                         <td>
-                            <input type="checkbox" name="WaypointsFlight" id="inputWaypointSettingsFlight" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="WaypointsFlight" id="inputWaypointSettingsFlight" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Wp.-Lines:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="WaypointLines" id="inputFlightSettingsWaypointLines" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="WaypointLines" id="inputFlightSettingsWaypointLines" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -427,21 +439,21 @@
                             Wp.-Callsign:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="WaypointsFlightCallsign" id="inputWaypointSettingsFlightCallsign" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="WaypointsFlightCallsign" id="inputWaypointSettingsFlightCallsign" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Wp.-Speed, Alt.
                         </td>
                         <td>
-                            <input type="checkbox" name="WaypointsFlightSpeedAltitudeHeading" id="inputWaypointSettingsFlightSpeedAltitudeHeading" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="WaypointsFlightSpeedAltitudeHeading" id="inputWaypointSettingsFlightSpeedAltitudeHeading" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
                             Max. waypoints:
                         </td>
-                        <td>
-                            <select name="FlightWaypointsMaxNumber" id="inputWaypointSettingsFlightMaxNumber" onchange="ctr.vatsimClientSettingsChanged()">
+                        <td colspan="2">
+                            <select name="FlightWaypointsMaxNumber" id="inputWaypointSettingsFlightMaxNumber" onchange=" ctr.vatsimClientSettingsChanged() ">
                                 <option>5</option>
                                 <option>10</option>
                                 <option>25</option>
@@ -450,10 +462,7 @@
                                 <option>all</option>
                             </select>
                         </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
+                        <td></td>
                     </tr>
                     <tr class="ui-widget-header">
                         <th colspan="4" class="sideBarHeader">
@@ -465,13 +474,13 @@
                             Show Airports
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowAirports" id="inputAirportSettingsShowAirport" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowAirports" id="inputAirportSettingsShowAirport" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Show Vicinity:
                         </td>
                         <td>
-                            <input type="checkbox" name="ShowVicinity" id="inputAirportSettingsVicinity" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="ShowVicinity" id="inputAirportSettingsVicinity" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -479,13 +488,13 @@
                             Show METAR:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowMetar" id="inputAirportSettingsMetar" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowMetar" id="inputAirportSettingsMetar" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Show ATIS:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowAtis" id="inputAirportSettingsAtis" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowAtis" id="inputAirportSettingsAtis" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -498,13 +507,13 @@
                             Show ATC:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowATC" id="inputAtcSettingsShowAtc" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowATC" id="inputAtcSettingsShowAtc" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Callsign:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="Callsign" id="inputAtcSettingsCallsign" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="Callsign" id="inputAtcSettingsCallsign" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -512,13 +521,13 @@
                             Controller:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="Controller" id="inputAtcSettingsController" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="Controller" id="inputAtcSettingsController" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Id:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowAtcId" id="inputAtcSettingsId" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowAtcId" id="inputAtcSettingsId" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -526,13 +535,15 @@
                             Observer:
                         </td>
                         <td>
-                            <input type="checkbox" disabled="disabled" name="ShowObserver" id="inputAtcSettingsObserver" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <!-- value considered (PageController), not editable -->
+                            <input type="checkbox" disabled="disabled" name="ShowObserver" id="inputAtcSettingsObserver" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Area Ctr.:
                         </td>
                         <td>
-                            <input type="checkbox" disabled="disabled" checked="checked" name="ShowAreaAtc" id="inputAtcSettingsAreaAtc" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <!-- value considered (PageController), not editable -->
+                            <input type="checkbox" disabled="disabled" checked="checked" name="ShowAreaAtc" id="inputAtcSettingsAreaAtc" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -545,13 +556,13 @@
                             Airway:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowRouteAirway" id="inputRouteSettingsAirway" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" checked="checked" name="ShowRouteAirway" id="inputRouteSettingsAirway" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             Distance:
                         </td>
                         <td>
-                            <input type="checkbox" name="ShowRouteDistance" id="inputRouteSettingsDistance" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="ShowRouteDistance" id="inputRouteSettingsDistance" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -559,13 +570,13 @@
                             Frequency:
                         </td>
                         <td>
-                            <input type="checkbox" name="ShowRouteFrequency" id="inputRouteSettingsFrequency" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="ShowRouteFrequency" id="inputRouteSettingsFrequency" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                         <td>
                             True course:
                         </td>
                         <td>
-                            <input type="checkbox" name="ShowRouteTC" id="inputRouteSettingsCourse" onchange="ctr.vatsimClientSettingsChanged()" />
+                            <input type="checkbox" name="ShowRouteTC" id="inputRouteSettingsCourse" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                 </table>
@@ -578,16 +589,20 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="2">
+                        <td>
                             Distance:
-                            <select id="inputSettingsDistance" class="sideBarRightAlign" onchange="ctr.unitsChanged()">
+                        </td>
+                        <td>
+                            <select id="inputSettingsDistance" class="sideBarRightAlign" onchange=" ctr.unitsChanged() ">
                                 <option selected="selected">km</option>
                                 <option>nm</option>
                             </select>
                         </td>
-                        <td colspan="2">
+                        <td>
                             Altitude:
-                            <select id="inputSettingsAltitude" class="sideBarRightAlign" onchange="ctr.unitsChanged()">
+                        </td>
+                        <td>
+                            <select id="inputSettingsAltitude" class="sideBarRightAlign" onchange=" ctr.unitsChanged() ">
                                 <option>ft</option>
                                 <option>m</option>
                             </select>
@@ -603,17 +618,39 @@
                             Log.level for console:
                         </td>
                         <td colspan="2">
-                            <select id="inputSettingsLogLevel" class="sideBarRightAlign" onchange="ctr.logLevelChanged()">
+                            <select id="inputSettingsLogLevel" class="sideBarRightAlign" onchange=" ctr.logLevelChanged() ">
                                 <!-- options will be set in init -->
                             </select>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="2">
+                        <td colspan="3">
                             Check console pop up:
                         </td>
-                        <td colspan="2">
+                        <td colspan="1">
                             <button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppenderPopUp.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-header">
+                        <th colspan="4" class="sideBarHeader">
+                            FSX web services
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="2">
+                            Location:
+                        </td>
+                        <td colspan="2">
+                            <input name="fsxWsLocation" id="inputFsxWsLocation" type="text" size="20"/>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="2">
+                            Port:
+                        </td>
+                        <td colspan="2">
+                            <input name="fsxWsPort"id="inputFsxWsPort" type="text" size="5"/>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.fsxWsSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -622,96 +659,90 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             Flight labels:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="flightLabelsColor" id="inputFlightSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             .. when followed:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="flightLabelsColorIfFollowed" id="inputFlightSettingLabelsColorIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             .. when filtered:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="flightLabelsColorIfFiltered" id="inputFlightSettingLabelsColorIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             Flight labels font:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="flightLabelsFontColor" id="inputFlightSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             Airport labels:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="airportLabelsColor" id="inputAirportSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
+                        <td colspan="2">
                             Airport labels font:
                         </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <input name="airportLabelsFontColor" id="inputAirportSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>Wp.-Lines:</td>
-                        <td colspan="3">
+                        <td colspan="2">Wp.-Lines:</td>
+                        <td colspan="2">
                             <input name="waypointLinesColor" id="inputFlightSettingsWaypointLinesColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>0 - FL30</td>
-                        <td colspan="3">
+                        <td colspan="2">0 - FL30</td>
+                        <td colspan="2">
                             <!-- colour gradient will go here -->
                             <canvas width="125px" height="15px" id="inputFlightWaypointsLegend"></canvas>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Route labels:
-                        </td>
+                        <td colspan="2">Route labels:</td>
                         <td colspan="3">
                             <input name="routeLabelsFontColor" id="inputRouteSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Route labels font:
-                        </td>
-                        <td colspan="3">
+                        <td colspan="2">Route labels font:</td>
+                        <td colspan="2">
                             <input name="routeLabelsFontColor" id="inputRouteSettingLabelsFontColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Route:
-                        </td>
-                        <td colspan="3">
+                        <td colspan="2">Route:</td>
+                        <td colspan="2">
                             <input name="routeColor" id="inputRouteSettingRouteLineColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
@@ -757,7 +788,7 @@
                             Airport:
                         </td>
                         <td>
-                            <select id="inputGroundOverlaysAirport" class="sideBarGroundOverlaySelect" onchange="ctr.loadOverlayChartList();"></select>
+                            <select id="inputGroundOverlaysAirport" class="sideBarGroundOverlaySelect" onchange=" ctr.loadOverlayChartList(); "></select>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.loadOverlayChartList(); " title="Refresh chart list"><span class="ui-icon ui-icon-arrowrefresh-1-e" title="Refresh chart list"></span></button>
                         </td>
                     </tr>
@@ -766,7 +797,7 @@
                             Charts:
                         </td>
                         <td>
-                            <select id="inputGroundOverlaysAirportCharts" class="sideBarGroundOverlaySelect" onchange="ctr.displayOverlayChart();"></select>
+                            <select id="inputGroundOverlaysAirportCharts" class="sideBarGroundOverlaySelect" onchange=" ctr.displayOverlayChart(); "></select>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.displayOverlayChart(); " title="Display ground overlay"><span class="ui-icon ui-icon-plus" title="Display ground overlay"></span></button>
                         </td>
                     </tr>
@@ -811,7 +842,7 @@
                         </td>
                         <td>
                             <input name="groundOverlayBackgroundColor" id="inputGroundOverlayBackgroundColor" onkeydown=" ctr.onEnter(event, 'ctr.groundOverlayChanged()'); " class="color" type="text" size="8"/>
-                            <input type="checkbox" id="inputGroundOverlayBackgroundTransparent" onchange="ctr.groundOverlayChanged();" />transp.
+                            <input type="checkbox" id="inputGroundOverlayBackgroundTransparent" onchange=" ctr.groundOverlayChanged(); " />transp.
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.groundOverlayChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
@@ -820,7 +851,7 @@
                             Opacity:
                         </td>
                         <td>
-                            <select id="inputGroundOverlayOpacity" onchange="ctr.groundOverlayChanged();"></select>
+                            <select id="inputGroundOverlayOpacity" onchange=" ctr.groundOverlayChanged(); "></select>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
