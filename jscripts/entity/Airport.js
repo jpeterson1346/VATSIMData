@@ -236,7 +236,7 @@ namespace.module('vd.entity', function (exports, require) {
     };
 
     //
-    // Pop up further information about ATC
+    // Pop up further information about ATC.
     //
     exports.Airport.prototype._displayPopUp = function () {
         if (Array.isNullOrEmpty(this.atcs)) return;

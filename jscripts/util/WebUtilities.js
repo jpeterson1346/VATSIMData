@@ -169,7 +169,7 @@ namespace.module('vd.util', function (exports) {
     exports.UtilsWeb.getCssStyle = function (ruleSelector, cssprop, styleSheet) {
         for (var c = 0, lenC = document.styleSheets.length; c < lenC; c++) {
             var sheet = document.styleSheets[c];
-            if (!String.isNullOrEmpty(styleSheet) &&!String.isNullOrEmpty(sheet.href)) {
+            if (!String.isNullOrEmpty(styleSheet) && !String.isNullOrEmpty(sheet.href)) {
                 if (!sheet.href.endsWith(styleSheet)) continue; // check on sheet name 
             }
             var rules = sheet.cssRules;
@@ -244,4 +244,38 @@ namespace.module('vd.util', function (exports) {
         else
             location.href = url;
     };
+
+    /**
+    * Get all query parameters (if there are any) as "associative array".
+    * @return {Object} param1:value1 param2:value2
+    * @see <a href="http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929">Stack overflow articler</a>
+    * @see vd.module:util.UtilsWeb.getQueryParameter
+    */
+    exports.UtilsWeb.getQueryParameters = function () {
+        var urlParams = {};
+        var match,
+        pl = /\+/g,  // Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g,
+        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+        query = window.location.search.substring(1);
+
+        while (match = search.exec(query))
+            urlParams[decode(match[1])] = decode(match[2]);
+
+        return urlParams;
+    };
+
+    /**
+    * Get a single query parameter by name.
+    * @param  {String} name
+    * @return {String} value
+    * @see <a href="http://stackoverflow.com/a/5158301/356726">Stack overflow articler</a>
+    * @see vd.module:util.UtilsWeb.getQueryParameter
+    */
+    exports.UtilsWeb.getQueryParameter = function(name) {
+        var match = RegExp('[?&]' + name + '=([^&]*)')
+            .exec(window.location.search);
+        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    };
+
 });
