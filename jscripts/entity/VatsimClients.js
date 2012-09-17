@@ -105,6 +105,7 @@ namespace.module('vd.entity', function(exports) {
     /**
     * Read data from the VATSIM servers ("data file").
     * @return {Number} status, const values indicating if data was already available or something failed
+    * @see vd.entity.FsxWs.readFromFsxWs
     */
     exports.VatsimClients.prototype.readFromVatsim = function() {
         this._statisticsRead.start();
@@ -116,7 +117,7 @@ namespace.module('vd.entity', function(exports) {
         xmlhttp.send();
         if (xmlhttp.status == 200) {
             var xml = xmlhttp.responseText;
-            var r = this._parseVatsimDataFile(xml);
+            var r = this._parseVatsimDataFile(xml); // also updates timestamp / history
             if (r == exports.VatsimClients.Ok) {
                 var rtEntry = this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                 globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
@@ -385,32 +386,32 @@ namespace.module('vd.entity', function(exports) {
     /**
     * Find by unique object id.
     * @param {Number} objectId
-    * @returns {BaseEntityVatsim}
+    * @returns {BaseEntityModel}
     */
     exports.VatsimClients.prototype.findByObjectId = function(objectId) {
         var clients = this.allClients();
-        return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, objectId);
+        return vd.entity.base.BaseEntityModel.findByObjectId(clients, objectId);
     };
 
     /**
     * Find by id.
     * @param {Number} id
-    * @returns {Array} BaseEntityVatsim
+    * @returns {Array} BaseEntityModel
     */
     exports.VatsimClients.prototype.findById = function(id) {
         var clients = this.allClients();
-        return vd.entity.base.BaseEntityVatsim.findByObjectId(clients, id);
+        return vd.entity.base.BaseEntityModel.findByObjectId(clients, id);
     };
 
     /**
     * Find client with first occurance of id.
     * @param {Number} id
-    * @returns {BaseEntityVatsim}
-    * @see BaseEntityVatsim#findByIdFirst
+    * @returns {BaseEntityModel}
+    * @see BaseEntityModel#findByIdFirst
     */
     exports.VatsimClients.prototype.findByIdFirst = function(id) {
         var clients = this.allClients();
-        return vd.entity.base.BaseEntityVatsim.findByIdFirst(clients, id);
+        return vd.entity.base.BaseEntityModel.findByIdFirst(clients, id);
     };
 
     /**

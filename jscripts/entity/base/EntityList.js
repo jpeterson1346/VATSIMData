@@ -27,11 +27,11 @@ namespace.module('vd.entity.base', function(exports) {
 
     /**
     * Add a new entity.
-    * @param {String} vatsimId
+    * @param {String} domainId
     */
     exports.EntityList.prototype.addById = function(vatsimId) {
         if (String.isNullOrEmpty(vatsimId)) return;
-        var entity = vd.entity.base.BaseEntityVatsim.findById(globals.clients.clients(), vatsimId);
+        var entity = vd.entity.base.BaseEntityModel.findById(globals.clients.clients(), vatsimId);
         if (!Object.isNullOrUndefined(entity)) this.add(entity);
     };
 
@@ -41,7 +41,7 @@ namespace.module('vd.entity.base', function(exports) {
     */
     exports.EntityList.prototype.addByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return;
-        var entity = vd.entity.base.BaseEntityVatsim.findByObjectId(globals.clients.clients(), objectId);
+        var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.clients.clients(), objectId);
         if (!Object.isNullOrUndefined(entity)) this.add(entity);
     };
 
@@ -67,11 +67,11 @@ namespace.module('vd.entity.base', function(exports) {
 
     /**
     * Remove an entity.
-    * @param {String} vatsimId
+    * @param {String} domainId
     */
     exports.EntityList.prototype.removeById = function(vatsimId) {
         if (String.isNullOrEmpty(vatsimId)) return;
-        var entity = vd.entity.base.BaseEntityVatsim.findById(globals.clients.clients(), vatsimId);
+        var entity = vd.entity.base.BaseEntityModel.findById(globals.clients.clients(), vatsimId);
         if (!Object.isNullOrUndefined(entity)) this.remove(entity);
     };
 
@@ -81,7 +81,7 @@ namespace.module('vd.entity.base', function(exports) {
     */
     exports.EntityList.prototype.removeByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return;
-        var entity = vd.entity.base.BaseEntityVatsim.findByObjectId(globals.clients.clients(), objectId);
+        var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.clients.clients(), objectId);
         if (!Object.isNullOrUndefined(entity)) this.remove(entity);
     };
 
@@ -102,7 +102,7 @@ namespace.module('vd.entity.base', function(exports) {
 
     /**
     * Contains entity?
-    * @param  {BaseEntityVatsim} entity
+    * @param  {BaseEntityModel} entity
     * @return {Boolean}
     */
     exports.EntityList.prototype.contains = function(entity) {

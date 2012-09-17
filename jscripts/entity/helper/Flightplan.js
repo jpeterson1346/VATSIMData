@@ -11,13 +11,13 @@ namespace.module('vd.entity.helper', function (exports, require) {
     * @constructor
     * @classdesc Flightplan origin to destination.
     * @param {Object} flightplanProperties
-    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @extends vd.entity.module:base.BaseEntityModelOnMap
     */
     exports.Flightplan = function (flightplanProperties) {
 
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
         // after this, the subclasses are merged into flight
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, flightplanProperties);
+        vd.entity.base.BaseEntityModelOnMap.call(this, flightplanProperties);
 
         /*
         * Entity "Flightplan".
@@ -112,5 +112,5 @@ namespace.module('vd.entity.helper', function (exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.Flightplan, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.Flightplan, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });

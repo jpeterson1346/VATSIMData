@@ -165,7 +165,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Test FsxWs connection and update info.
     */
-    exports.PageController.prototype.refreshFsxWsInfo = function() {
+    exports.PageController.prototype.refreshFsxWsInfo = function () {
         this._setFsxWsInfoFields();
     };
 
@@ -177,7 +177,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype.loadAndDisplayVatsimClients = function (displayInfo, timerCalled) {
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, false);
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
-        if (timerCalled && this.timerLoadUpdate < 0) return; // timer calls no longer valid?
+        if (timerCalled && this.timerLoadVatsimUpdate < 0) return; // timer calls no longer valid?
         var clients = globals.clients;
         var readStatus = clients.readFromVatsim();
         var info = "";
@@ -229,10 +229,41 @@ namespace.module('vd.page', function (exports) {
     * Set a new or cancel the timer.
     */
     exports.PageController.prototype.resetUpdateTimer = function () {
-        this.timerLoadUpdate = String.toNumber($("#inputTimerUpdate").val(), -1) * 1000;
-        if (this.timerLoadUpdate < 0) return;
+        this.timerLoadVatsimUpdate = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) * 1000;
+        var timeOut = this.timerLoadVatsimUpdate;
+        this.timerFsxDataUpdate = String.toNumber($("#inputTimerUpdateFsx").val(), -1) * 1000;
+        if (timeOut < 0 || (this.timerFsxDataUpdate > 0 && this.timerFsxDataUpdate < timeOut)) timeOut = this.timerFsxDataUpdate;
+        if (this.timerLoadVatsimUpdate < 0 && this.timerFsxDataUpdate < 0) return;
+
+        // init timer
         var me = this;
-        setTimeout(function () { me.loadAndDisplayVatsimClients(true, true); }, this.timerLoadUpdate);
+        setTimeout(function () { me.timerDispatcher(); }, timeOut);
+    };
+
+    /**
+    * Dispatches the timer calls to the respective functions.
+    * This saves multiples timers and allows to call the data loaders in a
+    * controlled order.
+    */
+    exports.PageController.prototype.timerDispatcher = function () {
+        // init values if required
+        if (Object.isNullOrUndefined(this.timerLoadVatsimUpdateLastCall)) this.timerLoadVatsimUpdateLastCall = new Date();
+        if (Object.isNullOrUndefined(this.timerFsxDataUpdateLastCall)) this.timerFsxDataUpdateLastCall = new Date();
+
+        // what time is it?
+        var now = new Date().getTime();
+
+        // check for FSX data
+        if (this.timerFsxDataUpdate > 0 && 
+            (this.timerFsxDataUpdateLastCall.getTime() + this.timerFsxDataUpdate < now)) {
+            // FSX call here
+        }
+
+        // check for VATSIM data
+        if (this.timerLoadVatsimUpdate > 0 &&
+            (this.timerLoadVatsimUpdateLastCall.getTime() + this.timerLoadVatsimUpdate < now)) {
+            this.loadAndDisplayVatsimClients(true, true);
+        }
     };
 
     /**
@@ -817,7 +848,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype.loadOverlayChartList = function () {
         var icao = vd.util.UtilsWeb.getSelectedValue("inputGroundOverlaysAirport");
         if (String.isNullOrEmpty(icao)) return;
-        var selectedOverlays = vd.entity.base.BaseEntityVatsim.findByCallsign(this._groundOverlays, icao); // already in memory
+        var selectedOverlays = vd.entity.base.BaseEntityModel.findByCallsign(this._groundOverlays, icao); // already in memory
         if (Array.isNullOrEmpty(selectedOverlays)) {
             selectedOverlays = globals.groundOverlays.readGroundOverlays(icao);
             this._groundOverlays.append(selectedOverlays);
@@ -834,7 +865,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype.displayOverlayChart = function (center) {
         var name = vd.util.UtilsWeb.getSelectedValue("inputGroundOverlaysAirportCharts");
         center = Object.ifNotNullOrUndefined(center, true);
-        var selectedOverlays = vd.entity.base.BaseEntityVatsim.findByName(this._groundOverlays, name); // already in memory
+        var selectedOverlays = vd.entity.base.BaseEntityModel.findByName(this._groundOverlays, name); // already in memory
         if (Array.isNullOrEmpty(selectedOverlays)) {
             this.displayInfo("No ground overlay charts can be displayed");
             return;
@@ -1212,7 +1243,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'pilot', index: 'pilot', width: widthNameFlight, search: true },
         // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
             { name: '_isGrounded', index: '_isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
@@ -1224,7 +1255,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
         // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
@@ -1234,7 +1265,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'name', index: 'name', width: widthNameFilter, search: true },
         // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'entity', index: 'entity', search: false, width: widthEntity }
         ];
 

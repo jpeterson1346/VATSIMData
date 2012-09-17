@@ -12,12 +12,12 @@ namespace.module('vd.entity', function (exports, require) {
     * @constructor
     * @param {Object} airportProperties
     * @param {AirportSettings} [airportSettings]
-    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @extends vd.entity.module:base.BaseEntityModelOnMap
     */
     exports.Airport = function (airportProperties, airportSettings) {
 
         // inherit attributes
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, airportProperties);
+        vd.entity.base.BaseEntityModelOnMap.call(this, airportProperties);
 
         /**
         * Entity "Airport".
@@ -78,7 +78,7 @@ namespace.module('vd.entity', function (exports, require) {
             this._airportLabel.eventMouseDownHookIn = null;
             this._airportLabel = null;
         }
-        this.dispose$BaseEntityVatsimOnMap();
+        this.dispose$BaseEntityModelOnMap();
     };
 
     /**
@@ -381,7 +381,7 @@ namespace.module('vd.entity', function (exports, require) {
     */
     exports.Airport.prototype.toString = function () {
         var s = this.name;
-        s = s.appendIfNotEmpty(this.toString$BaseEntityVatsimOnMap(), " - ");
+        s = s.appendIfNotEmpty(this.toString$BaseEntityModelOnMap(), " - ");
         return s;
     };
 
@@ -403,7 +403,7 @@ namespace.module('vd.entity', function (exports, require) {
             var exisitingAirportsCopy = existingAirports.slice();
             for (var a = 0, len = newAirports.length; a < len; a++) {
                 var newAirport = newAirports[a];
-                var foundInExistingAirports = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(exisitingAirportsCopy, newAirport.callsign);
+                var foundInExistingAirports = vd.entity.base.BaseEntityModel.findByCallsignFirst(exisitingAirportsCopy, newAirport.callsign);
                 if (Object.isNullOrUndefined(foundInExistingAirports)) {
                     airports.push(newAirport);
                 } else {
@@ -434,9 +434,9 @@ namespace.module('vd.entity', function (exports, require) {
         for (var f = 0, len = flights.length; f < len; f++) {
             var flight = flights[f];
             if (!flight.hasFlightplan()) continue;
-            var airportDep = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(airports, flight.flightplan.from);
+            var airportDep = vd.entity.base.BaseEntityModel.findByCallsignFirst(airports, flight.flightplan.from);
             if (!Object.isNullOrUndefined(airportDep)) airportDep.addFlightDeparting(flight);
-            var airportArr = vd.entity.base.BaseEntityVatsim.findByCallsignFirst(airports, flight.flightplan.to);
+            var airportArr = vd.entity.base.BaseEntityModel.findByCallsignFirst(airports, flight.flightplan.to);
             if (!Object.isNullOrUndefined(airportArr)) airportArr.addFlightArriving(flight);
             flight.flightplan.airportDeparting = airportDep;
             flight.flightplan.airportArriving = airportArr;
@@ -444,5 +444,5 @@ namespace.module('vd.entity', function (exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.Airport, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.Airport, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });

@@ -40,6 +40,11 @@ namespace.module('vd.entity', function (exports) {
         * @type {Array} 
         */
         this.readHistory = new Array();
+        /**
+        * Read JSON aircrafts
+        * @type {Array}
+        */
+        this.aircrafts = null;
 
         // call init methods
         this.initServerValues(fsxWsLocation, fsxWsPort);
@@ -99,8 +104,10 @@ namespace.module('vd.entity', function (exports) {
     };
 
     /**
-    * Read data from the WebService (JSON).
+    * Read data from the WebService (JSON). I do not use the jQuery method in order to be 
+    * consistent with the Vatsim clients read method (synchronous read, return values). 
     * @return {Number} status, const values indicating if data was already available or something failed
+    * @see vd.entity.VatsimClients.readFromVatsim 
     */
     exports.FsxWs.prototype.readFromFsxWs = function () {
         if (Object.isNullOrUndefined(this.serverUrl)) return exports.FsxWs.NoFsxWs;
@@ -114,9 +121,19 @@ namespace.module('vd.entity', function (exports) {
         if (xmlhttp.status == 200) {
             var xml = xmlhttp.responseText;
             if (xml.isNullOrEmpty()) return exports.FsxWs.ReadNoData;
+            var parsedAircrafts = jQuery.parseJSON(xml);
+            if (Object.isNullOrUndefined(parsedAircrafts)) return exports.FsxWs.ReadNoData;
+
+            // valid data
+            this.aircrafts = parsedAircrafts;
+            var dt = vd.utils.Utils.nowFormattedYYYYMMDDhhmm(true);
+            this.readHistory.unshift(dt);
+            this.update = dt;
+
+            // stats
             var rtEntry = this._statisticsRead.end(); // I just write full reads (not failed reads) in the statistics in order to get real comparisons
             globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
-            return r;
+            return exports.FsxWs.Ok;
         } else {
             globals.log.error("FsxWs data cannot be loaded, status " + xmlhttp.status + ". ");
             return exports.FsxWs.ReadFailed;
