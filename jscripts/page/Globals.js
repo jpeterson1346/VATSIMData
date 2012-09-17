@@ -140,7 +140,10 @@ namespace.module('vd.page', function (exports) {
 
         // timers / collective events
         this.timerCleanUpInfoBar = 10000; // clean info message after ms
-        this.timerLoadUpdate = -1;
+        this.timerLoadVatsimUpdate = -1;
+        this.timerFsxDataUpdate = -1;
+        this.timerLoadVatsimUpdateLastCall = new Date();
+        this.timerFsxDataUpdateLastCall = new Date();
         this.collectiveBoundsChangedInterval = 2500; // ms
         this.collectiveBackgroundRefreshEvent = 2000; // ms
         this.collectiveBackgroundGridsDelay = 3000; // ms

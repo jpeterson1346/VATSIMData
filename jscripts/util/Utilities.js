@@ -163,6 +163,24 @@ namespace.module('vd.util', function (exports) {
     };
 
     /**
+    * Formatted Date/time now.
+    * @return {String} yyyymmddhhmmss[MMM]
+    */
+    exports.Utils.nowFormattedYYYYMMDDhhmm = function (withMilliseconds) {
+        var wms = Object.isNullOrUndefined(withMilliseconds) ? false : withMilliseconds;
+        var now = new Date();
+        var fs = now.getYear();
+        fs += (now.getMonth() < 9 ? '0' : '') + (now.getMonth() + 1);
+        fs += (now.getDay() < 10 ? '0' : '') + (now.getDay());
+        fs += (now.getHours() < 10 ? '0' : '') + (now.getHours());
+        fs += (now.getMinutes() < 10 ? '0' : '') + (now.getMinutes());
+        fs += (now.getSeconds() < 10 ? '0' : '') + (now.getSeconds());
+        if (!wms) return fs;
+        fs += ("00" + now.getMilliseconds()).substr(-3) ;
+        return fs;
+    };
+
+    /**
     * Time difference.
     * @constructor
     */

@@ -12,14 +12,14 @@ namespace.module('vd.entity', function(exports, require) {
     * @classdesc Route, a route from startPoint to endPoint.
     * @param {Object} routeProperties
     * @param {RouteSettings} [routeSettings]
-    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @extends vd.entity.module:base.BaseEntityModelOnMap
     * @see vd.entity.module:helper.RouteParser
     * @author KWB
     */
     exports.Route = function(routeProperties, routeSettings) {
 
         // inherit attributes
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, routeProperties);
+        vd.entity.base.BaseEntityModelOnMap.call(this, routeProperties);
 
         /**
         * Waypoints.
@@ -39,7 +39,7 @@ namespace.module('vd.entity', function(exports, require) {
     exports.Route.prototype.dispose = function() {
         vd.entity.helper.Waypoints.dispose(this.waypoints);
         this.overlays.clear();
-        this.dispose$BaseEntityVatsimOnMap();
+        this.dispose$BaseEntityModelOnMap();
     };
 
     /**
@@ -107,10 +107,10 @@ namespace.module('vd.entity', function(exports, require) {
     */
     exports.Route.prototype.toString = function() {
         var s = "";
-        s = s.appendIfNotEmpty(this.toString$BaseEntityVatsimOnMap(), " - ");
+        s = s.appendIfNotEmpty(this.toString$BaseEntityModelOnMap(), " - ");
         return s;
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.Route, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.Route, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });

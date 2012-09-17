@@ -9,6 +9,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @classdesc Base class for objects displayed on the Google Map.
     * @param {Object} [mapProperties]
     * @author KWB
+    * @since 0.7
     */
     exports.BaseEntityMap = function(mapProperties) {
 

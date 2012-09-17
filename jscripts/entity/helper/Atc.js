@@ -15,7 +15,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
     exports.Atc = function(atcOpts, atcSettings) {
 
         // inherit attributes
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, atcOpts);
+        vd.entity.base.BaseEntityModelOnMap.call(this, atcOpts);
 
         /**
         * Type of the entity.
@@ -87,7 +87,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
     // @method toPropertyValue
     // @return {Array} with proerty / value pairs
     exports.Atc.prototype.toPropertyValue = function() {
-        var pv = this.toPropertyValue$BaseEntityVatsimOnMap();
+        var pv = this.toPropertyValue$BaseEntityModelOnMap();
         if (!String.isNullOrEmpty(this.controller)) pv["controller"] = this.controller;
         if (!String.isNullOrEmpty(this.atis)) pv["atis"] = this.atis;
         return pv;
@@ -196,7 +196,7 @@ namespace.module('vd.entity.helper', function(exports, require) {
     */
     exports.Atc.prototype.toString = function() {
         var s = this.getAtcType();
-        s = s.appendIfNotEmpty(this.toString$BaseEntityVatsimOnMap(), " - ");
+        s = s.appendIfNotEmpty(this.toString$BaseEntityModelOnMap(), " - ");
         return s;
     };
 
@@ -238,5 +238,5 @@ namespace.module('vd.entity.helper', function(exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.Atc, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.Atc, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });

@@ -18,7 +18,7 @@ namespace.module('vd.entity', function(exports, require) {
     exports.GroundOverlay = function(groundOverlayProperties, groundOverlaySettings) {
 
         // inherit attributes
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, groundOverlayProperties);
+        vd.entity.base.BaseEntityModelOnMap.call(this, groundOverlayProperties);
 
         /**
         * Entity "GroundOverlay".
@@ -463,7 +463,7 @@ namespace.module('vd.entity', function(exports, require) {
     * @return {String}
     */
     exports.GroundOverlay.prototype.toString = function() {
-        var s = this.toString$BaseEntityVatsimOnMap();
+        var s = this.toString$BaseEntityModelOnMap();
         return s;
     };
 
@@ -473,7 +473,7 @@ namespace.module('vd.entity', function(exports, require) {
     */
     exports.GroundOverlay.prototype.dispose = function() {
         this.display(false, false, false);
-        this.dispose$BaseEntityVatsimOnMap();
+        this.dispose$BaseEntityModelOnMap();
     };
 
     /**
@@ -584,5 +584,5 @@ namespace.module('vd.entity', function(exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.GroundOverlay, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.GroundOverlay, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });

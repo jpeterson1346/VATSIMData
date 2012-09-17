@@ -12,13 +12,13 @@ namespace.module('vd.entity.helper', function (exports, require) {
     * @constructor
     * @param {Array} waypointOpts
     * @param {WaypointSettings} [waypointSettings]
-    * @extends vd.entity.module:base.BaseEntityVatsimOnMap
+    * @extends vd.entity.module:base.BaseEntityModelOnMap
     * @see vd.entity.module:helper.Waypoints
     */
     exports.Waypoint = function (waypointProperties, waypointSettings) {
 
         // after this, the subclasses are merged into this class
-        vd.entity.base.BaseEntityVatsimOnMap.call(this, waypointProperties);
+        vd.entity.base.BaseEntityModelOnMap.call(this, waypointProperties);
         this.entity = "Waypoint";
 
         /**
@@ -248,7 +248,7 @@ namespace.module('vd.entity.helper', function (exports, require) {
     */
     exports.Waypoint.prototype.dispose = function () {
         this.display(false, false, false);
-        this.dispose$BaseEntityVatsimOnMap();
+        this.dispose$BaseEntityModelOnMap();
     };
 
     /**
@@ -258,7 +258,7 @@ namespace.module('vd.entity.helper', function (exports, require) {
     exports.Waypoint.prototype.toString = function () {
         var s = this.name;
         s = s.appendIfNotEmpty(this.baseEntityMapToString(), " - ");
-        s = s.appendIfNotEmpty(this.baseEntityVatsimToString(), " - ");
+        s = s.appendIfNotEmpty(this.BaseEntityModelToString(), " - ");
         return s;
     };
 
@@ -289,5 +289,5 @@ namespace.module('vd.entity.helper', function (exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.Waypoint, entityBase.BaseEntityVatsimOnMap, "BaseEntityVatsimOnMap");
+    util.inheritPrototypes(exports.Waypoint, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");
 });
