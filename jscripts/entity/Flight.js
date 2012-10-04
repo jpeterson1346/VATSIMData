@@ -263,7 +263,7 @@ namespace.module('vd.entity', function (exports, require) {
         if (!String.isNullOrEmpty(this.aircraft)) pv["aircraft"] = this.aircraft;
         if (!String.isNullOrEmpty(this.transponder)) pv["squawk"] = this.transponder;
         if (!Object.isNullOrUndefined(this.flightplan)) pv["flightplan"] = "<u>Goto flightplan</u>";
-        if (!String.isNullOrEmpty(this.id)) pv["vataware"] = "<u>Show @ Vataware</u>";
+        if (!String.isNullOrEmpty(this.vatsimId)) pv["vataware"] = "<u>Show @ Vataware</u>";
         pv["grounded"] = this.isGrounded();
         return pv;
     };
@@ -427,7 +427,7 @@ namespace.module('vd.entity', function (exports, require) {
         var existingFlightsCopy = existingFlights.slice();
         for (var f = 0, len = newFlights.length; f < len; f++) {
             var newFlight = newFlights[f];
-            var foundInExistingFlights = vd.entity.base.BaseEntityModel.findByIdFirst(existingFlightsCopy, newFlight.id);
+            var foundInExistingFlights = vd.entity.base.BaseEntityModel.findByVatsimIdFirst(existingFlightsCopy, newFlight.id);
             if (Object.isNullOrUndefined(foundInExistingFlights)) {
                 flights.push(newFlight);
             } else {

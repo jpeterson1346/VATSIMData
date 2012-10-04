@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function(exports) {
+namespace.module('vd.entity', function (exports) {
 
     /**
     * @constructor
@@ -13,11 +13,17 @@ namespace.module('vd.entity', function(exports) {
     * @see vd.module:entity.Flight
     * @see vd.module:page.PageController main user of this "class", in order to display the clients (pilots/ATC)
     * @author KWB
+    * @since 0.7
     */
-    exports.VatsimClients = function() {
+    exports.VatsimClients = function () {
+        /**
+        * Enabled, disabled? Disables primarily read.
+        * @type {Boolean}
+        */
+        this.enabled = true;
         /**
         * When this was last updated.
-        * @type {String} 
+        * @type {Date} 
         */
         this.update = null;
         /**
@@ -27,7 +33,8 @@ namespace.module('vd.entity', function(exports) {
         this.clientsConnected = 0;
         /**
         * Number of connected clients (aka VATSIM users).
-        * @type {Number}
+        * Info string with update time.
+        * @type {String}
         */
         this.info = "";
         /**
@@ -35,6 +42,11 @@ namespace.module('vd.entity', function(exports) {
         * @type {String}
         */
         this.datafile = null;
+        /**
+        * Last status. see define status codes.
+        * @type {Number}
+        */
+        this.lastStatus = exports.VatsimClients.Init;
         /**
         * List of all updates.
         * @type {Array} 
@@ -46,6 +58,11 @@ namespace.module('vd.entity', function(exports) {
         * @private
         */
         this._testModeFileNumber = 0;
+        /**
+        * Loading in progress
+        * @type {Boolean}
+        */
+        this.loading = false;
 
         //
         // ---- helper entities
@@ -95,41 +112,65 @@ namespace.module('vd.entity', function(exports) {
         * @type {vd.util.RuntimeStatistics}
         */
         this._statisticsParse = new vd.util.RuntimeStatistics("VatsimClients parse");
-        /**
-        * Log parse statistics.
-        * @type {vd.util.RuntimeStatistics}
-        */
-        this._statisticsDisplay = new vd.util.RuntimeStatistics("VatsimClients display");
     };
 
     /**
-    * Read data from the VATSIM servers ("data file").
-    * @return {Number} status, const values indicating if data was already available or something failed
+    * Trigger read data from the VATSIM servers ("data file").
     * @see vd.entity.FsxWs.readFromFsxWs
     */
-    exports.VatsimClients.prototype.readFromVatsim = function() {
-        this._statisticsRead.start();
-        this._setDatafile();
-        // ReSharper disable InconsistentNaming
-        var xmlhttp = new XMLHttpRequest();
-        // ReSharper restore InconsistentNaming
-        xmlhttp.open("GET", this.datafile, false);
-        xmlhttp.send();
-        if (xmlhttp.status == 200) {
-            var xml = xmlhttp.responseText;
-            var r = this._parseVatsimDataFile(xml); // also updates timestamp / history
-            if (r == exports.VatsimClients.Ok) {
-                var rtEntry = this._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
-                globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
-            } else if (r == exports.VatsimClients.NoNewData)
-                globals.log.trace("VATSIM Data loaded but no new data");
-            else
-                globals.log.error("Parsing VATSIM data failed");
-            return r;
-        } else {
-            globals.log.error("VATSIM data cannot be loaded, status " + xmlhttp.status + ". " + this.datafile);
-            return exports.VatsimClients.ReadFailed;
+    exports.VatsimClients.prototype.readFromVatsim = function () {
+
+        // checks
+        if (!this.enabled) return;
+        if (!jQuery.support.cors) alert("jQuery CORS not enabled");
+        if (this.loading) {
+            alert("Concurrent loading from VATSIM");
+            return;
         }
+
+        // prepare
+        this.loading = true;
+        this._setDatafile();
+        var url = this.datafile;
+        if (String.isNullOrEmpty(url)) alert("VATSIM read URL empty / undefined");
+        var me = this;
+        this._statisticsRead.start();
+
+        // AJAX call
+        $.ajax({
+            type: 'GET',
+            url: url,
+            cache: false,
+            async: true,
+            crossdomain: false,
+            datatype: "text",
+            success: function (data, status) {
+                // alert("Data returned :" + data);
+                // alert("Status :" + status);
+                if (status == "success" && !String.isNullOrEmpty(data)) {
+                    var r = me._parseVatsimDataFile(data); // also updates timestamp / history
+                    if (r == exports.VatsimClients.Ok) {
+                        var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
+                        globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
+                    } else if (r == exports.VatsimClients.NoNewData)
+                        globals.log.trace("VATSIM Data loaded but no new data");
+                    else
+                        globals.log.error("Parsing VATSIM data failed");
+
+                    // final state
+                    me.lastStatus = r;
+                } else {
+                    me.lastStatus = exports.VatsimClients.ReadFailed;
+                    globals.log.error("Reading from VATSIM success, but not data");
+                }
+                me.loading = false;
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                me.loading = false;
+                me.lastStatus = exports.VatsimClients.ReadFailed;
+                globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown + ". File: " + url);
+            }
+        });
     };
 
     /**
@@ -137,7 +178,7 @@ namespace.module('vd.entity', function(exports) {
     * it uses the test files.
     * @private
     */
-    exports.VatsimClients.prototype._setDatafile = function() {
+    exports.VatsimClients.prototype._setDatafile = function () {
         // http://www.net-flyer.net/DataFeed/vatsim-data.txt
         if (vd.util.UtilsWeb.isLocalServer()) {
             // local test mode
@@ -155,7 +196,7 @@ namespace.module('vd.entity', function(exports) {
     * @param  {String} rawData from the request
     * @return {Number} status, e.g. whether data was already available or something failed
     */
-    exports.VatsimClients.prototype._parseVatsimDataFile = function(rawData) {
+    exports.VatsimClients.prototype._parseVatsimDataFile = function (rawData) {
 
         // init
         var statsEntry = new vd.util.RuntimeEntry("Parsing file (VatsimClients)");
@@ -166,7 +207,7 @@ namespace.module('vd.entity', function(exports) {
         var atcs = new Array();
         var airports = new Array();
         var currentAirport = null;
-        var status = exports.VatsimClients.ParsingFailed;
+        var status;
 
         // parse each line
         for (var l = 0, len = lines.length; l < len; l++) {
@@ -214,7 +255,7 @@ namespace.module('vd.entity', function(exports) {
                         {
                             flightplan: flightplan,
                             callsign: callsign,
-                            id: id,
+                            idvatsim: id,
                             name: name,
                             frequency: String.toNumber(clientElements[4], null),
                             altitude: String.toNumber(clientElements[7], null),
@@ -234,8 +275,8 @@ namespace.module('vd.entity', function(exports) {
                     var atc = new vd.entity.helper.Atc(
                         {
                             callsign: callsign,
-                            id: id,
-                            controller: clientElements[2],
+                            idvatsim: id,
+                            controller: name,
                             name: name,
                             frequency: String.toNumber(clientElements[4], null),
                             altitude: String.toNumber(clientElements[7], null),
@@ -272,42 +313,34 @@ namespace.module('vd.entity', function(exports) {
         } // end parsing lines
 
         // update info, helper entities
+        if (Object.isNullOrUndefined(this.update)) alert("Update undefined in VATSIM data parsing");
         this.info = this.update.format("dd.MM.yyyy HH:mm:ss") + " " + this.clientsConnected;
-        this.atcs = atcs;
+        this.atcs = atcs; // atc currently replaced, since not displayed on map
         this.flightplans = flightplans;
 
-        // update flights with elevation
-        if (!globals._asyncBoundsUpdateSemaphore) {
-            globals._asyncBoundsUpdateSemaphore = true;
+        // VISUAL (displayed) entities are updated, not just replaced
+        // This leaves the references to this object intact, just changes its values
 
-            // set flights
-            this.flights = vd.entity.Flight.updateFlights(this.flights, flights);
-            if (!Object.isNullOrUndefined(this.flights)) {
-                var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(this.flights);
-                vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
-            } else {
-                globals.log.error("Parsing clients, flights undefined");
-                return exports.VatsimClients.ParsingFailed;
-            }
-
-            // set airports        
-            this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
-            if (Object.isNullOrUndefined(this.airports)) {
-                globals.log.error("Parsing clients, airports undefined");
-                return exports.VatsimClients.ParsingFailed;
-            }
-
-            // statistics / log
-            this._statisticsParse.add(statsEntry);
-            globals.log.trace(statsEntry.toString());
-
-            // completed    
-            globals._asyncBoundsUpdateSemaphore = false;
-            status = exports.VatsimClients.Ok;
-        } else {
-            // handling of race condition
-            globals.log.warn("Parsing clients, race condition detected!");
+        // update flights
+        this.flights = vd.entity.Flight.updateFlights(this.flights, flights);
+        if (Object.isNullOrUndefined(this.flights)) {
+            globals.log.error("Parsing vatsimClients, flights undefined");
+            return exports.VatsimClients.ParsingFailed;
         }
+
+        // set airports        
+        this.airports = vd.entity.Airport.updateAirports(this.airports, airports, this.flights);
+        if (Object.isNullOrUndefined(this.airports)) {
+            globals.log.error("Parsing vatsimClients, airports undefined");
+            return exports.VatsimClients.ParsingFailed;
+        }
+
+        // statistics / log
+        this._statisticsParse.add(statsEntry);
+        globals.log.trace(statsEntry.toString());
+
+        // completed    
+        status = exports.VatsimClients.Ok;
 
         // bye
         return status;
@@ -317,7 +350,7 @@ namespace.module('vd.entity', function(exports) {
     * Part of the parsing
     * @private
     */
-    exports.VatsimClients.prototype._splitGeneralSection = function(line) {
+    exports.VatsimClients.prototype._splitGeneralSection = function (line) {
         if (String.isNullOrEmpty(line)) return null;
         if (line.indexOf("=") < 0) return [line];
         var kv = line.split("=");
@@ -325,41 +358,11 @@ namespace.module('vd.entity', function(exports) {
     };
 
     /**
-    * Display the clients (invoke display on all entities).
-    * This will display the entities if they are in bounds of the map.
-    * @param {Boolean} display
-    * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
-    */
-    exports.VatsimClients.prototype.display = function(display, forceRedraw) {
-        var c = this.count();
-        if (c < 1) return;
-        forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, false);
-        var statsEntry = new vd.util.RuntimeEntry("Display on " + c + " clients (VatsimClients)");
-        var clients = this.clients();
-        vd.entity.base.BaseEntityMap.display(clients, display, forceRedraw);
-        this._statisticsDisplay.add(statsEntry, true);
-        globals.log.trace(statsEntry.toString());
-    };
-
-    /**
-    * Clear all overlays of all clients.
-    */
-    exports.VatsimClients.prototype.clearOverlays = function() {
-        if (this.count() < 1) return;
-        this.display(false, false);
-        var clients = this.allClients();
-        for (var c = 0, len = clients.length; c < len; c++) {
-            var client = clients[c];
-            if (!Object.isNullOrUndefined(client.overlays)) client.overlays.clear();
-        }
-    };
-
-    /**
     * Get all clients. While this.clients only gets the primary clients,
     * this returns all of them.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.allClients = function() {
+    exports.VatsimClients.prototype.allClients = function () {
         var c = this.flights.concat(this.airports);
         c = c.concat(this.flightplans);
         c = c.concat(this.atcs);
@@ -370,7 +373,7 @@ namespace.module('vd.entity', function(exports) {
     * All primary clients, not the helper entities.
     * @returns {Array} array of Flight, Airport ...
     */
-    exports.VatsimClients.prototype.clients = function() {
+    exports.VatsimClients.prototype.vatsimClients = function () {
         var c = this.flights.concat(this.airports);
         return c;
     };
@@ -379,8 +382,8 @@ namespace.module('vd.entity', function(exports) {
     * Number of primary clients.
     * @returns {Number}
     */
-    exports.VatsimClients.prototype.count = function() {
-        return this.clients().length;
+    exports.VatsimClients.prototype.count = function () {
+        return this.vatsimClients().length;
     };
 
     /**
@@ -388,7 +391,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Number} objectId
     * @returns {BaseEntityModel}
     */
-    exports.VatsimClients.prototype.findByObjectId = function(objectId) {
+    exports.VatsimClients.prototype.findByObjectId = function (objectId) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityModel.findByObjectId(clients, objectId);
     };
@@ -398,7 +401,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Number} id
     * @returns {Array} BaseEntityModel
     */
-    exports.VatsimClients.prototype.findById = function(id) {
+    exports.VatsimClients.prototype.findByVatsimId = function (id) {
         var clients = this.allClients();
         return vd.entity.base.BaseEntityModel.findByObjectId(clients, id);
     };
@@ -407,11 +410,11 @@ namespace.module('vd.entity', function(exports) {
     * Find client with first occurance of id.
     * @param {Number} id
     * @returns {BaseEntityModel}
-    * @see BaseEntityModel#findByIdFirst
+    * @see BaseEntityModel#findByVatsimIdFirst
     */
-    exports.VatsimClients.prototype.findByIdFirst = function(id) {
+    exports.VatsimClients.prototype.findByVatsimIdFirst = function (id) {
         var clients = this.allClients();
-        return vd.entity.base.BaseEntityModel.findByIdFirst(clients, id);
+        return vd.entity.base.BaseEntityModel.findByVatsimIdFirst(clients, id);
     };
 
     /**
@@ -419,7 +422,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Boolean} displayed
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsDisplayed = function(displayed) {
+    exports.VatsimClients.prototype.findFlightsDisplayed = function (displayed) {
         return vd.entity.base.BaseEntityMap.findByDisplayed(this.flights, displayed);
     };
 
@@ -428,10 +431,16 @@ namespace.module('vd.entity', function(exports) {
     * @param {Boolean} inBounds
     * @returns {Array} flights displayed / not displayed
     */
-    exports.VatsimClients.prototype.findFlightsInBounds = function(inBounds) {
+    exports.VatsimClients.prototype.findFlightsInBounds = function (inBounds) {
         return vd.entity.base.BaseEntityMap.findInBounds(this.flights, inBounds);
     };
 
+    /**
+    * Never read, init status
+    * @type {Number}
+    * @const
+    */
+    exports.VatsimClients.Init = -1;
     /**
     * Reading OK.
     * @type {Number}
@@ -456,4 +465,33 @@ namespace.module('vd.entity', function(exports) {
     * @const
     */
     exports.VatsimClients.ParsingFailed = 11;
+    /**
+    * Status code to readable message.
+    * @type {Number}
+    * @return {String}
+    */
+    exports.VatsimClients.statusToInfo = function (status) {
+        var info;
+        switch (status) {
+            case vd.entity.VatsimClients.Init:
+                info = "Init";
+                break;
+            case vd.entity.VatsimClients.Ok:
+                info = "Vatsim data loaded";
+                break;
+            case vd.entity.VatsimClients.NoNewData:
+                info = "No new data, skipping read.";
+                break;
+            case vd.entity.VatsimClients.ReadFailed:
+                info = "Read failed.";
+                break;
+            case vd.entity.VatsimClients.ParsingFailed:
+                info = "Parser failed.";
+                break;
+            default:
+                info = "Unknown, check console.";
+                break;
+        }
+        return info;
+    };
 });

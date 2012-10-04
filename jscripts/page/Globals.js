@@ -29,13 +29,35 @@ namespace.module('vd.page', function (exports) {
         this.logUseAppenderConsole = true;
         this._initLogger();
 
-        // Vatsim objects
+        // urls
+        this.urlUserManual = "./doc/Help.pdf";
+        this.urlVATroute = "http://www.vatroute.net/";
+        this.urlProjectLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
+        this.urlProjectGettingInvolved = "http://vatgm.codeplex.com/";
+        this.urlProjectReportBugs = "http://vatgm.codeplex.com/workitem/list/basic";
+        this.urlProjectFeatureRequests = "http://vatgm.codeplex.com/discussions";
+        this.urlProjectProvideCharts = "http://vatgm.codeplex.com/wikipage?title=Ground%20overlay%20charts";
+        this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
+        this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
+        this.urlFsxWsDefault = "http://localhost:8080/";
+
+        // global id counter
         this._idCounter = 0;
-        this.clients = new vd.entity.VatsimClients();
-        this.metar = new vd.entity.helper.VatsimMetar();
+        this._objects = null;
+
+        // Vatsim objects
+        this.vatsimClients = null;
+        this.vatsimMetar = new vd.entity.helper.VatsimMetar();
 
         // FsxWs JSON objects from web service
-        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"]);
+        this.fsxWs = null;
+        this.fsxWsAvailabilityDelay = 3000; // before expectiny availability results [ms]
+
+        // combined entities (VATSIM, FSX, ..)
+        this.allEntities = null;
+
+        // reset all entities
+        this.resetEntities();
 
         // sidebar dimensions
         this.sideBarMinWidth = null;
@@ -48,6 +70,7 @@ namespace.module('vd.page', function (exports) {
         this.sideBarRouteDisplay = null;
         this.sideBarOverlaysDisplay = null;
         this.sideBarAboutDisplay = null;
+        this.sideBarFsxWsUrlMaxChars = 30; // truncate too long URLs
         this.headerTaskInfoDisplay = null;
 
         // styles
@@ -57,7 +80,7 @@ namespace.module('vd.page', function (exports) {
         this.map = null;
         this.mapOverlayView = null;
         this.mapOldCenter = null;
-        this.mapFollowVatsimId = null;
+        this.mapFollowId = null;
         this.mapOldZoom = -1;
         this.mapRelevantMovement = 5; // 5%
         this.mapElevationZeroCutoff = true; // Google features sea levels < 0, I am aware this will cutoff some places on land < 0
@@ -103,6 +126,7 @@ namespace.module('vd.page', function (exports) {
         this.atcHideZoomLevel = 4;
         this.atcSettings = new vd.entity.helper.AtcSettings();
 
+        // Waypoints
         this.waypointSettings = new vd.entity.helper.WaypointSettings(
             {
                 displayFlightWaypointsWhenGrounded: false,
@@ -112,6 +136,7 @@ namespace.module('vd.page', function (exports) {
         this.waypointHideZoomLevel = 4;
         this.waypointLinesHideZoomLevel = 4;
 
+        // Airport
         this.airportHideZoomLevel = 4;
         this.airportAtisTextWidth = 30;
         this.airportSettings = new vd.entity.AirportSettings();
@@ -139,26 +164,19 @@ namespace.module('vd.page', function (exports) {
         this._asyncBoundsUpdateSemaphore = false;
 
         // timers / collective events
+        this.timerDispatcherSemaphore = false;
         this.timerCleanUpInfoBar = 10000; // clean info message after ms
         this.timerLoadVatsimUpdate = -1;
         this.timerFsxDataUpdate = -1;
-        this.timerLoadVatsimUpdateLastCall = new Date();
-        this.timerFsxDataUpdateLastCall = new Date();
+        this.timerLoadVatsimUpdateLastCall = new Date(0); // date in the past
+        this.timerFsxDataUpdateLastCall = new Date(0); // date in the past
         this.collectiveBoundsChangedInterval = 2500; // ms
         this.collectiveBackgroundRefreshEvent = 2000; // ms
         this.collectiveBackgroundGridsDelay = 3000; // ms
         this.collectiveBoundsWindowsRefreshDelay = 1000; // ms
 
-        // urls
-        this.urlUserManual = "./doc/Help.pdf";
-        this.urlVATroute = "http://www.vatroute.net/";
-        this.urlProjectLegalText = "http://vatgm.codeplex.com/wikipage?title=Legal";
-        this.urlProjectGettingInvolved = "http://vatgm.codeplex.com/";
-        this.urlProjectReportBugs = "http://vatgm.codeplex.com/workitem/list/basic";
-        this.urlProjectFeatureRequests = "http://vatgm.codeplex.com/discussions";
-        this.urlProjectProvideCharts = "http://vatgm.codeplex.com/wikipage?title=Ground%20overlay%20charts";
-        this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
-        this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
+        // jQuery
+        jQuery.support.cors = true;
     };
 
     /**
@@ -166,10 +184,9 @@ namespace.module('vd.page', function (exports) {
     * @param {google.maps.Map} map
     **/
     exports.Globals.prototype.assignMap = function (map) {
-        this.clients.clearOverlays(); // re-entry, clean up
+        this.allEntities.clearOverlays(); // re-entry, clean up
+        this._objects = new Array();
         this.map = map;
-        this.objects = new Array();
-
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
@@ -179,6 +196,15 @@ namespace.module('vd.page', function (exports) {
                 google.maps.event.trigger(this, 'ready');
             }
         };
+    };
+
+    /**
+    * Is the FsxWs service available?
+    * @return {Boolean} available
+    **/
+    exports.Globals.prototype.isFsxAvailable = function () {
+        if (Object.isNullOrUndefined(this.fsxWs)) return false;
+        return this.fsxWs.successfulRead();
     };
 
     /**
@@ -198,7 +224,7 @@ namespace.module('vd.page', function (exports) {
     exports.Globals.prototype.register = function (newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
-        this.objects[id] = newObject;
+        this._objects[id] = newObject;
         return id;
     };
 
@@ -218,15 +244,18 @@ namespace.module('vd.page', function (exports) {
     * @return {Object}
     */
     exports.Globals.prototype.getObject = function (id) {
-        return this.objects[id];
+        return this._objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetClients = function () {
-        if (!Object.isNullOrUndefined(this.clients)) this.clients.display(false, true);
-        this.clients = new vd.entity.VatsimClients();
+    exports.Globals.prototype.resetEntities = function () {
+        if (!Object.isNullOrUndefined(this.allEntities)) this.allEntities.display(false, true);
+        this.vatsimClients = new vd.entity.VatsimClients();
+        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"], this.urlFsxWsDefault);
+        this.allEntities = new vd.entity.base.EntityMapList();
+        this._objects = new Array();
     };
 
     /**
@@ -238,7 +267,7 @@ namespace.module('vd.page', function (exports) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
         for (var id in ids) {
-            var o = this.objects[id];
+            var o = this._objects[id];
             if (o != null) objs.push(o);
         }
         return objs;
@@ -267,7 +296,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
         value = Object.ifNotNullOrUndefined(value, 0);
-        // I have to use the global var _gaq here, because it will be changed
+        // I have to use the global var _gaq here, because it will be changed to valid object later
         // see: http://stackoverflow.com/questions/7944860/google-analytics-events-when-are-they-send
         _gaq.push(['_trackEvent', 'VatGM', action, label, value]);
     };

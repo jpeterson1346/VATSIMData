@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
     <head>
-        <title>VatGM - VATSIM and FSX flights information for Google Maps</title>
+        <title>VatGM (Plus) - VATSIM and FSX flights information for Google Maps</title>
         <meta name="viewport" content="initial-scale=1, user-scalable=yes, width=device-width" />
         <link rel="stylesheet" type="text/css" media="screen" href="css/Styles.css" />
         <link rel="stylesheet" type="text/css" media="screen" href="css/smoothness/jquery-ui-1.8.23.custom.css" />
@@ -34,6 +34,7 @@
         <script type="text/javascript" src="jscripts/util/CollectingEvent.js"> </script>
         <script type="text/javascript" src="jscripts/util/RuntimeStatistics.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/EntityList.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/base/EntityMapList.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/Styles.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/BaseEntityModel.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/BaseEntityMap.js"> </script>
@@ -60,6 +61,8 @@
         <script type="text/javascript" src="jscripts/entity/Route.js"> </script>
         <script type="text/javascript" src="jscripts/page/Globals.js"> </script>
         <script type="text/javascript" src="jscripts/page/PageController.js"> </script>
+        <script type="text/javascript" src="jscripts/page/PageControllerSettings.js"> </script>
+        <script type="text/javascript" src="jscripts/page/PageControllerDisplayAndLoad.js"> </script>
         <script type="text/javascript" src="jscripts/gm/OverlayGroup.js"> </script>
         <script type="text/javascript" src="jscripts/gm/Elevation.js"> </script>
         <script type="text/javascript" src="jscripts/gc/AltitudeProfile.js"> </script>
@@ -122,8 +125,8 @@
                 <!-- the first button also "catches" the first selected button action, so choose wisely -->
                 <button class="ui-button" onclick=" ctr.refresh(); " title="Refresh"><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
                 <button class="ui-button" onclick=" ctr.hideAllClients(); " title="Clear"><span class="ui-icon ui-icon-circlesmall-minus" title="Clear"></span></button>
-                <button class="ui-button" onclick=" ctr.loadAndDisplayVatsimClients(true); " title="Load"><span class="ui-icon ui-icon-document" title="Load"></span></button>
-                <button class="ui-button" onclick=" globals.resetClients(); " title="Reset"><span class="ui-icon ui-icon-refresh" title="Reset"></span></button>
+                <button class="ui-button" onclick=" ctr.triggerNewLoad(true); " title="Load"><span class="ui-icon ui-icon-document" title="Load"></span></button>
+                <button class="ui-button" onclick=" globals.resetEntities(); " title="Reset"><span class="ui-icon ui-icon-refresh" title="Reset"></span></button>
                 <button class="ui-button" onclick=" ctr.filterSettingsChanged({ toogleFilter: true }); " title="Toggle filter"><span class="ui-icon ui-icon-shuffle" title="Toggle filter"></span></button>
                 <button class="ui-button" onclick=" ctr.showLogger(); " title="Console"><span class="ui-icon ui-icon-newwin" title="Console"></span></button>
                 <button class="ui-button" onclick=" globals.flightSettings.displayMinimal(); ctr.refresh(); " title="Display minimal information"><span class="ui-icon ui-icon-arrow-1-sw" title="Display minimal information"></span></button>
@@ -150,7 +153,7 @@
                             <div id="inputDatafileInfo">not read</div>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" vd.util.UtilsWeb.newLocation(globals.clients.datafile, true); " ><span class="ui-icon ui-icon-link" title="Show data file"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" vd.util.UtilsWeb.newLocation(globals.vatsimClients.datafile, true); " ><span class="ui-icon ui-icon-link" title="Show data file"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content sideBarTopAlign">
@@ -169,15 +172,15 @@
                             Load data:
                         </td>
                         <td colspan="3">
-                            Vatsim:
+                            <label for="inputTimerUpdateVatsim">Vatsim</label>
                             <select id="inputTimerUpdateVatsim" onchange=" ctr.resetUpdateTimer(); ">
-                                <option value ="-1">never</option>
+                                <option value ="-1">off</option>
                                 <option value ="60" selected="selected">60s</option>
                                 <option value ="30">30s</option>
                             </select>
-                            FSX:
+                            <label for="inputTimerUpdateFsx">FSX</label>
                             <select id="inputTimerUpdateFsx" onchange=" ctr.resetUpdateTimer(); ">
-                                <option value ="-1">never</option>
+                                <option value ="-1">off</option>
                                 <option value ="5" selected="selected">05s</option>
                                 <option value ="10">10s</option>
                                 <option value ="20">20s</option>
@@ -194,7 +197,7 @@
                         <td>
                             Area:
                         </td>
-                        <td id="locationMapBounds"  colspan="3">
+                        <td id="locationMapBounds" colspan="3">
                             Map bounds
                         </td>
                     </tr>
@@ -296,13 +299,13 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
-                            Altitude profile:
+                            Alt.profile:
                         </td>
                         <td>
                             <input name="showProfile" id="inputAltitudeProfileShow" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
                         <td>
-                            Elevation profile:
+                            Elev.profile:
                         </td>
                         <td>
                             <input name="elevationProfile" id="inputAltitudeProfileElevationLine" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
@@ -315,14 +318,14 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
-                            Vatsim Id:
+                            Id:
                         </td>
                         <td>
-                            <input name="followVatsimId" id="inputFollowVatsimId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followVatsimId(null); }); "/>
+                            <input name="followId" id="inputFollowId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followId(null); }); "/>
                         </td>
                         <td colspan="2">
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { flightGridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " title="Show data"><span class="ui-icon ui-icon-link" title="Show data"></span></button>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(); " title="Follow"><span class="ui-icon ui-icon-check" title="Follow"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followId(); " title="Follow"><span class="ui-icon ui-icon-check" title="Follow"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -331,12 +334,12 @@
                             <div id="inputFollowedVatsimClient">Not followed.</div>
                         </td>
                         <td>
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followVatsimId(''); " title="End follow id"><span class="ui-icon ui-icon-trash" title="End follow id"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.followId(''); " title="End follow id"><span class="ui-icon ui-icon-trash" title="End follow id"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
-                            Apply Filter:
+                            Apply&nbsp;filter:
                         </td>
                         <td colspan="2">
                             <input name="applyFilter" id="inputApplyFilter" type="checkbox" onchange = " ctr.filterSettingsChanged(); "/>
@@ -986,6 +989,7 @@
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://log4javascript.org/docs/quickstart.html', true);">log4javascript</a></li>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('https://github.com/micmath/jsdoc', true);">JsDoc3</a></li>
                                 <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://appendto.com/community/jquery-vsdoc', true);">jQuery Intellisense</a></li>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://blog.stevenlevithan.com/archives/parseuri', true);">Uri Parser (by SL)</a></li>
                             </ul>
                         </td>
                     </tr>
