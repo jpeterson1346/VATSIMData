@@ -60,6 +60,13 @@ namespace.module('vd.entity', function (exports, require) {
         * @private
         */
         this._airportLabel = null;
+        /**
+        * Controller.
+        * @type {String}
+        */
+        this.controller = Object.ifNotNullOrUndefined(airportProperties["controller"], null);
+        if (String.isNullOrEmpty(this.controller)) this.controller = this.name;
+
     };
 
     /**

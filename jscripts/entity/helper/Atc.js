@@ -9,13 +9,13 @@ namespace.module('vd.entity.helper', function(exports, require) {
     /**
     * @classdesc An ATC unit
     * @constructor
-    * @param {Array} atcOpts
+    * @param {Array} atcProperties
     * @param {AtcSettings} [atcSettings]
     */
-    exports.Atc = function(atcOpts, atcSettings) {
+    exports.Atc = function(atcProperties, atcSettings) {
 
         // inherit attributes
-        vd.entity.base.BaseEntityModelOnMap.call(this, atcOpts);
+        vd.entity.base.BaseEntityModelOnMap.call(this, atcProperties);
 
         /**
         * Type of the entity.
@@ -32,13 +32,13 @@ namespace.module('vd.entity.helper', function(exports, require) {
         * ATIS message if applicable.
         * @type {String}
         */
-        this.atis = Object.ifNotNullOrUndefined(atcOpts["atis"], null);
+        this.atis = Object.ifNotNullOrUndefined(atcProperties["atis"], null);
         /**
         * Controller.
         * @type {String}
         */
-        this.controller = Object.ifNotNullOrUndefined(atcOpts["controller"], null);
-        if (String.isNullOrEmpty(this.controller)) this.controller = this.name;
+        this.controller = Object.ifNotNullOrUndefined(atcProperties["controller"], null);
+        if (String.isNullOrEmpty(this.controller)) this.controller = "Airport";
     };
 
     /**

@@ -106,7 +106,7 @@ namespace.module('vd.page', function (exports) {
         this.unitsChanged(false); // units such as km, ft ..
 
         // now the map, the following depends on the map
-        if (globals.clients.count() > 0) globals.resetClients(); // re-entry
+        if (globals.vatsimClients.count() > 0) globals.resetEntities(); // re-entry
         this._initMap();
 
         // tabs and client information, then side bars
@@ -114,11 +114,11 @@ namespace.module('vd.page', function (exports) {
         this._initSideBarData(); // side bar data init
         this._initAltitudeProfile(); // all related to height profile
 
-        // load flight when map completed
+        // load flights when map completed
         var me = this;
         google.maps.event.addListenerOnce(globals.map, 'tilesloaded',
             function () {
-                me.loadAndDisplayVatsimClients(false);
+                me.resetUpdateTimer(); // inital kick off reading
                 if (globals.geolocationWorking) me._initGeoLocationPosition();
             }
         );
@@ -166,104 +166,17 @@ namespace.module('vd.page', function (exports) {
     * Test FsxWs connection and update info.
     */
     exports.PageController.prototype.refreshFsxWsInfo = function () {
-        this._setFsxWsInfoFields();
-    };
-
-    /**
-    * Load the VATSIM clients (flights, airports, ATC ...).
-    * @param {Boolean} displayInfo
-    * @param {Boolean} timerCalled
-    */
-    exports.PageController.prototype.loadAndDisplayVatsimClients = function (displayInfo, timerCalled) {
-        displayInfo = Object.ifNotNullOrUndefined(displayInfo, false);
-        timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
-        if (timerCalled && this.timerLoadVatsimUpdate < 0) return; // timer calls no longer valid?
-        var clients = globals.clients;
-        var readStatus = clients.readFromVatsim();
-        var info = "";
-        if (displayInfo) {
-            switch (readStatus) {
-                case vd.entity.VatsimClients.Ok:
-                    info = "Data loaded as of " + clients.info + ".";
-                    break;
-                case vd.entity.VatsimClients.NoNewData:
-                    info = "No new data, skipping read.";
-                    break;
-                default:
-                    info = "Read error, check console.";
-                    break;
-            }
+        if (Object.isNullOrUndefined(globals.fsxWs)) {
+            alert("No refresh possible, FsxWs object not available!");
+            return;
         }
-        this._setVatsimInfoFields(clients.info);
-        clients.display(true, true); // force redraw
-        if (timerCalled) this.resetUpdateTimer(); // retrigger timer
-
-        // display info whether flights / airports will be shown
-        var hiddenInfo = this._hiddenByZoomMessage();
-        info = info.appendIfNotEmpty(hiddenInfo, " ");
-
-        // update the grids
-        this.updateGridsBackground(this._gridsVisible());
-
-        // update the height profile
-        this._updateAltitudeProfile();
-
-        // follow a certain VATSIM user
-        if (Object.isNumber(globals.mapFollowVatsimId)) {
-            var client = clients.findByIdFirst(globals.mapFollowVatsimId);
-            if (!Object.isNullOrUndefined(client)) {
-                globals.map.setCenter(client.latLng());
-                info = info.appendIfNotEmpty("Center on '" + client.callsign, " ");
-                info += "'.";
-            } else {
-                info = info.appendIfNotEmpty("Followed object no longer available.", " ");
-                this.followVatsimId("", false, false);
-            }
-        }
-
-        // display info
-        if (!String.isNullOrEmpty(info)) this.displayInfo(info);
-    };
-
-    /**
-    * Set a new or cancel the timer.
-    */
-    exports.PageController.prototype.resetUpdateTimer = function () {
-        this.timerLoadVatsimUpdate = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) * 1000;
-        var timeOut = this.timerLoadVatsimUpdate;
-        this.timerFsxDataUpdate = String.toNumber($("#inputTimerUpdateFsx").val(), -1) * 1000;
-        if (timeOut < 0 || (this.timerFsxDataUpdate > 0 && this.timerFsxDataUpdate < timeOut)) timeOut = this.timerFsxDataUpdate;
-        if (this.timerLoadVatsimUpdate < 0 && this.timerFsxDataUpdate < 0) return;
-
-        // init timer
+        globals.fsxWs.readFromFsxWs(true, true); // test availability (this is async)
         var me = this;
-        setTimeout(function () { me.timerDispatcher(); }, timeOut);
-    };
 
-    /**
-    * Dispatches the timer calls to the respective functions.
-    * This saves multiples timers and allows to call the data loaders in a
-    * controlled order.
-    */
-    exports.PageController.prototype.timerDispatcher = function () {
-        // init values if required
-        if (Object.isNullOrUndefined(this.timerLoadVatsimUpdateLastCall)) this.timerLoadVatsimUpdateLastCall = new Date();
-        if (Object.isNullOrUndefined(this.timerFsxDataUpdateLastCall)) this.timerFsxDataUpdateLastCall = new Date();
-
-        // what time is it?
-        var now = new Date().getTime();
-
-        // check for FSX data
-        if (this.timerFsxDataUpdate > 0 && 
-            (this.timerFsxDataUpdateLastCall.getTime() + this.timerFsxDataUpdate < now)) {
-            // FSX call here
-        }
-
-        // check for VATSIM data
-        if (this.timerLoadVatsimUpdate > 0 &&
-            (this.timerLoadVatsimUpdateLastCall.getTime() + this.timerLoadVatsimUpdate < now)) {
-            this.loadAndDisplayVatsimClients(true, true);
-        }
+        // update fields after a delay, hopefully the async check is completed by then
+        setTimeout(function () {
+            me._setFsxWsInfoFields();
+        }, globals.fsxWsAvailabilityDelay);
     };
 
     /**
@@ -305,7 +218,8 @@ namespace.module('vd.page', function (exports) {
     * Hide all clients.
     */
     exports.PageController.prototype.hideAllClients = function () {
-        globals.clients.display(false);
+        if (Object.isNullOrUndefined(globals.allEntities)) return;
+        globals.allEntities.display(false);
         this._clearOwnMapOverlays();
     };
 
@@ -539,11 +453,23 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Display a status information.
+    * Display a status information if not empty and write it to the log.
+    * @param {String}  content
+    * @param {Boolean} [timerCalled]
+    */
+    exports.PageController.prototype.displayInfoIfNotEmpty = function (content, timerCalled) {
+        if (String.isNullOrEmpty(content)) return;
+        timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
+        this.displayInfo(content, timerCalled);
+    };
+
+    /**
+    * Display a status information and write it to the log.
     * @param {String}  [content]
     * @param {Boolean} [timerCalled]
     */
     exports.PageController.prototype.displayInfo = function (content, timerCalled) {
+        if (!Object.isNullOrUndefined(content)) content = content.trim();
         var hasContent = !String.isNullOrEmpty(content);
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
         var now = new Date().getTime();
@@ -551,10 +477,13 @@ namespace.module('vd.page', function (exports) {
         var ti = document.getElementById("headerBarTaskInfo");
         if (Object.isNullOrUndefined(globals.headerTaskInfoDisplay)) globals.headerTaskInfoDisplay = ti.style.display;
         if (hasContent) {
+            // write to log
+            globals.log.info(content);
+
+            // write to status header
             $(ti).empty();
             ti.style.display = globals.headerTaskInfoDisplay;
             ti.appendChild(document.createTextNode(" " + content));
-            globals.log.info(content);
             this._lastInfoBarContentDeleteTime = now + globals.timerCleanUpInfoBar;
             setTimeout(
                 function () {
@@ -569,15 +498,15 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Map follows a VATSIM id.
-    * @param {String|Number} [id]
+    * Map follows an id (FSX/Vatsim).
+    * @param {String|Number} [vatsimId]
     * @param {Boolean} [displayInfo] display an info message
     * @param {Boolean} [refresh] update the entities, e.g. by highlighting them
     */
-    exports.PageController.prototype.followVatsimId = function (id, displayInfo, refresh) {
-        id = Object.ifNotNullOrUndefined(id, $("#inputFollowVatsimId").val());
-        if (id == globals.mapFollowVatsimId) return;
-        var client = (id == "") ? null : globals.clients.findByIdFirst(id);
+    exports.PageController.prototype.followId = function (id, displayInfo, refresh) {
+        id = Object.ifNotNullOrUndefined(id, $("#inputFollowId").val());
+        if (id == globals.mapFollowId) return;
+        var client = (id == "") ? null : globals.vatsimClients.findByIdFirst(id, false);
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, true);
         refresh = Object.ifNotNullOrUndefined(refresh, true);
 
@@ -586,14 +515,14 @@ namespace.module('vd.page', function (exports) {
         $(td).empty();
 
         if (Object.isNullOrUndefined(client)) {
-            $("#inputFollowVatsimId").val("");
-            globals.mapFollowVatsimId = null;
+            $("#inputFollowId").val("");
+            globals.mapFollowId = null;
             if (displayInfo) this.displayInfo("Follow mode 'off'.");
             td.appendChild(document.createTextNode("Follow mode 'off'."));
         } else {
             var infoText = client.callsign.appendIfNotEmpty(client.name, " ");
-            $("#inputFollowVatsimId").val(id);
-            globals.mapFollowVatsimId = id;
+            $("#inputFollowId").val(id);
+            globals.mapFollowId = id;
             td.appendChild(document.createTextNode(infoText));
             if (displayInfo) this.displayInfo("Will follow '" + infoText + "'.");
             globals.map.setCenter(client.latLng());
@@ -635,162 +564,14 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Settings for the entites (flight, ATC, waypoints) has been changed.
-    * @param {Object} mode specify further actions { initializeOnly: only initialize, do not refresh the GUI, toggleFlights: show / hide flights }
-    */
-    exports.PageController.prototype.vatsimClientSettingsChanged = function (mode) {
-        // make sure we have a mode
-        mode = Object.ifNotNullOrUndefined(mode, {});
-
-        var fs = globals.flightSettings;
-        if (!Object.isNullOrUndefined(mode["toggleFlights"]) && mode["toggleFlights"]) {
-            vd.util.UtilsWeb.toggleCheckbox("inputFlightSettingsShowFlight");
-        }
-
-        fs.set({
-            displayFlight: document.getElementById("inputFlightSettingsShowFlight").checked,
-            displayCallsign: document.getElementById("inputFlightSettingsCallsign").checked,
-            displayPilot: document.getElementById("inputFlightSettingsPilot").checked,
-            displayId: document.getElementById("inputFlightSettingsId").checked,
-            displayTransponder: document.getElementById("inputFlightSettingsTransponder").checked,
-            displayOnGround: document.getElementById("inputFlightSettingsOnGround").checked,
-            displaySpeedAltitudeHeading: document.getElementById("inputFlightSettingsSpeedAltitudeHeading").checked,
-            displayWaypointLines: document.getElementById("inputFlightSettingsWaypointLines").checked,
-            displayAircraft: document.getElementById("inputFlightSettingsAircraft").checked,
-            displayRequireFlightplan: document.getElementById("inputFlightSettingsRequireFlightplan").checked,
-            displayHeightAndDeclination: document.getElementById("inputFlightSettingsHeightAndDeclination").checked
-        }
-        );
-
-        var atc = globals.atcSettings;
-        atc.set({
-            displayAtc: document.getElementById("inputAtcSettingsShowAtc").checked,
-            displayCallsign: document.getElementById("inputAtcSettingsCallsign").checked,
-            displayController: document.getElementById("inputAtcSettingsController").checked,
-            displayId: document.getElementById("inputAtcSettingsId").checked,
-            displayAreaAtc: document.getElementById("inputAtcSettingsAreaAtc").checked,
-            displayObservers: document.getElementById("inputAtcSettingsObserver").checked
-        });
-
-        var ap = globals.airportSettings;
-        ap.set({
-            displayAirport: document.getElementById("inputAirportSettingsShowAirport").checked,
-            displayAirportVicinity: document.getElementById("inputAirportSettingsVicinity").checked,
-            displayAtis: document.getElementById("inputAirportSettingsAtis").checked,
-            displayMetar: document.getElementById("inputAirportSettingsMetar").checked
-        });
-
-        var ws = globals.waypointSettings;
-        ws.set({
-            displayFlightWaypoints: document.getElementById("inputWaypointSettingsFlight").checked,
-            displayFlightCallsign: document.getElementById("inputWaypointSettingsFlightCallsign").checked,
-            displayFlightAltitudeSpeed: document.getElementById("inputWaypointSettingsFlightSpeedAltitudeHeading").checked,
-            flightWaypointsNumberMaximum: $("#inputWaypointSettingsFlightMaxNumber").val(),
-            displayDistance: document.getElementById("inputRouteSettingsDistance").checked,
-            displayFrequency: document.getElementById("inputRouteSettingsFrequency").checked,
-            displayCourse: document.getElementById("inputRouteSettingsCourse").checked,
-            displayAirway: document.getElementById("inputRouteSettingsAirway").checked
-        });
-
-        // redisplay
-        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();
-    };
-
-    /**
-    * Log level has been changed.
-    */
-    exports.PageController.prototype.logLevelChanged = function () {
-        var value = vd.util.UtilsWeb.getSelectedValue("inputSettingsLogLevel");
-        // log level requires direct reference to its own static values
-        switch (value) {
-            case log4javascript.Level.TRACE.name:
-                globals.log.setLevel(log4javascript.Level.TRACE);
-                break;
-            case log4javascript.Level.DEBUG.name:
-                globals.log.setLevel(log4javascript.Level.DEBUG);
-                break;
-            case log4javascript.Level.INFO.name:
-                globals.log.setLevel(log4javascript.Level.INFO);
-                break;
-            case log4javascript.Level.WARN.name:
-                globals.log.setLevel(log4javascript.Level.WARN);
-                break;
-            case log4javascript.Level.ERROR.name:
-                globals.log.setLevel(log4javascript.Level.ERROR);
-                break;
-            case log4javascript.Level.FATAL.name:
-                globals.log.setLevel(log4javascript.Level.FATAL);
-                break;
-            default:
-                return;
-        }
-        this.displayInfo("New log level is " + value + ".");
-    };
-
-
-    /**
-    * The FSX settings have been changed.
-    * @param {Boolean} refresh
-    * @see vd.module:page.PageController#_initFsxWsSettings
-    */
-    exports.PageController.prototype.fsxWsSettingsChanged = function () {
-        var fsxWsLocation = $("#inputFsxWsLocation").val();
-        var fsxWsPort = $("#inputFsxWsPort").val();
-        globals.fsxWs.initServerValues(fsxWsLocation, fsxWsPort);
-
-        // back annotate GUI values
-        this._initFsxWsSettings();
-    };
-
-    /**
-    * The color settings have been changed.
-    * @param {Boolean} refresh
-    * @see vd.module:page.PageController#_initColorInputs
-    */
-    exports.PageController.prototype.colorSettingsChanged = function (refresh) {
-        refresh = Object.ifNotNullOrUndefined(refresh, true);
-        globals.styles.setFlightWaypointColor($("#inputFlightSettingsWaypointLinesColor").val());
-        globals.styles.flightLabelBackground = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColor").val(), globals.styles.flightLabelBackground).toHex();
-        globals.styles.flightLabelBackgroundIfFollowed = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColorIfFollowed").val(), globals.styles.flightLabelBackgroundIfFollowed).toHex();
-        globals.styles.flightLabelBackgroundIfFiltered = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColorIfFiltered").val(), globals.styles.flightLabelBackgroundIfFiltered).toHex();
-        globals.styles.flightLabelFontColor = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsFontColor").val(), globals.styles.flightLabelFontColor).toHex();
-        globals.styles.airportLabelBackground = vd.util.Utils.getValidColor($("#inputAirportSettingLabelsColor").val(), globals.styles.airportLabelBackground).toHex();
-        globals.styles.airportLabelFontColor = vd.util.Utils.getValidColor($("#inputAirportSettingLabelsFontColor").val(), globals.styles.airportLabelFontColor).toHex();
-        globals.styles.wpRouteLabelBackground = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsColor").val(), globals.styles.wpRouteLabelBackground).toHex();
-        globals.styles.wpRouteLabelFontColor = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsFontColor").val(), globals.styles.wpRouteLabelFontColor).toHex();
-        globals.styles.wpRouteLineColor = vd.util.Utils.getValidColor($("#inputRouteSettingRouteLineColor").val(), globals.styles.wpRouteLineColor).toHex();
-        this._displayAltitudeColorBar();
-        if (refresh) this.backgroundRefresh();
-    };
-
-    /**
-    * Change the filter (e.g. toggle the filter, or set it).
-    * @param {Object} filterParams 
-    */
-    exports.PageController.prototype.filterSettingsChanged = function (filterParams) {
-        filterParams = Object.ifNotNullOrUndefined(filterParams, {});
-        var tf = !Object.isNullOrUndefined(filterParams["toogleFilter"]) && filterParams["toogleFilter"];
-        var f = tf ? vd.util.UtilsWeb.toggleCheckbox("inputApplyFilter") : vd.util.UtilsWeb.checked("inputApplyFilter");
-        if (f) {
-            var it = "Filter is on";
-            if (globals.filter.isEmpty()) it += ". Warning, empty filter!";
-            this.displayInfo(it);
-        } else {
-            this.displayInfo("Filter is off.");
-        }
-        globals.filtered = f;
-        this.refresh(true);
-    };
-
-    /**
     * Redisplay the clients.
     * @param {Boolean} forceRedraw
     */
     exports.PageController.prototype.refresh = function (forceRedraw) {
         var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
-        var clients = globals.clients;
+        var entities = globals.allEntities;
         forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, true);
-        if (!Object.isNullOrUndefined(clients)) clients.display(true, forceRedraw);
+        if (!Object.isNullOrUndefined(entities)) entities.display(true, forceRedraw);
 
         // update tables
         this.updateGrids();
@@ -813,33 +594,6 @@ namespace.module('vd.page', function (exports) {
                 }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
         else
             this._backgroundRefreshCollectEvent.fire();
-    };
-
-    /**
-    * Units have been changed (distance, climb rate etc.)
-    * @param {Boolean} [redisplay]
-    */
-    exports.PageController.prototype.unitsChanged = function (redisplay) {
-        redisplay = Object.isNullOrUndefined(redisplay) ? true : redisplay;
-        var d = $(document.getElementById("inputSettingsDistance")).val();
-        var a = $(document.getElementById("inputSettingsAltitude")).val();
-        if (d == "km") {
-            globals.unitDistance = "km";
-            globals.unitSpeed = "km/h";
-        } else {
-            globals.unitDistance = "nm";
-            globals.unitSpeed = "kts";
-        }
-        if (a == "ft") {
-            globals.unitAltitude = "ft";
-            globals.unitRateOfClimb = "fpm";
-        } else {
-            globals.unitAltitude = "m";
-            globals.unitRateOfClimb = "m/s";
-        }
-
-        // redisplay
-        if (redisplay) this.refresh();
     };
 
     /**
@@ -920,19 +674,22 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype.updateGrids = function (forceUpdate) {
         if (!(forceUpdate || this._gridsVisible())) return;
+        if (Object.isNullOrUndefined(globals.allEntities) || globals.allEntities.isEmpty()) return;
 
         var statsEntry = new vd.util.RuntimeEntry("Grid update (Page Controller)");
         var flightsGrid = $("#flightData");
         flightsGrid.clearGridData();
-        for (var f = 0, lenF = globals.clients.flights.length; f < lenF; f++) {
-            var flight = globals.clients.flights[f];
+        var flights = globals.allEntities.flights();
+        for (var f = 0, lenF = flights.length; f < lenF; f++) {
+            var flight = flights[f];
             flightsGrid.addRowData(flight.objectId, flight);
         }
 
         var atcGrid = $("#atcData");
         atcGrid.clearGridData();
-        for (var a = 0, lenA = globals.clients.atcs.length; a < lenA; a++) {
-            var atc = globals.clients.atcs[a];
+        var atcs = globals.vatsimClients.atcs; // I need to get the helper entities as well
+        for (var a = 0, lenA = atcs.length; a < lenA; a++) {
+            var atc = atcs[a];
             atcGrid.addRowData(atc.objectId, atc);
         }
 
@@ -1243,7 +1000,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'pilot', index: 'pilot', width: widthNameFlight, search: true },
         // does for some reasons not work with id
-            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
             { name: '_isGrounded', index: '_isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
@@ -1255,7 +1012,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
         // does for some reasons not work with id
-            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
@@ -1265,7 +1022,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'name', index: 'name', width: widthNameFilter, search: true },
         // does for some reasons not work with id
-            {name: 'domainId', index: 'domainId', width: widthId, search: true, hidden: (widthId < 5) },
+            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'entity', index: 'entity', search: false, width: widthEntity }
         ];
 
@@ -1295,9 +1052,9 @@ namespace.module('vd.page', function (exports) {
                 cursor: "pointer",
                 onClickButton: function () {
                     var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
-                    var client = globals.clients.findByObjectId(objectId);
+                    var client = globals.vatsimClients.findByObjectId(objectId);
                     if (Object.isNullOrUndefined(client)) return;
-                    if (!String.isNullOrEmpty(objectId)) me.followVatsimId(client.id);
+                    if (!String.isNullOrEmpty(objectId)) me.followId(client.vatsimId);
                 }
             };
             var navAddToFilter = {
@@ -1371,7 +1128,7 @@ namespace.module('vd.page', function (exports) {
                 height: "auto",
                 width: widthGrids,
                 forceFit: true,
-                colNames: ['ObjId', 'Callsign', 'Pilot', 'Id', 'bounds', 'displayed'],
+                colNames: ['ObjId', 'Callsign', 'Controller', 'Id', 'bounds', 'displayed'],
                 colModel: colModelAtcs,
                 rowNum: globals.atcGridRows,
                 sortname: 'displayed',
@@ -1636,8 +1393,9 @@ namespace.module('vd.page', function (exports) {
         if (String.isNullOrEmpty(globals.fsxWs.serverUrl))
             td.appendChild(document.createTextNode("No connection info"));
         else {
-            var info = globals.fsxWs.serverUrl;
-            info += globals.fsxWs.isAvailable() ? " (connected)" : "(disconnected)";
+            var info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.serverUrl);
+            info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
+            info += globals.isFsxAvailable() ? " (connected)" : " (disconnected)";
             td.appendChild(document.createTextNode(info));
         }
     };
@@ -1715,17 +1473,7 @@ namespace.module('vd.page', function (exports) {
             if (relevantMapMovement) {
                 globals.mapOldCenter = globals.map.getCenter();
                 globals.mapOldZoom = globals.map.getZoom();
-                globals.clients.display(true, true);
-                if (!Object.isNullOrUndefined(this.groundOverlayDisplayed)) this.groundOverlayDisplayed.display(true, false, true);
-
-                // get new elevations
-                if (Array.isNullOrEmpty(globals.clients.flights)) return;
-                var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(globals.clients.flights);
-                vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously
-
-                // update grids / altitude profile
-                this.updateGrids();
-                this._updateAltitudeProfile();
+                this.displayEntities(true, false, "Map moved.");
             }
             globals._asyncBoundsUpdateSemaphore = false;
         }
@@ -1773,7 +1521,7 @@ namespace.module('vd.page', function (exports) {
                     break;
             }
         } else {
-            var client = globals.clients.findByObjectId(objectId);
+            var client = globals.vatsimClients.findByObjectId(objectId);
             if (!Object.isNullOrUndefined(client)) {
                 globals.gridSelectedVatsimClient = client;
                 pv = client.toPropertyValue();
@@ -1804,7 +1552,7 @@ namespace.module('vd.page', function (exports) {
             globals.log.warn("Center to map called without row id");
             return;
         }
-        var client = globals.clients.findByObjectId(rowId);
+        var client = globals.vatsimClients.findByObjectId(rowId);
         if (Object.isNullOrUndefined(client)) {
             globals.log.warn("Center to map called with id " + rowId + " but no client");
             return;

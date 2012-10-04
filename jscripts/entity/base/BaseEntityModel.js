@@ -25,22 +25,15 @@ namespace.module('vd.entity.base', function (exports) {
         */
         this.objectId = globals.register(this);
         /**
-        * Id, in this case VATSIM or FSX id.
+        * FSX id.
         * @type {String}
         */
-        this.id = Object.ifNotNullOrUndefined(properties["id"], null);
+        this.fsxId = Object.ifNotNullOrUndefined(properties["idfsx"], null);
         /**
-        * VATSIM / FSX id, same as id. This is a workaround, since some libraries as jqGrid
-        * have problems with the property name id.
+        * VATSIM id.
         * @type {String}
         */
-        this.domainId = this.id;
-        /**
-        * Origin (FSX/VATSIM)
-        * @const
-        * @type {String}
-        */
-        this.origin = Object.ifNotNullOrUndefined(properties["origin"], "vatsim");
+        this.vatsimId = Object.ifNotNullOrUndefined(properties["idvatsim"], null);
         /**
         * User name.
         * @type {String}
@@ -93,7 +86,6 @@ namespace.module('vd.entity.base', function (exports) {
         */
         this.entity = "?";
 
-
         // post fixes
         if (this.isFsxBased()) {
             if (String.isNullOrEmpty(this.name)) this.name = "FSX Webservice";
@@ -113,8 +105,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Boolean} origin is FSX
     */
     exports.BaseEntityModel.prototype.isFsxBased = function () {
-        if (String.isNullOrEmpty(this.origin)) return false;
-        return (this.origin.toLowerCase().startsWith("fsx"));
+        return !String.isNullOrEmpty(this.fsxId);
     };
 
     /**
@@ -122,8 +113,15 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Boolean} origin is FSX
     */
     exports.BaseEntityModel.prototype.isVatsimBased = function () {
-        if (String.isNullOrEmpty(this.origin)) return true; // default as of historical reasons
-        return (this.origin.toLowerCase().startsWith("vatsim"));
+        return !String.isNullOrEmpty(this.vatsimId);
+    };
+
+    /**
+    * Based on both data (FSX and VATSIM)?
+    * @return {Boolean} origin is FSX
+    */
+    exports.BaseEntityModel.prototype.isCombinedDataBased = function () {
+        return this.isVatsimBased() && this.isFsxBased();
     };
 
     /**
@@ -132,7 +130,8 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityModel.prototype.toPropertyValue = function () {
         var pv = new Array();
-        pv["id"] = this.id;
+        pv["idvatsim"] = this.vatsimId;
+        pv["idfsx"] = this.fsxId;
         pv["callsign"] = this.callsign;
 
         // properties not making sense for all entities
@@ -213,7 +212,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Boolean}
     */
     exports.BaseEntityModel.prototype.isFollowed = function () {
-        return this.id == globals.mapFollowVatsimId;
+        return this.vatsimId == globals.mapFollowId;
     };
 
     /**
@@ -238,7 +237,7 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityModel.prototype.toString = function () {
         var s = "objId:" + this.objectId;
-        s = s.appendIfNotEmpty([this.id, this.name], " ");
+        s = s.appendIfNotEmpty([this.vatsimId, this.fsxId, this.callsign], " ");
         return s;
     };
 
@@ -271,27 +270,87 @@ namespace.module('vd.entity.base', function (exports) {
     /**
     * Find the entity by Vatsim id - Vatsim id is not necessarily unique!
     * @param  {Array}  entities Array of entities
-    * @param  {String} id
+    * @param  {String} vatsimId
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findById = function (entites, id) {
-        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
+    exports.BaseEntityModel.findByVatsimId = function (entites, vatsimId) {
+        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(vatsimId)) return null;
         var entities = new Array();
         for (var e = 0, len = entites.length; e < len; e++) {
             var baseEntity = entites[e];
-            if (id == baseEntity.id) entities.push(baseEntity);
+            if (vatsimId == baseEntity.vatsimId) entities.push(baseEntity);
         }
         return entities;
     };
 
     /**
-    * Find the first entity by Vatsim id
+    * Find the entity by FSX id.
+    * @param  {Array}  entities Array of entities
+    * @param  {String} id
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findByFsxId = function (entites, id) {
+        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
+        var entities = new Array();
+        for (var e = 0, len = entites.length; e < len; e++) {
+            var baseEntity = entites[e];
+            if (id == baseEntity.fsxId) entities.push(baseEntity);
+        }
+        return entities;
+    };
+
+    /**
+    * Find the entity by id (FSX id, VATSIM id, object id).
+    * @param  {Array}  entities Array of entities
+    * @param  {String} id
+    * @param  {Boolean} [considerObjectId]
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findById = function (entites, id, considerObjectId) {
+        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
+        var withObjId = Object.isNullOrUndefined(considerObjectId) ? false : considerObjectId;
+        var entities = new Array();
+        for (var e = 0, len = entites.length; e < len; e++) {
+            var baseEntity = entites[e];
+            if (id == baseEntity.fsxId || id == baseEntity.vatsimId)
+                entities.push(baseEntity);
+            else if (withObjId && id == baseEntity.objectId)
+                entities.push(baseEntity);
+        }
+        return entities;
+    };
+
+    /**
+    * Find the first entity by Vatsim id.
     * @param {Array}  entities Array of entities
     * @param {String} id
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByIdFirst = function (entities, id) {
-        var baseEntities = exports.BaseEntityModel.findById(entities, id);
+    exports.BaseEntityModel.findByVatsimIdFirst = function (entities, id) {
+        var baseEntities = exports.BaseEntityModel.findByVatsimId(entities, id);
+        return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
+    };
+
+    /**
+    * Find the first entity by FSX id.
+    * @param {Array}  entities Array of entities
+    * @param {String} id
+    * @return {BaseEntityModel}
+    */
+    exports.BaseEntityModel.findByFsxIdFirst = function (entities, id) {
+        var baseEntities = exports.BaseEntityModel.findByFsxId(entities, id);
+        return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
+    };
+
+    /**
+    * Find the first entity by FSX id.
+    * @param {Array}  entities Array of entities
+    * @param {String} id
+    * @param  {Boolean} [considerObjectId]
+    * @return {BaseEntityModel}
+    */
+    exports.BaseEntityModel.findByIdFirst = function (entities, id, considerObjectId) {
+        var baseEntities = exports.BaseEntityModel.findById(entities, id, considerObjectId);
         return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
     };
 
@@ -336,6 +395,58 @@ namespace.module('vd.entity.base', function (exports) {
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
             if (name == baseEntity.name) baseEntities.push(baseEntity);
+        }
+        return baseEntities;
+    };
+
+    /**
+    * Find the entity by type.
+    * @param  {Array}  entities Array of entities
+    * @param  {String} type
+    * @param  {String} [alternativeType]
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findByType = function (entities, type, alternativeType) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(type)) return baseEntities;
+        var at = !Object.isNullOrUndefined();
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            var ct = baseEntity.entity;
+            if (ct == type) 
+                baseEntities.push(baseEntity);
+            else if(at && ct == alternativeType)
+                baseEntities.push(baseEntity);
+        }
+        return baseEntities;
+    };
+
+    /**
+    * Find the entity by its origin.
+    * @param  {Array}  entities Array of entities
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findVatsimBased = function (entities) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities)) return baseEntities;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (typeof baseEntity.isVatsimBased()) baseEntities.push(baseEntity);
+        }
+        return baseEntities;
+    };
+
+    /**
+    * Find the entity by its origin.
+    * @param  {Array}  entities Array of entities
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findFsxBased = function (entities) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities)) return baseEntities;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (typeof baseEntity.isFsxBased()) baseEntities.push(baseEntity);
         }
         return baseEntities;
     };

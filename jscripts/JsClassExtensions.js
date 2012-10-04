@@ -76,7 +76,7 @@ String.fromArray = function(arr) {
 * @return {Number}
 */
 String.prototype.stripNumber = function() {
-    var m = this.match( /\d+/ );
+    var m = this.match(/\d+/);
     if (Array.isNullOrEmpty(m)) return null;
     return m[0];
 };
@@ -88,7 +88,7 @@ String.prototype.stripNumber = function() {
 * @see <a href="http://semplicewebsites.com/removing-accents-javascript">Latin map</a>
 */
 String.prototype.latinise = function() {
-    return this.replace( /[^A-Za-z0-9]/g , function(x) { return String.latin_map[x] || x; });
+    return this.replace(/[^A-Za-z0-9]/g, function(x) { return String.latin_map[x] || x; });
 };
 
 /**
@@ -104,7 +104,7 @@ String.prototype.isLatin = function() {
 * @return {String}
 */
 String.prototype.ascii = function() {
-    return this.replace( /[^\u0000-\u007F]/g , "");
+    return this.replace(/[^\u0000-\u007F]/g, "");
 };
 
 /**
@@ -135,7 +135,7 @@ String.prototype.appendIfNotEmpty = function(append, separator) {
 String.prototype.isWhitespace = function() {
     if (this.length != 1) return false;
     // http://stackoverflow.com/questions/1496826/check-if-a-single-character-is-a-whitespace
-    return /\s/ .test(this);
+    return /\s/.test(this);
 };
 
 /**
@@ -181,7 +181,7 @@ String.toNumber = function(candidate, failureValue, digits) {
 */
 String.prototype.cleanUp = function() {
     var ns = jQuery.trim(this);
-    return ns.replace( / +(?= )/g , '');
+    return ns.replace(/ +(?= )/g, '');
 };
 
 /**
@@ -190,7 +190,7 @@ String.prototype.cleanUp = function() {
 */
 String.prototype.tabToSpace = function() {
     if (this.indexOf("\t") < 0) return this;
-    return this.replace( /\t/g , ' ');
+    return this.replace(/\t/g, ' ');
 };
 
 /**
@@ -257,6 +257,36 @@ String.prototype.regexLastIndexOf = function(regex, startpos) {
         regex.lastIndex = ++nextStop;
     }
     return lastIndexOf;
+};
+
+/**
+* Truncate to max characters. 
+* @param {Number} maxLength
+* @param {Boolean} [useWordBoundary] try to keep words
+* @return {String}
+* @see <a href="http://stackoverflow.com/questions/1199352/smart-way-to-shorten-long-strings-with-javascript">Based on</a>
+*/
+String.prototype.truncate = function(maxLength, useWordBoundary) {
+    var wordBounds = Object.ifNotNullOrUndefined(useWordBoundary, false);
+    var toLong = this.length > maxLength;
+    var trunc = toLong ? this.substr(0, maxLength - 1) : this;
+    trunc = wordBounds && toLong ? trunc.substr(0, trunc.lastIndexOf(' ')) : trunc;
+    return toLong ? trunc + '...' : trunc;
+};
+
+/**
+* Truncate to max characters from the right. 
+* @param {Number} maxLength
+* @param {Boolean} [useWordBoundary] try to keep words
+* @return {String}
+* @see <a href="http://stackoverflow.com/questions/1199352/smart-way-to-shorten-long-strings-with-javascript">Based on</a>
+*/
+String.prototype.truncateRight = function(maxLength, useWordBoundary) {
+    var wordBounds = Object.ifNotNullOrUndefined(useWordBoundary, false);
+    var toLong = this.length > maxLength;
+    var trunc = toLong ? this.substr(-maxLength) : this;
+    trunc = wordBounds && toLong ? trunc.substr(trunc.indexOf(' ')) : trunc;
+    return toLong ? '...' + trunc : trunc;
 };
 
 /** 

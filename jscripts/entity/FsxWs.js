@@ -3,7 +3,6 @@
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
 namespace.module('vd.entity', function (exports) {
-
     /**
     * @constructor
     * @classdesc 
@@ -11,10 +10,15 @@ namespace.module('vd.entity', function (exports) {
     * @see vd.module:page.PageController main user of this "class", in order to display the airplanes
     * @param {String} fsxWsLocation like localhost, mycomputer.here.local 
     * @param {Number} fsxWsPort e.g. 8080 
+    * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @author KWB
     */
-    exports.FsxWs = function (fsxWsLocation, fsxWsPort) {
-
+    exports.FsxWs = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+        /**
+        * Enabled, disabled? Disables primarily read.
+        * @type {Boolean}
+        */
+        this.enabled = true;
         /**
         * URL of FsxWs Web service
         * @type {String}
@@ -32,9 +36,14 @@ namespace.module('vd.entity', function (exports) {
         this.serverPort = -1;
         /**
         * When this was last updated.
-        * @type {String} 
+        * @type {Date} 
         */
         this.update = null;
+        /**
+        * Number of parsed aircrafts. Info string with update time.
+        * @type {String}
+        */
+        this.info = "";
         /**
         * List of all updates.
         * @type {Array} 
@@ -45,9 +54,24 @@ namespace.module('vd.entity', function (exports) {
         * @type {Array}
         */
         this.aircrafts = null;
+        /**
+        * JSON aircrafts converted to flights
+        * @type {Array}
+        */
+        this.flights = null;
+        /**
+        * Loading in progress
+        * @type {Boolean}
+        */
+        this.loading = false;
+        /**
+        * Last status. see define status codes.
+        * @type {Number}
+        */
+        this.lastStatus = exports.FsxWs.Init;
 
         // call init methods
-        this.initServerValues(fsxWsLocation, fsxWsPort);
+        this.initServerValues(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation);
 
         //
         // ---- statistics
@@ -58,31 +82,32 @@ namespace.module('vd.entity', function (exports) {
         * @type {vd.util.RuntimeStatistics}
         */
         this._statisticsRead = new vd.util.RuntimeStatistics("FsxWs read");
-        /**
-        * Log parse statistics.
-        * @type {vd.util.RuntimeStatistics}
-        */
-        this._statisticsParse = new vd.util.RuntimeStatistics("FsxWs parse");
-        /**
-        * Log parse statistics.
-        * @type {vd.util.RuntimeStatistics}
-        */
-        this._statisticsDisplay = new vd.util.RuntimeStatistics("FsxWs display");
     };
 
     /**
     * Init the server values and build a valid URL.
     * @param {String} fsxWsLocation like localhost, mycomputer.here.local 
     * @param {Number} fsxWsPort e.g. 8080 
+    * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @return {Boolean} true values have been reset, false nothing changed (values remain)
     */
-    exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort) {
+    exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         this.serverUrl = null;
         this.serverPort = -1;
         this.serverLocation = null;
 
-        // no values at all, return
-        if (Object.isNullOrUndefined(fsxWsLocation) && Object.isNullOrUndefined(fsxWsPort)) return;
+        // no values at all, try a default and return
+        if (String.isNullOrEmpty(fsxWsLocation) && Object.isNullOrUndefined(fsxWsPort)) {
+            // Auto hooking to FsxWs:
+            // I check set server default values whether just by chance there is something
+            // At least during development a very useful feature
+            if (!String.isNullOrEmpty(fsxWsDefaultLocation)) {
+                var uri = vd.util.UtilsWeb.parseUri(fsxWsDefaultLocation);
+                fsxWsLocation = uri.host;
+                fsxWsPort = String.toNumber(uri.port);
+            } else
+                return;
+        }
 
         // set location or default
         if (String.isNullOrEmpty(fsxWsLocation) && Object.isNullOrUndefined(this.serverLocation))
@@ -90,7 +115,7 @@ namespace.module('vd.entity', function (exports) {
         else if (!String.isNullOrEmpty(fsxWsLocation))
             this.serverLocation = fsxWsLocation;
 
-        // set port
+        // set port to default
         if (!Object.isNumber(fsxWsPort) && this.serverPort < 0)
             this.serverPort = 8080;
         else if (Object.isNumber(fsxWsPort))
@@ -99,103 +124,178 @@ namespace.module('vd.entity', function (exports) {
         // set URL
         var url = "http://" + this.serverLocation;
         if (this.serverPort != 80) url += ":" + this.serverPort;
-        url += "/aircraftsJson";
+        url += "/" + exports.FsxWs.PathJsonService;
         this.serverUrl = url;
     };
 
     /**
-    * Read data from the WebService (JSON). I do not use the jQuery method in order to be 
-    * consistent with the Vatsim clients read method (synchronous read, return values). 
-    * @return {Number} status, const values indicating if data was already available or something failed
+    * Trigger read data from the WebService (JSON). 
+    * @param {Boolean} [availability] check
+    * @param {Boolean} [autoEnableDisable] error / success leads to enabled / disabled service
     * @see vd.entity.VatsimClients.readFromVatsim 
     */
-    exports.FsxWs.prototype.readFromFsxWs = function () {
-        if (Object.isNullOrUndefined(this.serverUrl)) return exports.FsxWs.NoFsxWs;
-
-        this._statisticsRead.start();
-        // ReSharper disable InconsistentNaming
-        var xmlhttp = new XMLHttpRequest();
-        // ReSharper restore InconsistentNaming
-        xmlhttp.open("GET", this.serverUrl, false);
-        xmlhttp.send();
-        if (xmlhttp.status == 200) {
-            var xml = xmlhttp.responseText;
-            if (xml.isNullOrEmpty()) return exports.FsxWs.ReadNoData;
-            var parsedAircrafts = jQuery.parseJSON(xml);
-            if (Object.isNullOrUndefined(parsedAircrafts)) return exports.FsxWs.ReadNoData;
-
-            // valid data
-            this.aircrafts = parsedAircrafts;
-            var dt = vd.utils.Utils.nowFormattedYYYYMMDDhhmm(true);
-            this.readHistory.unshift(dt);
-            this.update = dt;
-
-            // stats
-            var rtEntry = this._statisticsRead.end(); // I just write full reads (not failed reads) in the statistics in order to get real comparisons
-            globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
-            return exports.FsxWs.Ok;
-        } else {
-            globals.log.error("FsxWs data cannot be loaded, status " + xmlhttp.status + ". ");
-            return exports.FsxWs.ReadFailed;
+    exports.FsxWs.prototype.readFromFsxWs = function (availability, autoEnableDisable) {
+        availability = Object.ifNotNullOrUndefined(availability, false);
+        autoEnableDisable = Object.ifNotNullOrUndefined(autoEnableDisable, true);
+        if (!availability && !this.enabled) return;
+        if (Object.isNullOrUndefined(this.serverUrl)) return;
+        if (!jQuery.support.cors) alert("jQuery CORS not enabled");
+        if (this.loading) {
+            alert("Concurrent loading from FsxWs");
+            return;
         }
+        this.loading = true;
+        var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
+        this._statisticsRead.start();
+        var me = this;
+
+        // AJAX call
+        $.ajax({
+            type: 'GET',
+            url: url,
+            cache: false,
+            async: true,
+            crossdomain: true,
+            datatype: "jsonp",
+            success: function (data, status) {
+                // alert("Data returned :" + data);
+                // alert("Status :" + status);
+                if (status == "success" && !Object.isNullOrUndefined(data)) {
+                    // testing?
+                    if (availability) {
+                        me.lastStatus = exports.FsxWs.Ok;
+                    } else {
+                        // normal mode
+                        if (data.length > 0) {
+                            var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
+                            globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
+                            me.aircrafts = data;
+                            me.lastStatus = exports.FsxWs.Ok;
+                        } else {
+                            globals.log.trace("FsxWs Data loaded but no data in array");
+                            me.lastStatus = exports.FsxWs.ReadNoData;
+                        }
+                    }
+                    // final state
+                    if (autoEnableDisable) me.enabled = true;
+                } else {
+                    me.lastStatus = exports.FsxWs.ReadNoData;
+                    if (autoEnableDisable) me.enabled = false;
+                    globals.log.error("Reading from FsxWs success, but not data");
+                }
+                me.loading = false;
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                me.loading = false;
+                if (autoEnableDisable) me.enabled = false;
+                me.lastStatus = exports.FsxWs.ReadFailed;
+                errorThrown = String.isNullOrEmpty(errorThrown) ? "N/A" : errorThrown;
+                var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorThrown + "\". URL: " + url;
+                if (availability)
+                    globals.log.info(msg);
+                else
+                    globals.log.error(msg);
+            }
+        });
     };
 
     /**
-    * Is FsxWs available?
-    * @return {Boolean} available?
+    * Successful read?
+    * @return success
     */
-    exports.FsxWs.prototype.isAvailable = function () {
-        if (Object.isNullOrUndefined(this.serverUrl)) return false;
-
-        // ReSharper disable InconsistentNaming
-        var xmlhttp = new XMLHttpRequest();
-        // ReSharper restore InconsistentNaming
-        xmlhttp.open("GET", this.serverUrl, false);
-        xmlhttp.send();
-        return (xmlhttp.status == 200);
+    exports.FsxWs.prototype.successfulRead = function () {
+        return this.lastStatus == exports.FsxWs.Ok;
     };
 
     /**
-    * Display the clients (invoke display on all entities).
-    * This will display the entities if they are in bounds of the map.
-    * @param {Boolean} display
-    * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
+    * Merge with VATSIM data.
+    * @param  {Array} vatsimClients
+    * @return {Array}
     */
-    // exports.FsxWs.prototype.display = function (display, forceRedraw) {
-    // };
-
-    /**
-    * Clear all overlays of all clients.
-    */
-    exports.FsxWs.prototype.clearOverlays = function () {
+    exports.FsxWs.prototype.mergeWithVatsimClients = function (vatsimClients) {
+        if (Array.isNullOrEmpty(vatsimClients)) {
+            if (Array.isNullOrEmpty(this.aircrafts)) return new Array();
+            return this.aircrafts;
+        }
+        // TODO: KB merge FSX and Vatsim data
+        return vatsimClients;
     };
 
+    /**
+    * Query parameters indicating no waypoints
+    * @type {String}
+    * @const
+    */
+    exports.FsxWs.QueryParameterNoWaypoints = "?withwaypoints=false";
+
+    /**
+    * Query parameter indicating just a test (check server)
+    * @type {String}
+    * @const
+    */
+    exports.FsxWs.QueryParameterTest = "?test=true";
+
+    /**
+    * Path for JSON Web service.
+    * @type {String}
+    * @const
+    */
+    exports.FsxWs.PathJsonService = "aircraftsJson";
+
+    /**
+    * Reading status init value.
+    * @type {Number}
+    * @const
+    */
+    exports.FsxWs.Init = -1;
     /**
     * Reading OK.
     * @type {Number}
     * @const
     */
     exports.FsxWs.Ok = 0;
-
     /**
     * Reading OK.
     * @type {Number}
     * @const
     */
     exports.FsxWs.NoFsxWs = 10;
-
     /**
     * Reading failed.
     * @type {Number}
     * @const
     */
     exports.FsxWs.ReadFailed = 11;
-
     /**
     * Reading succeeded, but no data.
     * @type {Number}
     * @const
     */
     exports.FsxWs.ReadNoData = 12;
-
+    /**
+    * Status code to readable message.
+    * @type {Number}
+    * @return {String}
+    */
+    exports.FsxWs.statusToInfo = function (status) {
+        var info;
+        switch (status) {
+            case vd.entity.FsxWs.Init:
+                info = "Init";
+                break;
+            case vd.entity.FsxWs.Ok:
+                info = "FSX data loaded";
+                break;
+            case vd.entity.FsxWs.ReadFailed:
+                info = "Read failed.";
+                break;
+            case vd.entity.FsxWs.NoFsxWs.ReadNoData:
+                info = "No data.";
+                break;
+            default:
+                info = "Unknown, check console.";
+                break;
+        }
+        return info;
+    };
 });
