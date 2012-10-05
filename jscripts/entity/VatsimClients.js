@@ -116,9 +116,10 @@ namespace.module('vd.entity', function (exports) {
 
     /**
     * Trigger read data from the VATSIM servers ("data file").
+    * @param {function} [successfulReadCallback]
     * @see vd.entity.FsxWs.readFromFsxWs
     */
-    exports.VatsimClients.prototype.readFromVatsim = function () {
+    exports.VatsimClients.prototype.readFromVatsim = function (successfulReadCallback) {
 
         // checks
         if (!this.enabled) return;
@@ -129,6 +130,7 @@ namespace.module('vd.entity', function (exports) {
         }
 
         // prepare
+        successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
         this.loading = true;
         this._setDatafile();
         var url = this.datafile;
@@ -145,10 +147,14 @@ namespace.module('vd.entity', function (exports) {
             crossdomain: false,
             datatype: "text",
             success: function (data, status) {
-                // alert("Data returned :" + data);
-                // alert("Status :" + status);
                 if (status == "success" && !String.isNullOrEmpty(data)) {
-                    var r = me._parseVatsimDataFile(data); // also updates timestamp / history
+                    var r;
+                    try {
+                        r = me._parseVatsimDataFile(data); // also updates timestamp / history
+                    } catch (e) {
+                        globals.log.error("VATSIM file \"" + url + "\" ,parsing error " + e);
+                        r = exports.VatsimClients.ParsingFailed;
+                    }
                     if (r == exports.VatsimClients.Ok) {
                         var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                         globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
@@ -157,8 +163,9 @@ namespace.module('vd.entity', function (exports) {
                     else
                         globals.log.error("Parsing VATSIM data failed");
 
-                    // final state
+                    // final state and callback
                     me.lastStatus = r;
+                    if (r == exports.VatsimClients.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                 } else {
                     me.lastStatus = exports.VatsimClients.ReadFailed;
                     globals.log.error("Reading from VATSIM success, but not data");

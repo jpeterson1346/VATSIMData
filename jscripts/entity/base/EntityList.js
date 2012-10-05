@@ -2,14 +2,14 @@
 * @module vd.entity.base
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function (exports) {
+namespace.module('vd.entity.base', function(exports) {
 
     /**
     * @classdesc List of entities.
     * @param {Array|vd.entity.base.EntityList} other entities
     * @constructor
     */
-    exports.EntityList = function (otherEntities) {
+    exports.EntityList = function(otherEntities) {
         /**
         * Entites.
         * @type {Array}
@@ -26,13 +26,16 @@ namespace.module('vd.entity.base', function (exports) {
         } else {
             throw new Error("Entity list, init by unsupported entities");
         }
+
+        // check for disposed entities
+        if (this.containsDisposedEntities()) alert("Disposed elements detected. " + this.disposedEntitiesCount());
     };
 
     /**
     * Add a new entity.
     * @param {BaseEntity} entity
     */
-    exports.EntityList.prototype.add = function (entity) {
+    exports.EntityList.prototype.add = function(entity) {
         if (this.entities.contains(entity)) return;
         this.entities.push(entity);
     };
@@ -42,7 +45,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Number} objectId
     * @param {Boolean} added?
     */
-    exports.EntityList.prototype.addByObjectId = function (objectId) {
+    exports.EntityList.prototype.addByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return false;
         var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.vatsimClients.vatsimClients(), objectId);
         if (!Object.isNullOrUndefined(entity)) {
@@ -61,7 +64,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Remove an entity.
     * @param {BaseEntity} entity
     */
-    exports.EntityList.prototype.remove = function (entity) {
+    exports.EntityList.prototype.remove = function(entity) {
         this.entities.removeByValue(entity);
     };
 
@@ -69,7 +72,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Remove multiple entities.
     * @param {Array} entities
     */
-    exports.EntityList.prototype.removeEntites = function (entities) {
+    exports.EntityList.prototype.removeEntites = function(entities) {
         if (Array.isNullOrEmpty(entities)) return;
         for (var e = 0, len = entities.length; e < len; e++) {
             var entity = entities[e];
@@ -82,7 +85,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {String} objectId
     * @param {Boolean} removed?
     */
-    exports.EntityList.prototype.removeByObjectId = function (objectId) {
+    exports.EntityList.prototype.removeByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return false;
         var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.vatsimClients.vatsimClients(), objectId);
         if (!Object.isNullOrUndefined(entity)) {
@@ -98,9 +101,19 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
+    * Find by object id.
+    * @param {String|Number} objectId
+    * @return {BaseEntityModel}
+    */
+    exports.EntityList.prototype.findByObjectId = function(objectId) {
+        if (!Object.isNumber(objectId)) return null;
+        return vd.entity.base.BaseEntityModel.findByObjectId(this.entities, objectId);
+    };
+
+    /**
     * Clear all.
     */
-    exports.EntityList.prototype.clear = function () {
+    exports.EntityList.prototype.clear = function() {
         this.entities = new Array();
     };
 
@@ -108,7 +121,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Any elements?
     * @return {Boolean}
     */
-    exports.EntityList.prototype.isEmpty = function () {
+    exports.EntityList.prototype.isEmpty = function() {
         return this.count() < 1;
     };
 
@@ -116,7 +129,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Number of elements?
     * @return {Number}
     */
-    exports.EntityList.prototype.count = function () {
+    exports.EntityList.prototype.count = function() {
         if (Array.isNullOrEmpty(this.entities)) return 0;
         return this.entities.length;
     };
@@ -126,9 +139,34 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {BaseEntityModel} entity
     * @return {Boolean}
     */
-    exports.EntityList.prototype.contains = function (entity) {
+    exports.EntityList.prototype.contains = function(entity) {
         if (this.isEmpty()) return false;
         return this.entities.contains(entity);
+    };
+
+    /**
+    * Contains disposed elements?
+    * @param  {BaseEntityModel} entity
+    * @return {Boolean}
+    */
+    exports.EntityList.prototype.containsDisposedEntities = function() {
+        return (this.disposedEntitiesCount() > 0);
+    };
+
+    /**
+    * Number of disposed elements.
+    * @param  {BaseEntityModel} entity
+    */
+    exports.EntityList.prototype.disposedEntitiesCount = function() {
+        if (this.isEmpty()) return 0;
+        var no;
+        var disposedEntities = vd.entity.base.BaseEntityModel.findDisposed(this.entities);
+        if (!Array.isNullOrEmpty(disposedEntities)) {
+            no = disposedEntities.length;
+        } else {
+            no = 0;
+        }
+        return no;
     };
 
     /**
@@ -137,7 +175,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Array}
     * @see vd.entity.Flight
     */
-    exports.EntityList.prototype.flights = function () {
+    exports.EntityList.prototype.flights = function() {
         if (this.isEmpty()) return new Array();
         return vd.entity.base.BaseEntityModel.findByType(this.entities, "Flight", null);
     };
@@ -148,7 +186,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Array}
     * @see vd.entity.Atc
     */
-    exports.EntityList.prototype.airports = function () {
+    exports.EntityList.prototype.airports = function() {
         if (this.isEmpty()) return new Array();
         return vd.entity.base.BaseEntityModel.findByType(this.entities, "Airport");
     };

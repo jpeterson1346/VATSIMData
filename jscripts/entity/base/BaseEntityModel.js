@@ -212,7 +212,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Boolean}
     */
     exports.BaseEntityModel.prototype.isFollowed = function () {
-        return this.vatsimId == globals.mapFollowId;
+        return this.objectId == globals.mapFollowId;
     };
 
     /**
@@ -343,7 +343,7 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
-    * Find the first entity by FSX id.
+    * Find the first entity by any id.
     * @param {Array}  entities Array of entities
     * @param {String} id
     * @param  {Boolean} [considerObjectId]
@@ -384,7 +384,7 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
-    * Find the entity by name
+    * Find the entity by name.
     * @param  {Array}  entities Array of entities
     * @param  {String} name
     * @return {Array} BaseEntityModel objects
@@ -447,6 +447,21 @@ namespace.module('vd.entity.base', function (exports) {
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
             if (typeof baseEntity.isFsxBased()) baseEntities.push(baseEntity);
+        }
+        return baseEntities;
+    };
+
+    /**
+    * Find already disposed entities.
+    * @param  {Array}  entities Array of entities
+    * @return {Array} BaseEntityModel objects
+    */
+    exports.BaseEntityModel.findDisposed = function (entities) {
+        var baseEntities = new Array();
+        if (Array.isNullOrEmpty(entities)) return baseEntities;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (baseEntity.disposed) baseEntities.push(baseEntity);
         }
         return baseEntities;
     };

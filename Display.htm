@@ -123,12 +123,12 @@
                     <option>Hidden</option>
                 </select>
                 <!-- the first button also "catches" the first selected button action, so choose wisely -->
-                <button class="ui-button" onclick=" ctr.refresh(); " title="Refresh"><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
+                <button class="ui-button" onclick=" ctr.refresh(true); " title="Refresh"><span class="ui-icon ui-icon-arrowrefresh-1-w" title="Refresh"></span></button>
                 <button class="ui-button" onclick=" ctr.hideAllClients(); " title="Clear"><span class="ui-icon ui-icon-circlesmall-minus" title="Clear"></span></button>
-                <button class="ui-button" onclick=" ctr.triggerNewLoad(true); " title="Load"><span class="ui-icon ui-icon-document" title="Load"></span></button>
+                <button class="ui-button" onclick=" ctr.triggerNewLoad(true); " title="Load"><span class="ui-icon ui-icon-document" title="Trigger load"></span></button>
                 <button class="ui-button" onclick=" globals.resetEntities(); " title="Reset"><span class="ui-icon ui-icon-refresh" title="Reset"></span></button>
                 <button class="ui-button" onclick=" ctr.filterSettingsChanged({ toogleFilter: true }); " title="Toggle filter"><span class="ui-icon ui-icon-shuffle" title="Toggle filter"></span></button>
-                <button class="ui-button" onclick=" ctr.showLogger(); " title="Console"><span class="ui-icon ui-icon-newwin" title="Console"></span></button>
+                <button class="ui-button" onclick=" ctr.showLogger(); " title="Console"><span class="ui-icon ui-icon-newwin" title="Console, see settings for Level"></span></button>
                 <button class="ui-button" onclick=" globals.flightSettings.displayMinimal(); ctr.refresh(); " title="Display minimal information"><span class="ui-icon ui-icon-arrow-1-sw" title="Display minimal information"></span></button>
                 <button class="ui-button" onclick=" ctr.vatsimClientSettingsChanged(); " title="Display as set"><span class="ui-icon ui-icon-transfer-e-w" title="Display as set"></span></button>
                 <button class="ui-button" onclick=" vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); " title="User manual"><span class="ui-icon ui-icon-help" title="User manual"></span></button>
@@ -175,8 +175,8 @@
                             <label for="inputTimerUpdateVatsim">Vatsim</label>
                             <select id="inputTimerUpdateVatsim" onchange=" ctr.resetUpdateTimer(); ">
                                 <option value ="-1">off</option>
-                                <option value ="60" selected="selected">60s</option>
-                                <option value ="30">30s</option>
+                                <option value ="30" selected="selected">30s</option>
+                                <option value ="60">60s</option>
                             </select>
                             <label for="inputTimerUpdateFsx">FSX</label>
                             <select id="inputTimerUpdateFsx" onchange=" ctr.resetUpdateTimer(); ">

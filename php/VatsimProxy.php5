@@ -1,7 +1,9 @@
 ﻿<?php
 	$query = $_SERVER["QUERY_STRING"];
-	$url = null; 
-	if (empty($query) || stristr($query, 'data')) {
+	$url = null;
+	$knownQuery = (stristr($query, 'data') || stristr($query, 'metar'));
+	
+	if (empty($query) || stristr($query, 'data') || !$knownQuery) {
 		
 		//
 		// Data proxy

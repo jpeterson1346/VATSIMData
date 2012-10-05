@@ -2,7 +2,7 @@
 * @module vd.entity.base
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function(exports) {
+namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @constructor
@@ -11,7 +11,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @author KWB
     * @since 0.7
     */
-    exports.BaseEntityMap = function(mapProperties) {
+    exports.BaseEntityMap = function (mapProperties) {
 
         /**
         * Underlying Google map.
@@ -50,6 +50,11 @@ namespace.module('vd.entity.base', function(exports) {
         * @type {Boolean}     
         */
         this.displayed = false;
+        /**
+        * Disposed?
+        * @type {Boolean}     
+        */
+        this.disposed = false;
         /*
         * All overlays belonging to this entity.
         * @type {vd.gm.OverlayGroup}
@@ -83,16 +88,17 @@ namespace.module('vd.entity.base', function(exports) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.BaseEntityMap.prototype.dispose = function() {
+    exports.BaseEntityMap.prototype.dispose = function () {
         this.overlays.clear();
         this.overlays = null;
+        this.disposed = true;
     };
 
     /**
     * Current position for Google Map.
     * @return {google.maps.LatLng}
     */
-    exports.BaseEntityMap.prototype.latLng = function() {
+    exports.BaseEntityMap.prototype.latLng = function () {
         return new google.maps.LatLng(this.latitude, this.longitude);
     };
 
@@ -100,7 +106,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Current position for calculations.
     * @return {LatLon}
     */
-    exports.BaseEntityMap.prototype.latLon = function() {
+    exports.BaseEntityMap.prototype.latLon = function () {
         return new LatLon(this.latitude, this.longitude);
     };
 
@@ -110,7 +116,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Number} lngDistanceKm
     * @return {google.maps.LatLngBounds}
     */
-    exports.BaseEntityMap.prototype.getVicinity = function(latDistanceKm, lngDistanceKm) {
+    exports.BaseEntityMap.prototype.getVicinity = function (latDistanceKm, lngDistanceKm) {
         var latLon = this.latLon();
         var dp = latLon.rhumbDestinationPoint(270, lngDistanceKm / 2).rhumbDestinationPoint(180, latDistanceKm / 2);
         var sw = vd.util.UtilsMap.latLonToLatLng(dp);
@@ -125,7 +131,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {vd.entity.base.BaseEntityMap} baseEntity
     * @return {Boolean}
     */
-    exports.BaseEntityMap.prototype.isInVicinity = function(baseEntity) {
+    exports.BaseEntityMap.prototype.isInVicinity = function (baseEntity) {
         if (Object.isNullOrUndefined(this.vicinity)) return false;
         if (Object.isNullOrUndefined(baseEntity)) return false;
         this._isInVicinity = this.vicinity.contains(baseEntity.latLng());
@@ -137,7 +143,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Needs to be overrriden by subclasses.
     * @return {Boolean}
     */
-    exports.BaseEntityMap.prototype.displayedAtZoomLevel = function() {
+    exports.BaseEntityMap.prototype.displayedAtZoomLevel = function () {
         return true;
     };
 
@@ -145,7 +151,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Is within map bounds?
     * @return {Boolean}
     **/
-    exports.BaseEntityMap.prototype.isInBounds = function() {
+    exports.BaseEntityMap.prototype.isInBounds = function () {
         if (Object.isNullOrUndefined(this.vicinity))
             this._isInBounds = this.map.getBounds().contains(this.latLng());
         else
@@ -159,7 +165,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {google.maps.Map} [map]
     * @return {Boolean} true if zoom worked
     */
-    exports.BaseEntityMap.prototype.zoomMapToVicinity = function(map) {
+    exports.BaseEntityMap.prototype.zoomMapToVicinity = function (map) {
         if (Object.isNullOrUndefined(this.vicinity)) return false;
         map = Object.ifNotNullOrUndefined(map, globals.map);
         map.fitBounds(this.vicinity);
@@ -170,14 +176,14 @@ namespace.module('vd.entity.base', function(exports) {
     * Magnetic declination (degrees).
     * @return {Number}
     */
-    exports.BaseEntityMap.prototype.declination = function() {
+    exports.BaseEntityMap.prototype.declination = function () {
         return globals.worldMagneticModel.declination(vd.util.UtilsCalc.ftToKm(this.elevation), this.latitude, this.longitude, globals.worldMagneticModelDate).toFixed(globals.angelsDigitsDisplayed) * 1;
     };
 
     // Set new latitude / longitude values (rounding, casting).
     // @param {Number|String} latitude
     // @param {Number|String} longitude
-    exports.BaseEntityMap.prototype.setLatitudeLongitude = function(latitude, longitude) {
+    exports.BaseEntityMap.prototype.setLatitudeLongitude = function (latitude, longitude) {
         this.latitude = Object.isNumber(latitude) ? latitude.toFixed(globals.coordinatesDigitsCalculation) * 1 : null;
         this.longitude = Object.isNumber(longitude) ? longitude.toFixed(globals.coordinatesDigitsCalculation) * 1 : null;
     };
@@ -185,7 +191,7 @@ namespace.module('vd.entity.base', function(exports) {
     // Set an elevation value.
     // @param {Number} elevation in ft
     // @param {Boolean} inMeters unit is in meters and will be converted in feet
-    exports.BaseEntityMap.prototype.setElevation = function(elevation, inMeters) {
+    exports.BaseEntityMap.prototype.setElevation = function (elevation, inMeters) {
         this.elevation = String.toNumber(elevation, null, 0);
         if (!Object.isNumber(elevation)) return;
         if (globals.mapElevationZeroCutoff && this.elevation < 0) {
@@ -198,7 +204,7 @@ namespace.module('vd.entity.base', function(exports) {
 
     // @method toPropertyValue
     // @return {Object} with property / value pairs
-    exports.BaseEntityMap.prototype.toPropertyValue = function() {
+    exports.BaseEntityMap.prototype.toPropertyValue = function () {
         var pv = new Array();
         pv["declination"] = this.declinationAndUnit();
         pv["latitude"] = this.latitude.toFixed(globals.coordinatesDigitsDisplayed);
@@ -212,14 +218,14 @@ namespace.module('vd.entity.base', function(exports) {
 
     // Compare the locations of 2 entities.
     // @param {BaseEntityMap} otherEntity
-    exports.BaseEntityMap.prototype.hasSameLocation = function(otherEntity) {
+    exports.BaseEntityMap.prototype.hasSameLocation = function (otherEntity) {
         if (Object.isNullOrUndefined(otherEntity)) return false;
         return vd.util.UtilsMap.hasSameLocation(this.latitude, this.longitude, otherEntity.latitude, otherEntity.longitude);
     };
 
     // Same location as the provided latLng.
     // @param {google.maps.LatLng}
-    exports.BaseEntityMap.prototype.hasSameLatLng = function(latLng) {
+    exports.BaseEntityMap.prototype.hasSameLatLng = function (latLng) {
         if (Object.isNullOrUndefined(latLng)) return false;
         return vd.util.UtilsMap.hasSameLocation(this.latitude, this.longitude, latLng.lat(), latLng.lat());
     };
@@ -231,7 +237,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Boolean} [onlyDisplayed] check only displayed entities, faster
     * @return {Array} array of {see vd.entity.helper.Edge}
     */
-    exports.BaseEntityMap.prototype.entitiesWithinPointDistance = function(entities, threshold, onlyDisplayed) {
+    exports.BaseEntityMap.prototype.entitiesWithinPointDistance = function (entities, threshold, onlyDisplayed) {
         return vd.util.UtilsMap.entitiesWithinPointDistance(this, entities, threshold, onlyDisplayed);
     };
 
@@ -244,7 +250,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @see vd.util.UtilsMap.entitiesWithinPixelDistance
     * @see vd.entity.helper.Edge
     */
-    exports.BaseEntityMap.prototype.entitiesWithinPixelDistance = function(entities, threshold, onlyDisplayed) {
+    exports.BaseEntityMap.prototype.entitiesWithinPixelDistance = function (entities, threshold, onlyDisplayed) {
         return vd.util.UtilsMap.entitiesWithinPixelDistance(this, entities, threshold, onlyDisplayed);
     };
 
@@ -253,7 +259,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @return {google.maps.Point}
     * @see BaseEntityMap#displayed
     */
-    exports.BaseEntityMap.prototype.point = function() {
+    exports.BaseEntityMap.prototype.point = function () {
         if (Object.isNullOrUndefined(this.map)) return null;
         var p = this.map.getProjection();
         return Object.isNullOrUndefined(p) ? null : p.fromLatLngToPoint(this.latLng());
@@ -263,19 +269,19 @@ namespace.module('vd.entity.base', function(exports) {
     * Display the vicinity if there are given values.
     * @param {Object} polygonParams
     */
-    exports.BaseEntityMap.prototype.displayVicinity = function(polygonParams) {
+    exports.BaseEntityMap.prototype.displayVicinity = function (polygonParams) {
         if (Object.isNullOrUndefined(this.vicinity)) return;
         if (Object.isNullOrUndefined(this.map)) return;
         if (Object.isNullOrUndefined(polygonParams)) return;
         var coords = vd.util.UtilsMap.boundsToPath(this.vicinity);
         var vicinityBounds = new google.maps.Polygon({
-                paths: coords,
-                strokeColor: polygonParams.strokeColor,
-                strokeOpacity: polygonParams.strokeOpacity,
-                strokeWeight: polygonParams.strokeWeight,
-                fillColor: polygonParams.fillColor,
-                fillOpacity: polygonParams.fillOpacity
-            });
+            paths: coords,
+            strokeColor: polygonParams.strokeColor,
+            strokeOpacity: polygonParams.strokeOpacity,
+            strokeWeight: polygonParams.strokeWeight,
+            fillColor: polygonParams.fillColor,
+            fillOpacity: polygonParams.fillOpacity
+        });
         vicinityBounds.setMap(this.map);
         this.overlays.add(vicinityBounds);
     };
@@ -284,7 +290,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Get the point coordinates or null if not displayed @see BaseEntityMap.displayed.
     * @return {google.maps.Point}
     */
-    exports.BaseEntityMap.prototype.pixelPoint = function() {
+    exports.BaseEntityMap.prototype.pixelPoint = function () {
         if (Object.isNullOrUndefined(globals.mapOverlayView)) return null;
         var p = globals.mapOverlayView.getProjection();
         if (Object.isNullOrUndefined(p)) return null;
@@ -296,7 +302,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Elevation with unit.
     * @return {String}
     */
-    exports.BaseEntityMap.prototype.elevationAndUnit = function() {
+    exports.BaseEntityMap.prototype.elevationAndUnit = function () {
         if (!Object.isNumber(this.elevation)) return "?";
         return ("m" == globals.unitAltitude) ? vd.util.UtilsCalc.ftToM(this.elevation).toFixed(0) + "m" : this.elevation + "ft";
     };
@@ -305,7 +311,7 @@ namespace.module('vd.entity.base', function(exports) {
     * String representation.
     * @return {String}
     */
-    exports.BaseEntityMap.prototype.toString = function() {
+    exports.BaseEntityMap.prototype.toString = function () {
         var s = this.displayed ? "displayed" : "not displayed";
         s = s.appendIfNotEmpty([this.latitude, this.longitude, this.altitude], " ");
         return s;
@@ -317,7 +323,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Boolean} display
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     */
-    exports.BaseEntityMap.display = function(entities, display, forceRedraw) {
+    exports.BaseEntityMap.display = function (entities, display, forceRedraw) {
         if (Array.isNullOrEmpty(entities)) return;
         forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, false);
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -331,7 +337,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Array} entities
     * @return {Array} overlays
     */
-    exports.BaseEntityMap.overlays = function(entities) {
+    exports.BaseEntityMap.overlays = function (entities) {
         var overlays = new Array();
         if (Array.isNullOrEmpty(entities)) return overlays;
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -347,7 +353,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Number} maxNumber maximum number of entities considered
     * @return {Array} google.map.latlng values
     */
-    exports.BaseEntityMap.getLatLngValues = function(entities, maxNumber) {
+    exports.BaseEntityMap.getLatLngValues = function (entities, maxNumber) {
         var latlngs = new Array();
         if (Array.isNullOrEmpty(entities)) return latlngs;
         maxNumber = Object.ifNotNullOrUndefined(maxNumber, entities.length);
@@ -365,7 +371,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} [displayed]
     * @return {Array} entities found
     */
-    exports.BaseEntityMap.findByDisplayed = function(entities, displayed) {
+    exports.BaseEntityMap.findByDisplayed = function (entities, displayed) {
         var foundEntities = new Array();
         displayed = Object.ifNotNullOrUndefined(displayed, true);
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -381,7 +387,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} inBounds
     * @return {Array} entities found
     **/
-    exports.BaseEntityMap.findInBounds = function(entities, inBounds) {
+    exports.BaseEntityMap.findInBounds = function (entities, inBounds) {
         var foundEntities = new Array();
         inBounds = Object.ifNotNullOrUndefined(inBounds, true);
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -397,7 +403,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {google.maps.LatLng} latLng
     * @return {Array} entities found
     **/
-    exports.BaseEntityMap.findByLatLng = function(entities, latLng) {
+    exports.BaseEntityMap.findByLatLng = function (entities, latLng) {
         var foundEntities = new Array();
         for (var e = 0, len = entities.length; e < len; e++) {
             var entity = entities[e];
