@@ -39,11 +39,10 @@ namespace.module('vd.page', function (exports) {
             }
         }
 
-        // handle the Fsx data
+        // handle the FSX data
         if (!Object.isNullOrUndefined(globals.fsxWs) && globals.fsxWs.enabled) {
             if (globals.fsxWs.lastStatus != vd.entity.FsxWs.Init) {
-                info += "FsxWs: " + vd.entity.VatsimClients.statusToInfo(globals.fsxWs.lastStatus) + ".";
-                // this._setVatsimInfoFields(globals.fsxWs.lastStatus.info); // info about load
+                info += " FsxWs: " + vd.entity.FsxWs.statusToInfo(globals.fsxWs.lastStatus) + ".";
             }
         }
 

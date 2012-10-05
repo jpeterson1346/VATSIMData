@@ -998,7 +998,7 @@ namespace.module('vd.page', function (exports) {
         // does for some reasons not work with id
             {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
-            { name: '_isGrounded', index: '_isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
+            { name: 'isGrounded', index: 'isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
@@ -1555,7 +1555,7 @@ namespace.module('vd.page', function (exports) {
         globals.map.setCenter(client.latLng());
 
         // At least temporaily display, will be overwritten with next update
-        // TODO: I abuse a private method here to force a display
+        // TODO: KB I abuse a private method here to force a display
         if (!client.displayed && !Object.isNullOrUndefined(client._draw)) client._draw(true);
     };
 

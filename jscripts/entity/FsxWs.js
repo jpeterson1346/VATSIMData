@@ -174,10 +174,11 @@ namespace.module('vd.entity', function(exports) {
                             var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                             globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
                             me.aircrafts = data;
+                            me.flights = me.aircraftsToFlight(data);
                             me.lastStatus = exports.FsxWs.Ok;
                             if (!Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                         } else {
-                            globals.log.trace("FsxWs Data loaded but no data in array");
+                            globals.log.trace("FsxWs Data loaded, but no data in array");
                             me.lastStatus = exports.FsxWs.ReadNoData;
                         }
                     }
@@ -211,6 +212,42 @@ namespace.module('vd.entity', function(exports) {
     */
     exports.FsxWs.prototype.successfulRead = function() {
         return this.lastStatus == exports.FsxWs.Ok;
+    };
+
+    /**
+    * Aircrafts to flight.
+    * @param {Array} aircrafts array of JSON Aircrafts
+    * @return {Array} flight
+    */
+    exports.FsxWs.prototype.aircraftsToFlight = function(aircrafts) {
+        aircrafts = Object.ifNotNullOrUndefined(aircrafts, this.aircrafts);
+        var flights = new Array();
+        if (Array.isNullOrEmpty(aircrafts)) return flights;
+        for (var a = 0, len = aircrafts.length; a < len; a++) {
+            var aircraft = aircrafts[a];
+            // VatGM: Create Flight from FsxWs aircraft
+            var fp = {
+                "idfsx": aircraft.id,
+                "name": "FSX " + aircraft.title,
+                "frequency": aircraft.com1,
+                "qnh": aircraft.kohlsmanMb,
+                "aircraft": aircraft.model,
+                "callsign": aircraft.title,
+                "altitude": String.toNumber(aircraft.altitudeFt, -1, 0),
+                "groundspeed": String.toNumber(aircraft.groundSpeedKts, -1, 0),
+                "heading": String.toNumber(aircraft.headingTrueDeg, -1, 0),
+                "latitude": String.toNumber(aircraft.latitude, -1),
+                "longitude": String.toNumber(aircraft.longitude, -1),
+                "elevation": vd.util.UtilsCalc.mToFt(
+                    String.toNumber(aircraft.groundAltitudeM, -1),
+                    2),
+                "grounded": aircraft.simOnGround,
+                "transponder": aircraft.transponder
+            };
+            var flight = new vd.entity.Flight(fp);
+            flights.push(flight);
+        }
+        return flights;
     };
 
     /**
