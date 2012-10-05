@@ -175,7 +175,7 @@ namespace.module('vd.page', function(exports) {
             this.displayInfo("Filter is off.");
         }
         globals.filtered = f;
-        this.refresh(true);
+        this.refresh();
     };
 
 });

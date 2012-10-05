@@ -499,14 +499,14 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Map follows an id (FSX/Vatsim).
-    * @param {String|Number} [vatsimId]
+    * @param {String|Number} [objectId]
     * @param {Boolean} [displayInfo] display an info message
     * @param {Boolean} [refresh] update the entities, e.g. by highlighting them
     */
-    exports.PageController.prototype.followId = function (id, displayInfo, refresh) {
-        id = Object.ifNotNullOrUndefined(id, $("#inputFollowId").val());
-        if (id == globals.mapFollowId) return;
-        var client = (id == "") ? null : globals.vatsimClients.findByIdFirst(id, false);
+    exports.PageController.prototype.followId = function (objectId, displayInfo, refresh) {
+        objectId = Object.ifNotNullOrUndefined(objectId, $("#inputFollowId").val());
+        if (objectId == globals.mapFollowId) return;
+        var entity = (String.isNullOrEmpty(objectId) || Array.isNullOrEmpty(globals.allEntities)) ? null : globals.allEntities.findByObjectId(objectId, false);
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, true);
         refresh = Object.ifNotNullOrUndefined(refresh, true);
 
@@ -514,20 +514,20 @@ namespace.module('vd.page', function (exports) {
         var td = document.getElementById("inputFollowedVatsimClient");
         $(td).empty();
 
-        if (Object.isNullOrUndefined(client)) {
+        if (Object.isNullOrUndefined(entity)) {
             $("#inputFollowId").val("");
             globals.mapFollowId = null;
             if (displayInfo) this.displayInfo("Follow mode 'off'.");
             td.appendChild(document.createTextNode("Follow mode 'off'."));
         } else {
-            var infoText = client.callsign.appendIfNotEmpty(client.name, " ");
-            $("#inputFollowId").val(id);
-            globals.mapFollowId = id;
+            var infoText = entity.callsign.appendIfNotEmpty(entity.name, " ");
+            $("#inputFollowId").val(objectId);
+            globals.mapFollowId = objectId;
             td.appendChild(document.createTextNode(infoText));
             if (displayInfo) this.displayInfo("Will follow '" + infoText + "'.");
-            globals.map.setCenter(client.latLng());
+            globals.map.setCenter(entity.latLng());
         }
-        if (refresh) this.backgroundRefresh(true);
+        if (refresh) this.backgroundRefresh();
     };
     // #endregion ------------ public part general ------------
 
@@ -565,16 +565,12 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Redisplay the clients.
-    * @param {Boolean} forceRedraw
+    * @param {Boolean} withInfo
     */
-    exports.PageController.prototype.refresh = function (forceRedraw) {
+    exports.PageController.prototype.refresh = function (withInfo) {
         var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
-        var entities = globals.allEntities;
-        forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, true);
-        if (!Object.isNullOrUndefined(entities)) entities.display(true, forceRedraw);
-
-        // update tables
-        this.updateGrids();
+        withInfo = Object.ifNotNullOrUndefined(withInfo, false);
+        this.displayEntities(withInfo, "Refresh.");
 
         // statistics / logging
         this._statisticsRefresh.add(statsEntry, true);
@@ -582,15 +578,15 @@ namespace.module('vd.page', function (exports) {
     };
 
     /**
-    * Redisplay the clients (after some delay in the background).
+    * Redisplay the entities (after some delay in the background).
     * @param {Boolean} forceRedraw
     */
-    exports.PageController.prototype.backgroundRefresh = function (forceRedraw) {
+    exports.PageController.prototype.backgroundRefresh = function () {
         var me = this;
         if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
             this._backgroundRefreshCollectEvent = new vd.util.CollectingEvent(
                 function () {
-                    me.refresh(forceRedraw);
+                    me.refresh();
                 }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
         else
             this._backgroundRefreshCollectEvent.fire();
@@ -755,7 +751,7 @@ namespace.module('vd.page', function (exports) {
             var entity = globals.filter.entities[f];
             filterGrid.addRowData(entity.objectId, entity);
         }
-        if (refresh) this.backgroundRefresh(true);
+        if (refresh) this.backgroundRefresh();
     };
 
     /**
@@ -1052,9 +1048,7 @@ namespace.module('vd.page', function (exports) {
                 cursor: "pointer",
                 onClickButton: function () {
                     var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
-                    var client = globals.vatsimClients.findByObjectId(objectId);
-                    if (Object.isNullOrUndefined(client)) return;
-                    if (!String.isNullOrEmpty(objectId)) me.followId(client.vatsimId);
+                    if (!String.isNullOrEmpty(objectId)) me.followId(objectId);
                 }
             };
             var navAddToFilter = {
@@ -1378,6 +1372,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._setVatsimInfoFields = function (vatsimFileInfo) {
         // file info
+        if (!Object.isNullOrUndefined(globals.vatsimClients)) vatsimFileInfo = String.isNullOrEmpty(vatsimFileInfo) ? globals.vatsimClients.info : vatsimFileInfo;
         var td = document.getElementById("inputDatafileInfo");
         $(td).empty();
         if (!String.isNullOrEmpty(vatsimFileInfo)) td.appendChild(document.createTextNode(vatsimFileInfo));
@@ -1473,7 +1468,7 @@ namespace.module('vd.page', function (exports) {
             if (relevantMapMovement) {
                 globals.mapOldCenter = globals.map.getCenter();
                 globals.mapOldZoom = globals.map.getZoom();
-                this.displayEntities(true, false, "Map moved.");
+                this.displayEntities(true, "Map moved.");
             }
             globals._asyncBoundsUpdateSemaphore = false;
         }

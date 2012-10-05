@@ -80,7 +80,7 @@ namespace.module('vd.page', function (exports) {
         this.map = null;
         this.mapOverlayView = null;
         this.mapOldCenter = null;
-        this.mapFollowId = null;
+        this.mapFollowId = null; // Object id being followed
         this.mapOldZoom = -1;
         this.mapRelevantMovement = 5; // 5%
         this.mapElevationZeroCutoff = true; // Google features sea levels < 0, I am aware this will cutoff some places on land < 0
