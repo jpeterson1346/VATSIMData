@@ -164,7 +164,7 @@ String.isNullOrEmpty = function(candidate) {
 * To number or failure value.
 * @param {String} candidate
 * @param {Object} failureValue
-* @param {Number} digits
+* @param {Number} [digits]
 * @return {Number} candidate as Number or failureValue
 */
 String.toNumber = function(candidate, failureValue, digits) {
