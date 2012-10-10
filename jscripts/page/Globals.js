@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function (exports) {
+namespace.module('vd.page', function(exports) {
 
     /**
     * @classdesc
@@ -11,7 +11,7 @@ namespace.module('vd.page', function (exports) {
     * @constructor
     * @author KWB
     */
-    exports.Globals = function () {
+    exports.Globals = function() {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
@@ -185,14 +185,14 @@ namespace.module('vd.page', function (exports) {
     * Assign a new / other map.
     * @param {google.maps.Map} map
     **/
-    exports.Globals.prototype.assignMap = function (map) {
-        this.allEntities.clearOverlays(); // re-entry, clean up
+    exports.Globals.prototype.assignMap = function(map) {
+        this.allEntities.disposeData(); // re-entry, clean up
         this._objects = new Array();
         this.map = map;
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
-        this.mapOverlayView.draw = function () {
+        this.mapOverlayView.draw = function() {
             if (!this.ready) {
                 this.ready = true;
                 google.maps.event.trigger(this, 'ready');
@@ -204,7 +204,7 @@ namespace.module('vd.page', function (exports) {
     * Is the FsxWs service available?
     * @return {Boolean} available
     **/
-    exports.Globals.prototype.isFsxAvailable = function () {
+    exports.Globals.prototype.isFsxAvailable = function() {
         if (Object.isNullOrUndefined(this.fsxWs)) return false;
         return this.fsxWs.successfulRead();
     };
@@ -214,7 +214,7 @@ namespace.module('vd.page', function (exports) {
     * @param {LatLng} latLng position to be checked.
     * @see Globals#map
     */
-    exports.Globals.prototype.isInBounds = function (latLng) {
+    exports.Globals.prototype.isInBounds = function(latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
@@ -223,7 +223,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Object} newObject: to be registered object
     * @return {Number} objectId
     */
-    exports.Globals.prototype.register = function (newObject) {
+    exports.Globals.prototype.register = function(newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
         this._objects[id] = newObject;
@@ -235,7 +235,7 @@ namespace.module('vd.page', function (exports) {
     * on temporary objects.
     * @return {Number} objectId
     */
-    exports.Globals.prototype.getObjectId = function () {
+    exports.Globals.prototype.getObjectId = function() {
         var id = this._idCounter++;
         return id;
     };
@@ -245,18 +245,27 @@ namespace.module('vd.page', function (exports) {
     * @param  {Number} id
     * @return {Object}
     */
-    exports.Globals.prototype.getObject = function (id) {
+    exports.Globals.prototype.getObject = function(id) {
         return this._objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetEntities = function () {
-        if (!Object.isNullOrUndefined(this.allEntities)) this.allEntities.display(false, true);
-        this.vatsimClients = new vd.entity.VatsimClients();
-        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"], this.urlFsxWsDefault);
+    exports.Globals.prototype.resetEntities = function() {
+        // dispose all entities but recycle the list
+        if (!Object.isNullOrUndefined(this.allEntities)) this.allEntities.disposeData();
         this.allEntities = new vd.entity.base.EntityMapList();
+
+        // FsxWs data, do not recycle but create new, maybe params have changed
+        if (!Object.isNullOrUndefined(this.fsxWs)) this.fsxWs.disposeData();
+        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"], this.urlFsxWsDefault);
+
+        //  VATSIM
+        if (!Object.isNullOrUndefined(this.vatsimClients)) this.vatsimClients.disposeData();
+        this.vatsimClients = new vd.entity.VatsimClients();
+
+        // new objects
         this._objects = new Array();
     };
 
@@ -265,7 +274,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Array} ids
     * @return {Array} 0..n objects
     */
-    exports.Globals.prototype.getObjects = function (ids) {
+    exports.Globals.prototype.getObjects = function(ids) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
         for (var id in ids) {
@@ -279,7 +288,7 @@ namespace.module('vd.page', function (exports) {
     * Init the version (by version.txt).
     * @private
     */
-    exports.Globals.prototype._initVersion = function () {
+    exports.Globals.prototype._initVersion = function() {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
         // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
@@ -296,7 +305,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Number} value (MUST be an INTEGER)
     * @see <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html">Google Analytics Events</a>
     */
-    exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
+    exports.Globals.prototype.googleAnalyticsEvent = function(action, label, value) {
         value = Object.ifNotNullOrUndefined(value, 0);
         // I have to use the global var _gaq here, because it will be changed to valid object later
         // see: http://stackoverflow.com/questions/7944860/google-analytics-events-when-are-they-send
@@ -307,7 +316,7 @@ namespace.module('vd.page', function (exports) {
     * Init the logger.
     * @private
     */
-    exports.Globals.prototype._initLogger = function () {
+    exports.Globals.prototype._initLogger = function() {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();

@@ -115,13 +115,17 @@ namespace.module('vd.entity', function (exports) {
     };
 
     /**
-    * Clear data.
+    * Dispose the "stored data" (hide as well).
     */
-    exports.VatsimClients.prototype.clearData = function() {
+    exports.VatsimClients.prototype.disposeData = function () {
+        if (this.loading) return;
         this.atcs = new Array();
         this.flightplans = new Array();
+        vd.entity.base.BaseEntityModel.dispose(this.aircrafts);
+        this.aircrafts = new Array();
+        vd.entity.base.BaseEntityModel.dispose(this.flights);
         this.flights = new Array();
-        this.airports = new Array();
+        this.lastStatus = vd.entity.VatsimClients.Init;
     };
 
     /**

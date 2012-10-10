@@ -130,6 +130,7 @@ namespace.module('vd.entity', function (exports, require) {
     * or method will be overridden by subclass.
     */
     exports.Flight.prototype.dispose = function () {
+        if (this.disposed) return;
         this.display(false, false, false, true);
         if (!Object.isNullOrUndefined(this._img)) {
             this._img.onmouseover = null;
