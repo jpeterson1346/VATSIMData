@@ -109,7 +109,7 @@ namespace.module('vd.page', function (exports) {
         this.groundOverlayMinPixelY = 200;
 
         // data grids
-        this.gridSelectedVatsimClient = null;
+        this.gridSelectedEntity = null;
         this.gridJqGridUnloadPossible = isOsWindows; // add additional columns when on a wide screen.
 
         // altitude profile
@@ -117,6 +117,8 @@ namespace.module('vd.page', function (exports) {
         this.altitudeProfileSettings = new vd.gc.AltitudeProfileSettings();
 
         // flights, which property to display and how
+        this.flightImageWidth = 16;
+        this.flightImageHeight = 16;
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms

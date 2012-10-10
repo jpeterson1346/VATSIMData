@@ -111,6 +111,16 @@ namespace.module('vd.entity.base', function(exports) {
     };
 
     /**
+    * Find by any id.
+    * @param {String|Number} id
+    * @return {BaseEntityModel}
+    */
+    exports.EntityList.prototype.findById = function (id) {
+        if (Object.isNullOrUndefined(id)) return null;
+        return vd.entity.base.BaseEntityModel.findByIdFirst(this.entities, id);
+    };
+
+    /**
     * Clear all.
     */
     exports.EntityList.prototype.clear = function() {
@@ -190,4 +200,30 @@ namespace.module('vd.entity.base', function(exports) {
         if (this.isEmpty()) return new Array();
         return vd.entity.base.BaseEntityModel.findByType(this.entities, "Airport");
     };
+
+    /**
+    * VATSIM based entities.
+    * @param  {Boolean} [vatsimOnly] only purely VATSIM based entities
+    * @return {Array}
+    */
+    exports.EntityList.prototype.vatsimEntities = function (vatsimOnly) {
+        return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, vatsimOnly);
+    };
+
+    /**
+    * FsxWs based entities.
+    * @param  {Boolean} [fsxWsOnly] only purely FsxWs based entities
+    * @return {Array}
+    */
+    exports.EntityList.prototype.fsxWsEntities = function (fsxWsOnly) {
+        return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, fsxWsOnly);
+    };
+
+    /**
+    * Dispose entities.
+    */
+    exports.EntityList.prototype.fsxWsEntities = function () {
+        return vd.entity.base.BaseEntityModel.dispose(this.entities);
+    };
+
 });

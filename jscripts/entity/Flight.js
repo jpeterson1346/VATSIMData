@@ -55,6 +55,8 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {vd.entity.helper.Flightplan}
         */
         this.flightplan = Object.ifNotNullOrUndefined(flightProperties["flightplan"], null);
+        if (this.isFsxBased() && Object.isNullOrUndefined(this.flightplan))
+            this.flightplan = vd.entity.helper.Flightplan.getFsxDummyFlightplan();
         /**
         * Array of waypoints.
         * @type {Array}
@@ -68,13 +70,39 @@ namespace.module('vd.entity', function (exports, require) {
         */
         this.transponder = String.isNullOrEmpty(flightProperties["transponder"]) ? null : flightProperties["transponder"];
         /**
-        * Is grounded, caching the value of isGrounded (for grids).
+        * Bank angle [deg].
+        * @type {Number}
+        * @example 5, 10
+        */
+        this.bankAngle = String.toNumber(flightProperties["bankangle"], 0, 2);
+        /**
+        * Angle of attack angle [deg].
+        * @type {Number}
+        * @example 5, 10
+        */
+        this.angleOfAttack = String.toNumber(flightProperties["aoa"], 0, 2);
+        /**
+        * Climb rate [ft/min].
+        * @type {Number}
+        * @example 1200, 4000
+        */
+        this.climbRate = String.toNumber(flightProperties["climbrate"], 0, 2);
+        /**
+        * Is grounded, also caching the value of isGrounded (for grids).
         * VATSIM: Requires a call of isGrounded to get a valid value.
         * FSX: Passes this value.
         * @type {Boolean}
         * @protected
         */
         this._isGrounded = Object.ifNotNullOrUndefined(flightProperties["grounded"], false);
+        /**
+        * Helicopter?.
+        * VATSIM: Requires a call of isHelicopter to get a valid value.
+        * FSX: Passes this value.
+        * @type {Boolean}
+        * @protected
+        */
+        this._isHelicopter = Object.ifNotNullOrUndefined(flightProperties["helicopter"], false);
         /**
         * Corresponding plane image.
         * @type {HTMLDOMElement}
@@ -102,7 +130,7 @@ namespace.module('vd.entity', function (exports, require) {
     * or method will be overridden by subclass.
     */
     exports.Flight.prototype.dispose = function () {
-        this.display(false, false, false);
+        this.display(false, false, false, true);
         if (!Object.isNullOrUndefined(this._img)) {
             this._img.onmouseover = null;
             this._img.onmouseout = null;
@@ -119,9 +147,13 @@ namespace.module('vd.entity', function (exports, require) {
         if (Object.isNullOrUndefined(this._img)) this._img = document.createElement('img');
         this._img.alt = this.toString();
         this._img.id = this.entity + "_" + this.objectId;
-        this._img.src = (this.isGrounded()) ? "images/AircraftJetGnd.png" : this._img.src = "images/AircraftJet.png";
-        this._img.width = 16;
-        this._img.height = 16;
+        if (this.isHelicopter()) {
+            this._img.src = (this.isGrounded()) ? "images/HelicopterGnd.png" : this._img.src = "images/Helicopter.png";
+        } else {
+            this._img.src = (this.isGrounded()) ? "images/AircraftJetGnd.png" : this._img.src = "images/AircraftJet.png";
+        }
+        this._img.width = globals.flightImageWidth;
+        this._img.height = globals.flightImageHeight;
         this._img.style.visibility = true;
         this._img.onmouseover = function () { me._imageMouseover(); };
         this._img.onmouseout = function () { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
@@ -133,6 +165,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     */
     exports.Flight.prototype._imageMouseover = function () {
+        if (this.disposed) return; // no longer valid
         if (!Object.isNullOrUndefined(this._flightSettings)) return; // already in this mode
         this._flightSettings = this.flightSettings;
         this.flightSettings = this.flightSettings.clone().displayAll();
@@ -151,6 +184,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     */
     exports.Flight.prototype._imgMouseout = function () {
+        if (this.disposed) return; // no longer valid
         if (Object.isNullOrUndefined(this._flightSettings)) return; // nothing to reset
         this.flightSettings = this._flightSettings;
         this._flightSettings = null;
@@ -162,15 +196,20 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} display
     * @param {Boolean} center Center on the map
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
+    * @param {Boolean} [dispose] disposing, hide in any case
     */
-    exports.Flight.prototype.display = function (display, center, forceRedraw) {
+    exports.Flight.prototype.display = function (display, center, forceRedraw, dispose) {
+        dispose = Object.ifNotNullOrUndefined(dispose, false);
+
         // display checks
-        if (this.isFollowed()) {
+        if (dispose) {
+            display = false;
+        } else if (this.isFollowed()) {
             display = true;
         } else {
             display = display && this.flightSettings.displayFlight; // hide anyway
             display = display && this.displayedAtZoomLevel(); // too small to be displayed?
-            display = display && (this.flightSettings.displayOnGround || !this.isGrounded()); // grounded?
+            display = display && (this.flightSettings.displayOnGround || !this.isGrounded() || this.isMyFsxAircraft()); // grounded?
             display = display && (!this.flightSettings.displayRequireFlightplan || this.hasFlightplan());
             display = display && this.compliesWithFilter();
         }
@@ -204,11 +243,22 @@ namespace.module('vd.entity', function (exports, require) {
     };
 
     /**
+    * Helicopter?
+    * @return {Boolean}
+    */
+    exports.Flight.prototype.isHelicopter = function () {
+
+        // FSX sets the value
+        if (this.isFsxBased()) return this._isHelicopter;
+        return false;
+    };
+
+    /**
     * Airborne or grounded?
     * @return {Boolean}
     */
     exports.Flight.prototype.isGrounded = function () {
-        
+
         // FSX sets the value
         if (this.isFsxBased()) return this._isGrounded;
 
@@ -284,7 +334,7 @@ namespace.module('vd.entity', function (exports, require) {
 
         // assertion check
         if (this.entity != "Flight") {
-            globals.log.error("Flight draw called as none flight object");
+            globals.log.error("Flight draw called on none flight object");
             return;
         }
 
@@ -296,7 +346,7 @@ namespace.module('vd.entity', function (exports, require) {
         // build the plane icon
         // view-source:http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.7/examples/infobox-basic.html
         this._setImage();
-        var planeLabelBoxStyle = (this.isFollowed()) ? {
+        var planeImageLabelBoxStyle = (this.isFollowed()) ? {
             background: globals.styles.flightLabelBackgroundIfFollowed,
             opacity: globals.styles.flightLabelOpacity
         } :
@@ -307,17 +357,21 @@ namespace.module('vd.entity', function (exports, require) {
                 opacity: globals.styles.flightLabelOpacity
             } : null;
 
-        var planeLabelOptions = {
+        // IE bug, img.width/height might be 0
+        var imgOffsetW = this._img.width == 0 ? globals.flightImageWidth : this._img.width;
+        var imgOffsetH = this._img.height == 0 ? globals.flightImageHeight : this._img.height;
+
+        var planeImageLabelOptions = {
             content: this._img,
             disableAutoPan: true,
-            boxStyle: planeLabelBoxStyle,
-            pixelOffset: new google.maps.Size(-this._img.width / 2, -this._img.height / 2),
+            boxStyle: planeImageLabelBoxStyle,
+            pixelOffset: new google.maps.Size(-imgOffsetW / 2, -imgOffsetH / 2),
             closeBoxURL: "",
             position: latlng,
             zIndex: this.altitude < 0 ? 100 : this.altitude
         };
-        var planeLabel = new InfoBox(planeLabelOptions);
-        this.overlays.add(planeLabel);
+        var planeImageLabel = new InfoBox(planeImageLabelOptions);
+        this.overlays.add(planeImageLabel);
 
         // text label
         if (this.flightSettings.displayedElements() > 0) {
@@ -339,7 +393,7 @@ namespace.module('vd.entity', function (exports, require) {
                 },
                 zIndex: this.altitude < 0 ? 100 : this.altitude,
                 disableAutoPan: true,
-                pixelOffset: new google.maps.Size(0, this._img.height),
+                pixelOffset: new google.maps.Size(0, -imgOffsetH),
                 position: latlng,
                 closeBoxURL: "",
                 isHidden: false,
@@ -369,7 +423,7 @@ namespace.module('vd.entity', function (exports, require) {
 
         // draw everything before rotating the image
         this.overlays.display(true); // assign map
-        if (!this._drawn) planeLabel.draw(); // 1st time force a draw, otherwise rotating the image will fail because an asyncronously drawn object has not all tags in place
+        if (!this._drawn) planeImageLabel.draw(); // 1st time force a draw, otherwise rotating the image will fail because an asyncronously drawn object has not all tags in place
 
         // set the heading if required
         if (this.heading != 0) this.setHeading(this.heading, true);
@@ -384,7 +438,8 @@ namespace.module('vd.entity', function (exports, require) {
     * @return {String}
     */
     exports.Flight.prototype._getContent = function () {
-        var c = (this.flightSettings.displayCallsign) ? this.callsign : "";
+        var origin = "(" + (this.isVatsimBased() ? "V" : "") + (this.isFsxBased() ? "F" : "") + ")";
+        var c = (this.flightSettings.displayCallsign) ? (this.callsign + " " + origin) : "";
         if (this.flightSettings.displayAircraft && !String.isNullOrEmpty(this.aircraft)) c = c.appendIfThisIsNotEmpty(" ") + this.aircraft;
         if (this.flightSettings.displayFrequency && this.frequency > 100) c += " " + this.frequency + "MHz";
         if (this.flightSettings.displayPilot && !String.isNullOrEmpty(this.pilot)) c = c.appendIfThisIsNotEmpty("<br>") + this.pilot;
@@ -401,6 +456,8 @@ namespace.module('vd.entity', function (exports, require) {
     * @return {Boolean} updated?
     */
     exports.Flight.prototype.update = function (newFlightInformation) {
+        this._isGrounded = newFlightInformation._isGrounded;
+        this._isHelicopter = newFlightInformation._isHelicopter; // actually this should newer changed, but when user switches aircraft ...
         this.groundspeed = newFlightInformation.groundspeed;
         this.altitude = newFlightInformation.altitude;
         this.flightplan = newFlightInformation.flightplan;
@@ -432,7 +489,9 @@ namespace.module('vd.entity', function (exports, require) {
         var existingFlightsCopy = existingFlights.slice(0); // make a copy of the array
         for (var f = 0, len = newFlights.length; f < len; f++) {
             var newFlight = newFlights[f];
-            var foundInExistingFlights = vd.entity.base.BaseEntityModel.findByVatsimIdFirst(existingFlightsCopy, newFlight.vatsimId);
+            var foundInExistingFlights = newFlight.isFsxBased() ?
+                vd.entity.base.BaseEntityModel.findByFsxIdFirst(existingFlightsCopy, newFlight.fsxId) :
+                vd.entity.base.BaseEntityModel.findByVatsimIdFirst(existingFlightsCopy, newFlight.vatsimId);
             if (Object.isNullOrUndefined(foundInExistingFlights)) {
                 flights.push(newFlight);
             } else {
