@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function(exports) {
+namespace.module('vd.entity', function (exports) {
     /**
     * @constructor
     * @classdesc 
@@ -13,7 +13,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @author KWB
     */
-    exports.FsxWs = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+    exports.FsxWs = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         /**
         * Enabled, disabled? Disables primarily read.
         * @type {Boolean}
@@ -91,7 +91,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @return {Boolean} true values have been reset, false nothing changed (values remain)
     */
-    exports.FsxWs.prototype.initServerValues = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+    exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         this.serverUrl = null;
         this.serverPort = -1;
         this.serverLocation = null;
@@ -129,21 +129,13 @@ namespace.module('vd.entity', function(exports) {
     };
 
     /**
-    * Clear all data. 
-    */
-    exports.FsxWs.prototype.clearData = function() {
-        this.aircrafts = null;
-        this.flights = null;
-    };
-
-    /**
     * Trigger read data from the WebService (JSON). 
     * @param {Boolean}  [availability] check
     * @param {Boolean}  [autoEnableDisable] error / success leads to enabled / disabled service
     * @param {function} [successfulReadCallback] call if really read data
     * @see vd.entity.VatsimClients.readFromVatsim 
     */
-    exports.FsxWs.prototype.readFromFsxWs = function(availability, autoEnableDisable, successfulReadCallback) {
+    exports.FsxWs.prototype.readFromFsxWs = function (availability, autoEnableDisable, successfulReadCallback) {
         availability = Object.ifNotNullOrUndefined(availability, false);
         autoEnableDisable = Object.ifNotNullOrUndefined(autoEnableDisable, true);
         if (!availability && !this.enabled) return;
@@ -169,7 +161,7 @@ namespace.module('vd.entity', function(exports) {
             async: true,
             crossdomain: true,
             datatype: "jsonp",
-            success: function(data, status) {
+            success: function (data, status) {
                 // alert("Data returned :" + data);
                 // alert("Status :" + status);
                 if (status == "success" && !Object.isNullOrUndefined(data)) {
@@ -201,7 +193,7 @@ namespace.module('vd.entity', function(exports) {
                 }
                 me.loading = false;
             },
-            error: function(xhr, textStatus, errorThrown) {
+            error: function (xhr, textStatus, errorThrown) {
                 me.loading = false;
                 if (autoEnableDisable) me.enabled = false;
                 me.lastStatus = exports.FsxWs.ReadFailed;
@@ -219,8 +211,18 @@ namespace.module('vd.entity', function(exports) {
     * Successful read?
     * @return success
     */
-    exports.FsxWs.prototype.successfulRead = function() {
+    exports.FsxWs.prototype.successfulRead = function () {
         return this.lastStatus == exports.FsxWs.Ok;
+    };
+
+    /**
+    * Dispose the "stored data" (hide as well).
+    */
+    exports.FsxWs.prototype.disposeData = function () {
+        if (this.loading) return;
+        this.aircrafts = new Array();
+        vd.entity.base.BaseEntityModel.dispose(this.flights);
+        this.flights = new Array();
     };
 
     /**
@@ -228,7 +230,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Array} aircrafts array of JSON Aircrafts
     * @return {Array} flight
     */
-    exports.FsxWs.prototype.aircraftsToFlight = function(aircrafts) {
+    exports.FsxWs.prototype.aircraftsToFlight = function (aircrafts) {
         aircrafts = Object.ifNotNullOrUndefined(aircrafts, this.aircrafts);
         var flights = new Array();
         if (Array.isNullOrEmpty(aircrafts)) return flights;
@@ -266,7 +268,7 @@ namespace.module('vd.entity', function(exports) {
     * @param  {Array} vatsimClients
     * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimFlights = function(vatsimClients) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients) {
 
         // VATSIM data?
         if (Array.isNullOrEmpty(vatsimClients)) {
@@ -361,24 +363,24 @@ namespace.module('vd.entity', function(exports) {
     * @type {Number}
     * @return {String}
     */
-    exports.FsxWs.statusToInfo = function(status) {
+    exports.FsxWs.statusToInfo = function (status) {
         var info;
         switch (status) {
-        case vd.entity.FsxWs.Init:
-            info = "Init";
-            break;
-        case vd.entity.FsxWs.Ok:
-            info = "Data loaded";
-            break;
-        case vd.entity.FsxWs.ReadFailed:
-            info = "Read failed";
-            break;
-        case vd.entity.FsxWs.NoFsxWs.ReadNoData:
-            info = "No data";
-            break;
-        default:
-            info = "Unknown, check console";
-            break;
+            case vd.entity.FsxWs.Init:
+                info = "Init";
+                break;
+            case vd.entity.FsxWs.Ok:
+                info = "Data loaded";
+                break;
+            case vd.entity.FsxWs.ReadFailed:
+                info = "Read failed";
+                break;
+            case vd.entity.FsxWs.NoFsxWs.ReadNoData:
+                info = "No data";
+                break;
+            default:
+                info = "Unknown, check console";
+                break;
         }
         return info;
     };
