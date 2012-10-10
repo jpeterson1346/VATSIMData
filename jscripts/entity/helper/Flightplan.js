@@ -84,7 +84,7 @@ namespace.module('vd.entity.helper', function (exports, require) {
         */
         this.waypoints = new Array();
     };
-    
+
     /**
     * Get property value pairs.
     * @return {Array} with property / value pairs
@@ -105,11 +105,30 @@ namespace.module('vd.entity.helper', function (exports, require) {
     * @param {Waypoint} waypoint
     * @see Waypoint
     */
-    exports.Flightplan.addWaypoint = function (waypoint) {
+    exports.Flightplan.prototype.addWaypoint = function (waypoint) {
         if (Object.isNullOrUndefined(waypoint)) return;
         waypoint.type = vd.entity.WaypointSettings.TypeRoute;
         this.waypoints.push(waypoint);
     };
+
+
+    /**
+    * For FsxWs flights, create a dummy flightplan.
+    * @return {vd.entity.helper.Flightplan} dummy flightplan
+    * @see Waypoint
+    */
+    exports.Flightplan.getFsxDummyFlightplan = function () {
+        var props = {
+            "from" : "local",
+            "to" : "local",
+            "alternate" : "none",
+            "remarks": "FSX flight"
+        };
+        return new exports.Flightplan(props);
+    };
+
+
+
 
     // Inheritance must be last!
     util.inheritPrototypes(exports.Flightplan, entityBase.BaseEntityModelOnMap, "BaseEntityModelOnMap");

@@ -115,6 +115,16 @@ namespace.module('vd.entity', function (exports) {
     };
 
     /**
+    * Clear data.
+    */
+    exports.VatsimClients.prototype.clearData = function() {
+        this.atcs = new Array();
+        this.flightplans = new Array();
+        this.flights = new Array();
+        this.airports = new Array();
+    };
+
+    /**
     * Trigger read data from the VATSIM servers ("data file").
     * @param {function} [successfulReadCallback]
     * @see vd.entity.FsxWs.readFromFsxWs
@@ -257,7 +267,7 @@ namespace.module('vd.entity', function (exports) {
                             });
                         flightplans.push(flightplan);
                     }
-                    ;
+
                     var flight = new vd.entity.Flight(
                         {
                             flightplan: flightplan,
@@ -296,7 +306,7 @@ namespace.module('vd.entity', function (exports) {
                     if (atc.isAirportAtc()) {
                         var airport = atc.getCallsignMainPart();
                         if (Object.isNullOrUndefined(currentAirport) || currentAirport.name != airport) {
-                            currentAirport = new vd.entity.Airport({ name: airport, callsign: airport });
+                            currentAirport = new vd.entity.Airport({ name: airport, callsign: airport, idvatsim: id });
                             airports.push(currentAirport);
                         }
                         currentAirport.addAtc(atc);
@@ -484,19 +494,19 @@ namespace.module('vd.entity', function (exports) {
                 info = "Init";
                 break;
             case vd.entity.VatsimClients.Ok:
-                info = "Vatsim data loaded";
+                info = "Data loaded";
                 break;
             case vd.entity.VatsimClients.NoNewData:
-                info = "No new data, skipping read.";
+                info = "No new data, skipping read";
                 break;
             case vd.entity.VatsimClients.ReadFailed:
-                info = "Read failed.";
+                info = "Read failed";
                 break;
             case vd.entity.VatsimClients.ParsingFailed:
-                info = "Parser failed.";
+                info = "Parser failed";
                 break;
             default:
-                info = "Unknown, check console.";
+                info = "Unknown, check console";
                 break;
         }
         return info;

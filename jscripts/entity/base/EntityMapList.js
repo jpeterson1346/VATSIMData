@@ -29,34 +29,57 @@ namespace.module('vd.entity.base', function (exports, require) {
     * Display the clients (invoke display on all entities).
     * This will display the entities if they are in bounds of the map.
     * @param {Boolean} display
-    * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
+    * @param {Boolean} [forceRedrawFsx] redraw
+    * @param {Boolean} [forceRedrawVatsim] redraw
     */
-    exports.EntityMapList.prototype.display = function (display, forceRedraw) {
+    exports.EntityMapList.prototype.display = function (display, forceRedrawFsx, forceRedrawVatsim) {
         var c = this.count();
         if (c < 1) return;
-        forceRedraw = Object.ifNotNullOrUndefined(forceRedraw, false);
+        forceRedrawFsx = Object.ifNotNullOrUndefined(forceRedrawFsx, true);
+        forceRedrawVatsim = Object.ifNotNullOrUndefined(forceRedrawVatsim, true);
         var statsEntry = new vd.util.RuntimeEntry("Display on " + c + " entities (e.g. FSX, VATSIM)");
         var entities = this.entities;
-        vd.entity.base.BaseEntityMap.display(entities, display, forceRedraw);
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var entity = entities[e];
+            if (display) {
+                if (!entity.isInBounds()) continue;
+                if (entity.isFsxBased())
+                    entity.display(display, false, forceRedrawFsx);
+                else if (entity.isVatsimBased())
+                    entity.display(display, false, forceRedrawVatsim);
+                else
+                    alert("Unknown entity origin in list");
+            } else {
+                entity.display(false);
+            }
+        }
         this._statisticsDisplay.add(statsEntry, true);
         globals.log.trace(statsEntry.toString());
     };
 
     /**
     * Clear all overlays of all clients.
+    * @param {Boolean} clear VATSIM entities
+    * @param {Boolean} clear FsxWs entities 
     */
-    exports.EntityMapList.prototype.clearOverlays = function () {
+    exports.EntityMapList.prototype.clearOverlays = function (vatsim, fsxWs) {
         if (this.count() < 1) return;
-        this.display(false, false);
-        var clients = this.allClients();
-        for (var c = 0, len = clients.length; c < len; c++) {
-            var client = clients[c];
-            if (!Object.isNullOrUndefined(client.overlays)) client.overlays.clear();
-        }
-    };
+        vatsim = Object.ifNotNullOrUndefined(vatsim, true);
+        fsxWs = Object.ifNotNullOrUndefined(fsxWs, true);
 
+        var entities;
+        if (vatsim && fsxWs)
+            entities = this.entities;
+        else if (vatsim)
+            entities = this.vatsimEntities(true);
+        else if (fsxWs)
+            entities = this.fsxWsEntities(true);
+        else
+            return;
+
+        vd.entity.base.BaseEntityMap.display(entities, false);
+    };
 
     // Inheritance must be last!
     util.inheritPrototypes(exports.EntityMapList, listBase.EntityList, "EntityList");
-
 });

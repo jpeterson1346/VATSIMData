@@ -129,6 +129,14 @@ namespace.module('vd.entity', function(exports) {
     };
 
     /**
+    * Clear all data. 
+    */
+    exports.FsxWs.prototype.clearData = function() {
+        this.aircrafts = null;
+        this.flights = null;
+    };
+
+    /**
     * Trigger read data from the WebService (JSON). 
     * @param {Boolean}  [availability] check
     * @param {Boolean}  [autoEnableDisable] error / success leads to enabled / disabled service
@@ -141,16 +149,16 @@ namespace.module('vd.entity', function(exports) {
         if (!availability && !this.enabled) return;
         if (Object.isNullOrUndefined(this.serverUrl)) return;
         if (!jQuery.support.cors) alert("jQuery CORS not enabled");
-        if (this.loading) {
+        if (this.loading && !availability) {
             alert("Concurrent loading from FsxWs");
             return;
         }
 
         // init
         successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
-        this.loading = true;
+        this.loading = !availability && true;
         var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
-        this._statisticsRead.start();
+        if (!availability) this._statisticsRead.start();
         var me = this;
 
         // AJAX call
@@ -174,7 +182,8 @@ namespace.module('vd.entity', function(exports) {
                             var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                             globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
                             me.aircrafts = data;
-                            me.flights = me.aircraftsToFlight(data);
+                            var newFlights = me.aircraftsToFlight(data);
+                            me.flights = vd.entity.Flight.updateFlights(me.flights, newFlights);
                             me.lastStatus = exports.FsxWs.Ok;
                             if (!Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                         } else {
@@ -228,7 +237,7 @@ namespace.module('vd.entity', function(exports) {
             // VatGM: Create Flight from FsxWs aircraft
             var fp = {
                 "idfsx": aircraft.id,
-                "name": "FSX " + aircraft.title,
+                "name": aircraft.id == 1 ? "Me" : "FSX " + aircraft.title,
                 "frequency": aircraft.com1,
                 "qnh": aircraft.kohlsmanMb,
                 "aircraft": aircraft.model,
@@ -242,6 +251,7 @@ namespace.module('vd.entity', function(exports) {
                     String.toNumber(aircraft.groundAltitudeM, -1),
                     2),
                 "grounded": aircraft.simOnGround,
+                "helicopter": aircraft.isHelicopter,
                 "transponder": aircraft.transponder
             };
             var flight = new vd.entity.Flight(fp);
@@ -251,17 +261,48 @@ namespace.module('vd.entity', function(exports) {
     };
 
     /**
-    * Merge with VATSIM data.
+    * Merge with VATSIM flight data.
+    * (this will change the flight data of FsxWs).
     * @param  {Array} vatsimClients
-    * @return {Array}
+    * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimClients = function(vatsimClients) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function(vatsimClients) {
+
+        // VATSIM data?
         if (Array.isNullOrEmpty(vatsimClients)) {
-            if (Array.isNullOrEmpty(this.aircrafts)) return new Array();
-            return this.aircrafts;
+            if (Array.isNullOrEmpty(this.flights)) return new Array();
+            return this.flights;
         }
-        // TODO: KB merge FSX and Vatsim data
-        return vatsimClients;
+
+        // FsxWs data?
+        if (Array.isNullOrEmpty(this.flights)) {
+            return vatsimClients;
+        }
+
+        var mergedEntities = new Array();
+        var fsxFlights = this.flights.slice(0); // copy of array
+
+        for (var f = 0, len = vatsimClients.length; f < len; f++) {
+            var vatsimEntity = vatsimClients[f];
+            if (vatsimEntity.entity != "Flight") {
+                mergedEntities.push(vatsimEntity);
+                continue;
+            }
+            var sameFlight = vd.entity.base.BaseEntityModel.findByCallsignFirst(fsxFlights, vatsimEntity.callsign);
+            if (Object.isNullOrUndefined(sameFlight)) {
+                // no equivalent flight
+                mergedEntities.push(vatsimEntity); // simply add VASTIM flight
+            } else {
+                fsxFlights.remove(sameFlight);
+                // following is by reference and changes this.flight[x] as well, but this has no negative side effects
+                sameFlight.pilot = vatsimEntity.pilot;
+                sameFlight.vatsimId = vatsimEntity.vatsimId;
+                sameFlight.flightplan = vatsimEntity.flightplan;
+                mergedEntities.push(sameFlight); // updated FsxFlight (data of VATSIM and FsxWs)
+            }
+        }
+        mergedEntities = mergedEntities.concat(fsxFlights); // no matching flight @ VATSIM
+        return mergedEntities;
     };
 
     /**
@@ -327,16 +368,16 @@ namespace.module('vd.entity', function(exports) {
             info = "Init";
             break;
         case vd.entity.FsxWs.Ok:
-            info = "FSX data loaded";
+            info = "Data loaded";
             break;
         case vd.entity.FsxWs.ReadFailed:
-            info = "Read failed.";
+            info = "Read failed";
             break;
         case vd.entity.FsxWs.NoFsxWs.ReadNoData:
-            info = "No data.";
+            info = "No data";
             break;
         default:
-            info = "Unknown, check console.";
+            info = "Unknown, check console";
             break;
         }
         return info;

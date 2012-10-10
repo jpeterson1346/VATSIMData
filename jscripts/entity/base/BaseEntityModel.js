@@ -78,7 +78,7 @@ namespace.module('vd.entity.base', function (exports) {
         * @type {String} 
         * @example DCMBZ, EDDF_TWR, EDDS_GND
         */
-        this.callsign = String.isNullOrEmpty(properties["callsign"]) ? null : properties["callsign"].toUpperCase();
+        this.callsign = String.isNullOrEmpty(properties["callsign"]) ? null : exports.BaseEntityModel.formatCallsign(properties["callsign"]);
         /**
         * Entity, will be set by subclass.
         * @type {String}
@@ -88,7 +88,8 @@ namespace.module('vd.entity.base', function (exports) {
 
         // post fixes
         if (this.isFsxBased()) {
-            if (String.isNullOrEmpty(this.name)) this.name = "FSX Webservice";
+            if (String.isNullOrEmpty(this.name)) this.name = this.vatsimId == 1 ? "Me" : "FSX";
+            if (String.isNullOrEmpty(this.pilot)) this.pilot = this.vatsimId == 1 ? "Me" : "FSX";
         }
     };
 
@@ -106,6 +107,14 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityModel.prototype.isFsxBased = function () {
         return !String.isNullOrEmpty(this.fsxId);
+    };
+
+    /**
+    * Is my FSX aircraft?
+    * @return {Boolean} origin is FSX
+    */
+    exports.BaseEntityModel.prototype.isMyFsxAircraft = function () {
+        return this.fsxId == 1;
     };
 
     /**
@@ -253,6 +262,18 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
+    * Remove invalid characters from a callsign make it all capital.
+    * @param  {String} callsign
+    * @return {String} formatted callsign
+    **/
+    exports.BaseEntityModel.formatCallsign = function (callsign) {
+        if (String.isNullOrEmpty(callsign)) return null;
+        var newcs = callsign.toUpperCase();
+        newcs = newcs.replace(/\W/g, '');
+        return newcs;
+    };
+
+    /**
     * Find the entity by object id.
     * @param {Array} entities Array of entities
     * @param {String} objectId
@@ -279,22 +300,6 @@ namespace.module('vd.entity.base', function (exports) {
         for (var e = 0, len = entites.length; e < len; e++) {
             var baseEntity = entites[e];
             if (vatsimId == baseEntity.vatsimId) entities.push(baseEntity);
-        }
-        return entities;
-    };
-
-    /**
-    * Find the entity by FSX id.
-    * @param  {Array}  entities Array of entities
-    * @param  {String} id
-    * @return {Array} BaseEntityModel objects
-    */
-    exports.BaseEntityModel.findByFsxId = function (entites, id) {
-        if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
-        var entities = new Array();
-        for (var e = 0, len = entites.length; e < len; e++) {
-            var baseEntity = entites[e];
-            if (id == baseEntity.fsxId) entities.push(baseEntity);
         }
         return entities;
     };
@@ -338,8 +343,11 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {BaseEntityModel}
     */
     exports.BaseEntityModel.findByFsxIdFirst = function (entities, id) {
-        var baseEntities = exports.BaseEntityModel.findByFsxId(entities, id);
-        return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (id == baseEntity.fsxId) return entities[e];
+        }
+        return null;
     };
 
     /**
@@ -363,7 +371,7 @@ namespace.module('vd.entity.base', function (exports) {
     exports.BaseEntityModel.findByCallsign = function (entities, callsign) {
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(callsign)) return baseEntities;
-        callsign = callsign.toUpperCase();
+        callsign = exports.BaseEntityModel.formatCallsign(callsign);
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
             if (callsign == baseEntity.callsign) baseEntities.push(baseEntity);
@@ -413,9 +421,9 @@ namespace.module('vd.entity.base', function (exports) {
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
             var ct = baseEntity.entity;
-            if (ct == type) 
+            if (ct == type)
                 baseEntities.push(baseEntity);
-            else if(at && ct == alternativeType)
+            else if (at && ct == alternativeType)
                 baseEntities.push(baseEntity);
         }
         return baseEntities;
@@ -424,14 +432,17 @@ namespace.module('vd.entity.base', function (exports) {
     /**
     * Find the entity by its origin.
     * @param  {Array}  entities Array of entities
+    * @param  {Boolean} [vatsimOnly] only purely VATSIM based entities
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findVatsimBased = function (entities) {
+    exports.BaseEntityModel.findVatsimBased = function (entities, vatsimOnly) {
+        vatsimOnly = Object.ifNotNullOrUndefined(vatsimOnly, false);
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities)) return baseEntities;
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
-            if (typeof baseEntity.isVatsimBased()) baseEntities.push(baseEntity);
+            if (!baseEntity.isVatsimBased()) continue;
+            if (!vatsimOnly || !baseEntity.isFsxBased()) baseEntities.push(baseEntity);
         }
         return baseEntities;
     };
@@ -439,16 +450,31 @@ namespace.module('vd.entity.base', function (exports) {
     /**
     * Find the entity by its origin.
     * @param  {Array}  entities Array of entities
+    * @param  {Boolean} [fsxWsOnly] only purely FsxWs based entities
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findFsxBased = function (entities) {
+    exports.BaseEntityModel.findFsxBased = function (entities, fsxWsOnly) {
+        fsxWsOnly = Object.ifNotNullOrUndefined(fsxWsOnly, false);
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities)) return baseEntities;
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
-            if (typeof baseEntity.isFsxBased()) baseEntities.push(baseEntity);
+            if (!baseEntity.isFsxBased()) continue;
+            if (!fsxWsOnly || !baseEntity.isVatsimBased()) baseEntities.push(baseEntity);
         }
         return baseEntities;
+    };
+
+    /**
+    * Dispose entities.
+    * @param  {Array}  entities Array of entities
+    */
+    exports.BaseEntityModel.dispose = function (entities) {
+        if (Array.isNullOrEmpty(entities)) return;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            baseEntity.dispose();
+        }
     };
 
     /**

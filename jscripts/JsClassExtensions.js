@@ -168,7 +168,7 @@ String.isNullOrEmpty = function(candidate) {
 * @return {Number} candidate as Number or failureValue
 */
 String.toNumber = function(candidate, failureValue, digits) {
-    if (Object.isNullOrUndefined(candidate) || "" == candidate) return failureValue;
+    if (Object.isNullOrUndefined(candidate) || "" === candidate) return failureValue;
     if (isNaN(candidate)) return failureValue;
     var n = candidate * 1;
     if (Object.isNullOrUndefined(digits)) return n;
@@ -295,7 +295,8 @@ String.prototype.truncateRight = function(maxLength, useWordBoundary) {
 * @return {Boolean}
 * @see <a href="http://www.mapbender.org/JavaScript_pitfalls:_null,_false,_undefined,_NaN">Pitfalls</a>
 */
-Object.isNullOrUndefined = function(candidate) {
+Object.isNullOrUndefined = function (candidate) {
+    if (candidate === 0) return false; // a number 0 shall not be considered null
     return (candidate === null || candidate === undefined);
 };
 
