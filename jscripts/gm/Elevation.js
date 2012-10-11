@@ -2,14 +2,14 @@
 * @module vd.gm
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.gm', function (exports, require) {
+namespace.module('vd.gm', function(exports, require) {
 
     /**
     * @classdesc Elevation methods.
     * @constructor
     * @author KWB
     */
-    exports.Elevation = function () {
+    exports.Elevation = function() {
         // code
     };
 
@@ -18,11 +18,13 @@ namespace.module('vd.gm', function (exports, require) {
     * @param  {Array} entities
     * @return {Boolean} true, if the event is completely fired (does not mean it is successful)
     */
-    exports.Elevation.getElevationsForEntities = function (entities) {
+    exports.Elevation.getElevationsForEntities = function(entities) {
         if (Array.isNullOrEmpty(entities)) return false;
         if (!globals.elevationServiceEnabled) return false;
 
         var statEntry = new vd.util.RuntimeEntry("Elevation for " + entities.length + " entities (getElevationsForEntities)");
+        entities = vd.entity.base.BaseEntityModel.findVatsimBased(entities, true); // exclude FsxWs data, these have already elevation / height
+        if (Array.isNullOrEmpty(entities)) return false; // secondary check
         var latLngValues = vd.entity.base.BaseEntityMap.getLatLngValues(entities, globals.elevationSingleSamplesMax);
 
         // Create a LocationElevationRequest 
@@ -30,7 +32,7 @@ namespace.module('vd.gm', function (exports, require) {
         var positionalRequest = { 'locations': latLngValues };
 
         // Initiate the location request
-        globals.elevationService.getElevationForLocations(positionalRequest, function (results, status) {
+        globals.elevationService.getElevationForLocations(positionalRequest, function(results, status) {
             if (status == google.maps.ElevationStatus.OK) {
                 if (!Array.isNullOrEmpty(results)) {
                     for (var r = 0, len = results.length; r < len; r++) {
@@ -50,7 +52,7 @@ namespace.module('vd.gm', function (exports, require) {
             }
         });
 
-        var completely = latLngValues.length == entities.length;
+        var completely = (latLngValues.length == entities.length);
         if (!completely) globals.log.info("Too many entities " + entities.length + ", considered " + globals.elevationSingleSamplesMax);
         return completely;
     };
@@ -61,10 +63,10 @@ namespace.module('vd.gm', function (exports, require) {
     * @param {String} mode h=horizontal, v=vertical, d=diagonal
     * @param {function} callback function(result, status, statEntry)
     */
-    exports.Elevation.getElevationsForBounds = function (bounds, mode, callback) {
+    exports.Elevation.getElevationsForBounds = function(bounds, mode, callback) {
         if (Object.isNullOrUndefined(callback)) return;
         if (!globals.elevationServiceEnabled) return;
-        
+
         // determine path
         bounds = Object.ifNotNullOrUndefined(bounds, globals.map.getBounds());
         mode = String.isNullOrEmpty(mode) ? "d" : mode.toLowerCase().substr(0, 1);
@@ -73,18 +75,18 @@ namespace.module('vd.gm', function (exports, require) {
         var c = bounds.getCenter();
         var path;
         switch (mode) {
-            case "d":
-                path = [sw, ne];
-                break;
-            case "h":
-                path = [new google.maps.LatLng(c.lat(), sw.lng()), new google.maps.LatLng(c.lat(), ne.lng())];
-                break;
-            case "v":
-                path = [new google.maps.LatLng(ne.lat(), c.lng()), new google.maps.LatLng(sw.lat(), c.lng())];
-                break;
-            default:
-                path = [sw, ne];
-                break;
+        case "d":
+            path = [sw, ne];
+            break;
+        case "h":
+            path = [new google.maps.LatLng(c.lat(), sw.lng()), new google.maps.LatLng(c.lat(), ne.lng())];
+            break;
+        case "v":
+            path = [new google.maps.LatLng(ne.lat(), c.lng()), new google.maps.LatLng(sw.lat(), c.lng())];
+            break;
+        default:
+            path = [sw, ne];
+            break;
         }
 
         // Initiate the path request.

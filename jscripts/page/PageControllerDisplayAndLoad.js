@@ -69,6 +69,7 @@ namespace.module('vd.page', function (exports) {
         var displayFsxWs = displayReason == exports.PageController.DisplayForceRedisplay || displayReason == exports.PageController.DisplayNewDataFsx || displayReason == exports.PageController.DisplayMapMoved;
 
         // handle the VATSIM clients
+        var vatsimFlightsInBound = null; // for elevation service
         if (this.isVatsimEnabled && displayVatsim) {
             vatsimClients = globals.vatsimClients;
 
@@ -77,8 +78,7 @@ namespace.module('vd.page', function (exports) {
                 // we only need to do this for VATSIM entities, FSX entities do already have height
                 // since this is a) a time consuming method and b) makes only sense for entities "in bound"
                 // I trigger the update here (e.g. after the map has moved).
-                var flightsInBounds = vd.entity.base.BaseEntityMap.findInBounds(vatsimClients.flights); // flights in bounds
-                vd.gm.Elevation.getElevationsForEntities(flightsInBounds); // runs asynchronously, might be disabled
+                vatsimFlightsInBound = vd.entity.base.BaseEntityMap.findInBounds(vatsimClients.flights); // flights in bounds
             }
 
             if (vatsimClients.lastStatus != vd.entity.VatsimClients.Init) {
@@ -106,9 +106,15 @@ namespace.module('vd.page', function (exports) {
         info = info.appendIfNotEmpty(hiddenInfo, " ");
 
         // update the grids
-        this.updateGridsBackground(this._gridsVisible());
+        this.updateGridsBackground();
 
-        // update the height profile
+        // update the height profile, and request new data for VATSIM data
+        if (!Array.isNullOrEmpty(vatsimFlightsInBound)) {
+            // the VATSIM data might already have height / elevation by the update of FSX
+            // reduce to the purely VATSIM based entities
+            vatsimFlightsInBound = vd.entity.base.BaseEntityModel.findVatsimBased(vatsimFlightsInBound, true);
+            vd.gm.Elevation.getElevationsForEntities(vatsimFlightsInBound); // runs asynchronously, might be disabled
+        }
         this._updateAltitudeProfile();
 
         // follow a certain user by id
@@ -158,6 +164,16 @@ namespace.module('vd.page', function (exports) {
         this.timerLoadVatsimUpdate = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) * 1000;
         var timeOut = this.timerLoadVatsimUpdate;
         this.timerFsxDataUpdate = String.toNumber($("#inputTimerUpdateFsx").val(), -1) * 1000;
+
+        // dispose old data, the merge
+        var mergeRequired = false;
+        if (this.timerLoadVatsimUpdate < 0 && !Object.isNullOrUndefined(globals.vatsimClients)) {
+            mergeRequired = globals.vatsimClients.disposeData();
+        }
+        if (this.timerFsxDataUpdate < 0 && !Object.isNullOrUndefined(globals.fsxWs)) {
+            mergeRequired = globals.fsxWs.disposeData() || mergeRequired;
+        }
+        if (mergeRequired) this.mergeEntities();
 
         // always use the smallest valid time, even with no FSX available -> FSX might be switched on
         if (timeOut < 0 || (this.timerFsxDataUpdate > 0 && this.timerFsxDataUpdate < timeOut)) timeOut = this.timerFsxDataUpdate;
@@ -288,12 +304,12 @@ namespace.module('vd.page', function (exports) {
         var me = this;
         if (!Object.isNullOrUndefined(globals.fsxWs) && globals.fsxWs.enabled) {
             if (globals.fsxWs.loading) {
-                info = "FsxWs already loading";
+                info = "FsxWs already loading.";
             } else {
                 info = "Trigger FsxWs load.";
                 globals.fsxWs.readFromFsxWs(false, false,
                     function () {
-                        me.mergeEntities();
+                        me.successfulDataReadFsxWs();
                     }
                 ); // trigger a new read
                 this.timerFsxDataUpdateLastCall = new Date(); // time stamp
@@ -302,13 +318,12 @@ namespace.module('vd.page', function (exports) {
 
         if (!Object.isNullOrUndefined(globals.vatsimClients) && globals.vatsimClients.enabled) {
             if (globals.vatsimClients.loading) {
-                info += "VATSIM already loading";
+                info += "VATSIM already loading.";
             } else {
                 info += "Trigger VATSIM load.";
                 globals.vatsimClients.readFromVatsim(
                     function () {
-                        me.mergeEntities();
-                        me._setVatsimInfoFields(); // info about load
+                        me.successfulDataReadVatsim();
                     }
                 ); // trigger a new read
                 this.timerLoadVatsimUpdateLastCall = new Date(); // time stamp

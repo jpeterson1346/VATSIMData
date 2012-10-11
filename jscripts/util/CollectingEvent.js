@@ -63,9 +63,9 @@ namespace.module('vd.util', function (exports) {
             setTimeout(
                 function() {
                     me._fire();
-                }, this.collectTime); // this "looses" the object
+                }, this.collectTime);
         } else
-            return; // not yet fire, just ignore
+            return; // not yet fired, just ignore
     };
 
     /**
@@ -76,9 +76,9 @@ namespace.module('vd.util', function (exports) {
         if (this._token === 0) {
             this._token = -1;
             if (!Object.isNullOrUndefined(this._methodCalledCallback)) this._methodCalledCallback();
-            this._function();
+            this._function(); // event to be called
         } else if (this._token > 0) {
-            this._token--;
+            this._token--; // avoid secondary calls, parallel timeout calls
         }
     };
 });

@@ -139,14 +139,14 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityModel.prototype.toPropertyValue = function () {
         var pv = new Array();
-        pv["idvatsim"] = this.vatsimId;
-        pv["idfsx"] = this.fsxId;
+        if (!String.isNullOrEmpty(this.vatsimId)) pv["id vatsim"] = this.vatsimId;
+        if (!String.isNullOrEmpty(this.fsxId)) pv["id fsx"] = this.fsxId;
         pv["callsign"] = this.callsign;
 
         // properties not making sense for all entities
         if (Object.isNumber(this.frequency)) pv["frequency"] = this.frequencyAndUnit();
         if (Object.isNumber(this.qnh)) pv["qnh"] = this.qnhAndUnit();
-        if (Object.isNumber(this.heading)) pv["heading"] = this.headingAndUnit();
+        if (Object.isNumber(this.heading)) pv["heading (true)"] = this.headingAndUnit();
         if (Object.isNumber(this.groundspeed)) pv["groundspeed"] = this.groundspeed + "kts / " + vd.util.UtilsCalc.ktsToKmh(this.groundspeed).toFixed(2) + "km/h";
         if (Object.isNumber(this.visibility)) pv["visibility"] = this.visibilityAndUnit();
         return pv;

@@ -11,7 +11,8 @@ namespace.module('vd.entity', function (exports) {
     * Here data are parsed and the entity objects are created.
     * @see vd.module:entity.Airport
     * @see vd.module:entity.Flight
-    * @see vd.module:page.PageController main user of this "class", in order to display the clients (pilots/ATC)
+    * @see vd.module:page.PageController
+    * @see vd.module:entity.FsxWs
     * @author KWB
     * @since 0.7
     */
@@ -116,16 +117,19 @@ namespace.module('vd.entity', function (exports) {
 
     /**
     * Dispose the "stored data" (hide as well).
+    * @return {Boolean} info whether something was disposed
     */
     exports.VatsimClients.prototype.disposeData = function () {
-        if (this.loading) return;
+        if (this.loading) return false;
+        if (this.lastStatus == vd.entity.VatsimClients.Init) return false;
         this.atcs = new Array();
         this.flightplans = new Array();
-        vd.entity.base.BaseEntityModel.dispose(this.aircrafts);
-        this.aircrafts = new Array();
+        vd.entity.base.BaseEntityModel.dispose(this.airports);
+        this.airports = new Array();
         vd.entity.base.BaseEntityModel.dispose(this.flights);
         this.flights = new Array();
         this.lastStatus = vd.entity.VatsimClients.Init;
+        return true;
     };
 
     /**
