@@ -6,8 +6,10 @@ namespace.module('vd.entity', function (exports) {
     /**
     * @constructor
     * @classdesc 
-    * Connecting to FsxWs. Read data from FSX via a web service
-    * @see vd.module:page.PageController main user of this "class", in order to display the airplanes
+    * Connecting to FsxWs. Read data from FSX via a web service.
+    * VatsimClients is the sibling class fetching data for VATSIM.
+    * @see vd.module:page.PageController
+    * @see vd.module:entity.VatsimClients
     * @param {String} fsxWsLocation like localhost, mycomputer.here.local 
     * @param {Number} fsxWsPort e.g. 8080 
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
@@ -217,12 +219,16 @@ namespace.module('vd.entity', function (exports) {
 
     /**
     * Dispose the "stored data" (hide as well).
+    * @return {Boolean} info whether something was disposed
     */
     exports.FsxWs.prototype.disposeData = function () {
-        if (this.loading) return;
+        if (this.loading) return false;
+        if (this.lastStatus == vd.entity.FsxWs.Init) return false;
         this.aircrafts = new Array();
         vd.entity.base.BaseEntityModel.dispose(this.flights);
         this.flights = new Array();
+        this.lastStatus = vd.entity.FsxWs.Init;
+        return true;
     };
 
     /**
@@ -252,6 +258,10 @@ namespace.module('vd.entity', function (exports) {
                 "elevation": vd.util.UtilsCalc.mToFt(
                     String.toNumber(aircraft.groundAltitudeM, -1),
                     2),
+                "verticalspeed": String.toNumber(aircraft.verticalSpeedFts, -1),
+                "bankangle": String.toNumber(aircraft.bankAngleDeg, -1),
+                "pitchangle": String.toNumber(aircraft.pitchAngleDeg, -1),
+                "aoa": String.toNumber(aircraft.angleOfAttackDeg, -1),
                 "grounded": aircraft.simOnGround,
                 "helicopter": aircraft.isHelicopter,
                 "transponder": aircraft.transponder

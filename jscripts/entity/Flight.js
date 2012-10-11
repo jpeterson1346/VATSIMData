@@ -76,17 +76,23 @@ namespace.module('vd.entity', function (exports, require) {
         */
         this.bankAngle = String.toNumber(flightProperties["bankangle"], 0, 2);
         /**
+        * Pitch angle [deg].
+        * @type {Number}
+        * @example 5, 10
+        */
+        this.pitchAngle = String.toNumber(flightProperties["pitchangle"], 0, 2);
+        /**
         * Angle of attack angle [deg].
         * @type {Number}
         * @example 5, 10
         */
         this.angleOfAttack = String.toNumber(flightProperties["aoa"], 0, 2);
         /**
-        * Climb rate [ft/min].
+        * Vertical speed [ft/s].
         * @type {Number}
-        * @example 1200, 4000
+        * @example 100, 1000
         */
-        this.climbRate = String.toNumber(flightProperties["climbrate"], 0, 2);
+        this.verticalSpeed = String.toNumber(flightProperties["verticalspeed"], 0, 2);
         /**
         * Is grounded, also caching the value of isGrounded (for grids).
         * VATSIM: Requires a call of isGrounded to get a valid value.
@@ -315,12 +321,19 @@ namespace.module('vd.entity', function (exports, require) {
     */
     exports.Flight.prototype.toPropertyValue = function () {
         var pv = this.toPropertyValue$BaseEntityModelOnMap();
+        if (this.isFsxBased()) {
+            pv["aoa"] = this.angleOfAttackAndUnit();
+            pv["bank angle"] = this.bankAngleAndUnit();
+            pv["pitch angle"] = this.pitchAngleAndUnit();
+            pv["vertical speed"] = this.verticalSpeedAndUnit();
+        }
         if (!String.isNullOrEmpty(this.pilot)) pv["pilot"] = this.pilot;
         if (!String.isNullOrEmpty(this.aircraft)) pv["aircraft"] = this.aircraft;
         if (!String.isNullOrEmpty(this.transponder)) pv["squawk"] = this.transponder;
         if (!Object.isNullOrUndefined(this.flightplan)) pv["flightplan"] = "<u>Goto flightplan</u>";
         if (!String.isNullOrEmpty(this.vatsimId)) pv["vataware"] = "<u>Show @ Vataware</u>";
         pv["grounded"] = this.isGrounded();
+        pv["helicopter"] = this.isHelicopter();
         return pv;
     };
 
@@ -351,14 +364,14 @@ namespace.module('vd.entity', function (exports, require) {
             background: globals.styles.flightLabelBackgroundIfFollowed,
             opacity: globals.styles.flightLabelOpacity
         } :
-        // show if in filter, but filter is not active
-        // if filtered, only the selected flights are visible, so no need to highlight them
+        // Show if in filter, but filter is not active
+        // When filtered, only the selected flights are visible, so no need to highlight them
             (!globals.filtered && this.isInFilter()) ? {
                 background: globals.styles.flightLabelBackgroundIfFiltered,
                 opacity: globals.styles.flightLabelOpacity
             } : null;
 
-        // IE bug, img.width/height might be 0
+        // IE issue, img.width/height might be 0
         var imgOffsetW = this._img.width == 0 ? globals.flightImageWidth : this._img.width;
         var imgOffsetH = this._img.height == 0 ? globals.flightImageHeight : this._img.height;
 
@@ -458,12 +471,19 @@ namespace.module('vd.entity', function (exports, require) {
     */
     exports.Flight.prototype.update = function (newFlightInformation) {
         this._isGrounded = newFlightInformation._isGrounded;
-        this._isHelicopter = newFlightInformation._isHelicopter; // actually this should newer changed, but when user switches aircraft ...
         this.groundspeed = newFlightInformation.groundspeed;
         this.altitude = newFlightInformation.altitude;
         this.flightplan = newFlightInformation.flightplan;
+        this.qnh = newFlightInformation.qnh;
         this.setHeading(newFlightInformation.heading);
         this.setLatitudeLongitude(newFlightInformation.latitude, newFlightInformation.longitude);
+
+        if (this.isMyFsxAircraft()) {
+            // actually this should newer changed, but when user switches aircraft ...
+            this._isHelicopter = newFlightInformation._isHelicopter;
+            this.aircraft = newFlightInformation.aircraft;
+            this.callsign = newFlightInformation.callsign;
+        }
         return this._insertNewWaypoint();
     };
 
@@ -474,6 +494,39 @@ namespace.module('vd.entity', function (exports, require) {
     exports.Flight.prototype.toString = function () {
         var s = this.toString$BaseEntityModelOnMap();
         return s;
+    };
+
+    /**
+    * Angle of attack with unit.
+    * @return {String}
+    */
+    exports.Flight.prototype.angleOfAttackAndUnit = function () {
+        return this.angleOfAttack.toFixed(1) + "&deg;";
+    };
+
+    /**
+    * Bank angle of aircraft.
+    * @return {String}
+    */
+    exports.Flight.prototype.bankAngleAndUnit = function () {
+        return this.bankAngle.toFixed(1) + "&deg;";
+    };
+
+    /**
+    * Pitch angle of aircraft.
+    * @return {String}
+    */
+    exports.Flight.prototype.pitchAngleAndUnit = function () {
+        return this.pitchAngle.toFixed(1) + "&deg;";
+    };
+
+    /**
+    * Vertical speed [ft/s].
+    * @return {String}
+    */
+    exports.Flight.prototype.verticalSpeedAndUnit = function () {
+        var ftMin = this.verticalSpeed * 60;
+        return ftMin.toFixed(1) + "ft/min";
     };
 
     /**

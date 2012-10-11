@@ -87,6 +87,18 @@ namespace.module('vd.page', function(exports) {
         * @private
         */
         this._statsTabUsage = 0;
+        /**
+        * Mouse over flights grid?
+        * @type {Boolean}
+        * @private
+        */
+        this._gridFlightsMouseOver = false;
+        /**
+        * Mouse over flights grid?
+        * @type {Boolean}
+        * @private
+        */
+        this._gridAtcMouseOver = false;
     };
     // #endregion ------------ Constructor ------------
 
@@ -672,24 +684,44 @@ namespace.module('vd.page', function(exports) {
     * @param {boolean} forceUpdate update even when grid is invisible
     */
     exports.PageController.prototype.updateGrids = function(forceUpdate) {
-        if (!(forceUpdate || this._gridsVisible())) return;
+        var gridsVisible = this._gridsVisible();
+        if (!(forceUpdate || gridsVisible)) return;
         if (Object.isNullOrUndefined(globals.allEntities) || globals.allEntities.isEmpty()) return;
 
+        // methods: http://www.trirand.com/jqgridwiki/doku.php?id=wiki:methods
+        // pager: http://www.trirand.com/jqgridwiki/doku.php?id=wiki:pager
+        //    var pagerPos = flightsGrid.getGridParam('page');
+        //    flightsGrid.setGridParam({ "page": pagerPos });
+
         var statsEntry = new vd.util.RuntimeEntry("Grid update (Page Controller)");
-        var flightsGrid = $("#flightData");
-        flightsGrid.clearGridData();
-        var flights = globals.allEntities.flights();
-        for (var f = 0, lenF = flights.length; f < lenF; f++) {
-            var flight = flights[f];
-            flightsGrid.addRowData(flight.objectId, flight);
+        var fullUpdate = false;
+        var info = "";
+        var flightsGrid = null;
+        if (forceUpdate || !this._gridFlightsMouseOver) {
+            fullUpdate = true;
+            flightsGrid = $("#flightData");
+            flightsGrid.clearGridData();
+            var flights = globals.allEntities.flights();
+            for (var f = 0, lenF = flights.length; f < lenF; f++) {
+                var flight = flights[f];
+                flightsGrid.addRowData(flight.objectId, flight);
+            }
+        } else if (this._gridFlightsMouseOver) {
+            info = "Grid not updated, user on flights grid.";
         }
 
-        var atcGrid = $("#atcData");
-        atcGrid.clearGridData();
-        var atcs = globals.vatsimClients.atcs; // I need to get the helper entities as well
-        for (var a = 0, lenA = atcs.length; a < lenA; a++) {
-            var atc = atcs[a];
-            atcGrid.addRowData(atc.objectId, atc);
+        var atcGrid = null;
+        if (forceUpdate || !this._gridAtcMouseOver) {
+            atcGrid = $("#atcData");
+            atcGrid.clearGridData();
+            var atcs = globals.vatsimClients.atcs; // I need to get the helper entities as well
+            for (var a = 0, lenA = atcs.length; a < lenA; a++) {
+                var atc = atcs[a];
+                atcGrid.addRowData(atc.objectId, atc);
+            }
+        } else {
+            fullUpdate = false;
+            if (this._gridAtcMouseOver) info += " Grid not update, user on ATC grid.";
         }
 
         // filter grid
@@ -698,8 +730,9 @@ namespace.module('vd.page', function(exports) {
         // sort
         this.sortGrids("_isInBounds", flightsGrid, atcGrid);
 
-        // statistics / logging
-        this._statisticsDataGridUpdates.add(statsEntry, true);
+        // statistics / logging / info
+        if (fullUpdate) this._statisticsDataGridUpdates.add(statsEntry, true);
+        if (gridsVisible) this.displayInfo(info);
         globals.log.trace(statsEntry.toString());
     };
 
@@ -710,20 +743,9 @@ namespace.module('vd.page', function(exports) {
     * @param {jQuery|String|HtmlDomElement} [atcGrid]
     */
     exports.PageController.prototype.sortGrids = function(sortProperty, flightsGrid, atcGrid) {
-        if (Object.isNullOrUndefined(flightsGrid))
-            flightsGrid = $("#flightData");
-        else if (Object.isNullOrUndefined(flightsGrid.jquery)) {
-            flightsGrid = $(elementFromStringOrDomElement(flightsGrid));
-        }
-        if (Object.isNullOrUndefined(atcGrid))
-            atcGrid = $("#atcData");
-        else if (Object.isNullOrUndefined(atcGrid.jquery)) {
-            atcGrid = $(elementFromStringOrDomElement(atcGrid));
-        }
-
         var sc = String.isNullOrEmpty(sortProperty) ? "_isInBounds" : sortProperty;
-        flightsGrid.sortGrid(sc, false, "desc");
-        atcGrid.sortGrid(sc, false, "desc");
+        if (!Object.isNullOrUndefined(flightsGrid)) flightsGrid.sortGrid(sc, false, "desc");
+        if (!Object.isNullOrUndefined(atcGrid)) atcGrid.sortGrid(sc, false, "desc");
     };
 
     /**
@@ -771,6 +793,16 @@ namespace.module('vd.page', function(exports) {
         if (!Object.isNullOrUndefined(gridParams.atcGridHidden)) $(at).jqGrid().setGridState(this._gridHidden(gridParams.atcGridHidden));
         if (!Object.isNullOrUndefined(gridParams.detailsGridHidden)) $(dt).jqGrid().setGridState(this._gridHidden(gridParams.detailsGridHidden));
         if (!Object.isNullOrUndefined(gridParams.filterGridHidden)) $(filter).jqGrid().setGridState(this._gridHidden(gridParams.filterGridHidden));
+    };
+
+    /**
+    * Records whether the mouse is over the grids or not. 
+    * @param {Boolean} mouseOverFlightsGrid
+    * @param {Boolean} mouseOverAtcGrid
+    */
+    exports.PageController.prototype.gridMouseState = function(mouseOverFlightsGrid, mouseOverAtcGrid) {
+        if (!Object.isNullOrUndefined(mouseOverAtcGrid)) this._gridAtcMouseOver = mouseOverAtcGrid;
+        if (!Object.isNullOrUndefined(mouseOverFlightsGrid)) this._gridFlightsMouseOver = mouseOverFlightsGrid;
     };
     // #endregion ------------ public part grids ------------
 
@@ -1612,5 +1644,6 @@ namespace.module('vd.page', function(exports) {
         // full signature cellvalue, options, rowObject
         return cellvalue ? "&#10004;" : "";
     };
+
     // #endregion ------------ private part grids ------------
 });

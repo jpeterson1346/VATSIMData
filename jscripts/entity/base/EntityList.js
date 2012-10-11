@@ -184,7 +184,7 @@ namespace.module('vd.entity.base', function (exports) {
     * All flights.
     * @param  {BaseEntityModel} entity
     * @return {Array}
-    * @see vd.entity.Flight
+    * @see vd.module:entity.Flight
     */
     exports.EntityList.prototype.flights = function () {
         if (this.isEmpty()) return new Array();
@@ -192,7 +192,17 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
-    * All flights.
+    * Find displayed / hidden flights.
+    * @param {Boolean} displayed
+    * @returns {Array} flights displayed / not displayed
+    */
+    exports.EntityList.prototype.findFlightsDisplayed = function (displayed) {
+        var flights = this.flights();
+        return vd.entity.base.BaseEntityMap.findByDisplayed(flights, displayed);
+    };
+
+    /**
+    * All airports.
     * @param  {BaseEntityModel} entity
     * @return {Array}
     * @see vd.entity.Atc

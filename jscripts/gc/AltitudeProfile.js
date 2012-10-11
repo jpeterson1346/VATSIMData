@@ -40,7 +40,12 @@ namespace.module('vd.gc', function (exports) {
     */
     exports.AltitudeProfile.prototype.displayProjection = function (flights, latOrLon, withElevationProfile) {
         if (!this.isVisible()) return false;
-        flights = Array.isNullOrEmpty(flights) ? globals.vatsimClients.findFlightsDisplayed(true) : flights;
+        flights = (Array.isNullOrEmpty(flights) && !Object.isNullOrUndefined(globals.allEntities)) ? globals.allEntities.findFlightsDisplayed(true) : flights;
+        if (Object.isNullOrUndefined(flights)) {
+            alert("Projection profile cannot be generated, no flights");
+            globals.log.trace("Projection profile cannot be generated, no flights");
+            return false;
+        }
         withElevationProfile = Object.ifNotNullOrUndefined(withElevationProfile, this.altitudeProfileSettings.elevationProfile);
         var statsEntry = new vd.util.RuntimeEntry("Display projection " + flights.length + " flights, elevation profile " + withElevationProfile + " (AltitudeProfile)");
         var data = new google.visualization.DataTable();
