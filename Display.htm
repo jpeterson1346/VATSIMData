@@ -108,7 +108,7 @@
     <body>
         <div class="ui-widget">
             <div id="header">
-                VatGM - Who is flying ..? [Only for simulation] [<a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true);">Bug reporting</a>]
+                VatGM (plus) - VATSIM and FSX flights [Only for simulation] [<a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true);">Bug reporting</a>]
             </div>
             <div id="headerBar" class="ui-widget-header">
                 <select id="headerBarTabSelection" onchange=" ctr.showHideInputAndTabs() ">
@@ -186,6 +186,20 @@
                                 <option value ="10">10s</option>
                                 <option value ="20">20s</option>
                                 <option value ="30">30s</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            <label for="inputUsageMode">Usage</label>
+                        </td>
+                        <td colspan="3">
+                            <select id="inputUsageMode" onchange=" ctr.usageModeChanged(); ">
+                                <!-- values must match witch constants in PageController -->
+                                <option value ="0" selected="selected">VATSIM and FSX</option>
+                                <option value ="1">FSX MM + VATSIM data</option>
+                                <option value ="2">FSX MM only</option>
+                                <option value ="3">VATSIM only</option>
                             </select>
                         </td>
                     </tr>
