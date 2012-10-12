@@ -102,6 +102,72 @@ namespace.module('vd.page', function(exports) {
     };
     // #endregion ------------ Constructor ------------
 
+    // #region ------------ Static const values ------------
+    /**
+    * No particular reason for display.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayForceRedisplay = 0;
+    /**
+    * New FsxWs data.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayNewDataFsx = 1;
+    /**
+    * New VATSIM data.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayNewDataVatsim = 2;
+    /**
+    * Map moved.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayMapMoved = 3;
+    /**
+    * Usage mode.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.UsageModeIllegal = -1;
+    /**
+    * Usage mode.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.UsageModeFsxAndVatsim = 0;
+    /**
+    * Usage mode as FSX moving map.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.UsageModeFsxMovingMapWithVatsim = 1;
+    /**
+    * Usage mode as FSX moving map.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.UsageModeFsxMovingMapFsxOnly = 2;
+    /**
+    * VATSIM data only.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.UsageModeVatsimOnly = 3;
+    // #endregion ------------ Static const values ------------
+
     // #region ------------ public part init / close ------------
     /**
     * Init everything.
@@ -674,6 +740,42 @@ namespace.module('vd.page', function(exports) {
     exports.PageController.prototype.zoomToGroundOverlay = function() {
         if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
         this.groundOverlayDisplayed.zoomMapToVicinity();
+    };
+
+    /**
+    * Usage mode has changed. usage mode specifes how the data
+    * and display is handled en detail.
+    * @see vd.module:page.PageController.UsageModeFsxMovingMapWithVatsim
+    */
+    exports.PageController.prototype.usageModeChanged = function() {
+        var usageMode = String.toNumber($("#inputUsageMode").val(), vd.page.PageController.UsageModeIllegal);
+        var vatsimLoadOn = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) > 0;
+        var fsxLoadOn = String.toNumber($("#inputTimerUpdateFsx").val(), -1) > 0;
+        if (usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
+            usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
+            usageMode == vd.page.PageController.UsageModeFsxAndVatsim ||
+            usageMode == vd.page.PageController.UsageModeVatsimOnly ) {
+            if ((usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim
+                || usageMode == vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
+                this.displayInfo("Make sure FsxWs is running and connected.");
+            }
+
+            // set logical defaults for load time
+            if (usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly)
+                $("#inputTimerUpdateVatsim").val(-1);
+            else if (!vatsimLoadOn)
+                $("#inputTimerUpdateVatsim").val(30);
+
+            if (usageMode == vd.page.PageController.UsageModeVatsimOnly)
+                $("#inputTimerUpdateFsx").val(-1);
+            else if (!fsxLoadOn)
+                $("#inputTimerUpdateFsx").val(5);
+
+            // remember mode
+            globals.usageMode = usageMode;
+        } else {
+            alert("Illegal usage mode, check origin");
+        }
     };
     // #endregion ------------ public part events ------------
 

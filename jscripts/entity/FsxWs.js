@@ -276,9 +276,11 @@ namespace.module('vd.entity', function (exports) {
     * Merge with VATSIM flight data.
     * (this will change the flight data of FsxWs).
     * @param  {Array} vatsimClients
+    * @param  {Boolean} [addNonExisitingVatsimFlights] flights in VATSIM only will be added
     * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients, addNonExisitingVatsimFlights) {
+        addNonExisitingVatsimFlights = Object.ifNotNullOrUndefined(addNonExisitingVatsimFlights, true);
 
         // VATSIM data?
         if (Array.isNullOrEmpty(vatsimClients)) {
@@ -303,7 +305,7 @@ namespace.module('vd.entity', function (exports) {
             var sameFlight = vd.entity.base.BaseEntityModel.findByCallsignFirst(fsxFlights, vatsimEntity.callsign);
             if (Object.isNullOrUndefined(sameFlight)) {
                 // no equivalent flight
-                mergedEntities.push(vatsimEntity); // simply add VASTIM flight
+                if (addNonExisitingVatsimFlights) mergedEntities.push(vatsimEntity); // simply add VASTIM flight
             } else {
                 fsxFlights.remove(sameFlight);
                 // following is by reference and changes this.flight[x] as well, but this has no negative side effects
@@ -313,7 +315,12 @@ namespace.module('vd.entity', function (exports) {
                 mergedEntities.push(sameFlight); // updated FsxFlight (data of VATSIM and FsxWs)
             }
         }
-        mergedEntities = mergedEntities.concat(fsxFlights); // no matching flight @ VATSIM
+        if (Array.isNullOrEmpty(mergedEntities))
+            mergedEntities = fsxFlights;
+        else 
+            mergedEntities = mergedEntities.concat(fsxFlights); // no matching flight @ VATSIM
+        
+        // return
         return mergedEntities;
     };
 

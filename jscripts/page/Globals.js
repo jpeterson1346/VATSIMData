@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function(exports) {
+namespace.module('vd.page', function (exports) {
 
     /**
     * @classdesc
@@ -11,7 +11,7 @@ namespace.module('vd.page', function(exports) {
     * @constructor
     * @author KWB
     */
-    exports.Globals = function() {
+    exports.Globals = function () {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
@@ -45,16 +45,36 @@ namespace.module('vd.page', function(exports) {
         this._idCounter = 0;
         this._objects = null;
 
-        // Vatsim objects
+        /**
+        * The Vatsim clients.
+        * @type {vd.entity.VatsimClients}
+        */
         this.vatsimClients = null;
+        /**
+        * VATSIM Metar data
+        * @type {vd.entity.helper.VatsimMetar}
+        */
         this.vatsimMetar = new vd.entity.helper.VatsimMetar();
 
-        // FsxWs JSON objects from web service
+        /**
+        * FsxWs JSON objects from web service.
+        * @type {vd.entity.FsxWs}
+        */
         this.fsxWs = null;
         this.fsxWsAvailabilityDelay = 3000; // before expectiny availability results [ms]
 
-        // combined entities (VATSIM, FSX, ..)
+        /** 
+        * Combined entities (VATSIM, FSX, ..)
+        * @type {vd.entity.base.EntityMapList}
+        */
         this.allEntities = null;
+
+        /** 
+        * Usage mode (Moving map, ...)
+        * @type {Number}
+        * @see vd.module:page.PageController
+        */
+        this.usingMode = vd.page.PageController.UsageModeUnspecified;
 
         // reset all entities
         this.resetEntities();
@@ -185,14 +205,14 @@ namespace.module('vd.page', function(exports) {
     * Assign a new / other map.
     * @param {google.maps.Map} map
     **/
-    exports.Globals.prototype.assignMap = function(map) {
+    exports.Globals.prototype.assignMap = function (map) {
         this.allEntities.disposeData(); // re-entry, clean up
         this._objects = new Array();
         this.map = map;
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
-        this.mapOverlayView.draw = function() {
+        this.mapOverlayView.draw = function () {
             if (!this.ready) {
                 this.ready = true;
                 google.maps.event.trigger(this, 'ready');
@@ -204,7 +224,7 @@ namespace.module('vd.page', function(exports) {
     * Is the FsxWs service available?
     * @return {Boolean} available
     **/
-    exports.Globals.prototype.isFsxAvailable = function() {
+    exports.Globals.prototype.isFsxAvailable = function () {
         if (Object.isNullOrUndefined(this.fsxWs)) return false;
         return this.fsxWs.successfulRead();
     };
@@ -214,7 +234,7 @@ namespace.module('vd.page', function(exports) {
     * @param {LatLng} latLng position to be checked.
     * @see Globals#map
     */
-    exports.Globals.prototype.isInBounds = function(latLng) {
+    exports.Globals.prototype.isInBounds = function (latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
@@ -223,7 +243,7 @@ namespace.module('vd.page', function(exports) {
     * @param  {Object} newObject: to be registered object
     * @return {Number} objectId
     */
-    exports.Globals.prototype.register = function(newObject) {
+    exports.Globals.prototype.register = function (newObject) {
         if (newObject == null) return -1;
         var id = this._idCounter++;
         this._objects[id] = newObject;
@@ -235,7 +255,7 @@ namespace.module('vd.page', function(exports) {
     * on temporary objects.
     * @return {Number} objectId
     */
-    exports.Globals.prototype.getObjectId = function() {
+    exports.Globals.prototype.getObjectId = function () {
         var id = this._idCounter++;
         return id;
     };
@@ -245,14 +265,14 @@ namespace.module('vd.page', function(exports) {
     * @param  {Number} id
     * @return {Object}
     */
-    exports.Globals.prototype.getObject = function(id) {
+    exports.Globals.prototype.getObject = function (id) {
         return this._objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetEntities = function() {
+    exports.Globals.prototype.resetEntities = function () {
         // dispose all entities but recycle the list
         if (!Object.isNullOrUndefined(this.allEntities)) this.allEntities.disposeData();
         this.allEntities = new vd.entity.base.EntityMapList();
@@ -274,7 +294,7 @@ namespace.module('vd.page', function(exports) {
     * @param  {Array} ids
     * @return {Array} 0..n objects
     */
-    exports.Globals.prototype.getObjects = function(ids) {
+    exports.Globals.prototype.getObjects = function (ids) {
         var objs = new Array();
         if (ids == null || objs.length < 1) return objs;
         for (var id in ids) {
@@ -288,7 +308,7 @@ namespace.module('vd.page', function(exports) {
     * Init the version (by version.txt).
     * @private
     */
-    exports.Globals.prototype._initVersion = function() {
+    exports.Globals.prototype._initVersion = function () {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
         // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
@@ -305,7 +325,7 @@ namespace.module('vd.page', function(exports) {
     * @param {Number} value (MUST be an INTEGER)
     * @see <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html">Google Analytics Events</a>
     */
-    exports.Globals.prototype.googleAnalyticsEvent = function(action, label, value) {
+    exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
         value = Object.ifNotNullOrUndefined(value, 0);
         // I have to use the global var _gaq here, because it will be changed to valid object later
         // see: http://stackoverflow.com/questions/7944860/google-analytics-events-when-are-they-send
@@ -316,7 +336,7 @@ namespace.module('vd.page', function(exports) {
     * Init the logger.
     * @private
     */
-    exports.Globals.prototype._initLogger = function() {
+    exports.Globals.prototype._initLogger = function () {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();
