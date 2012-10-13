@@ -162,15 +162,15 @@ namespace.module('vd.entity', function (exports) {
             url: url,
             cache: false,
             async: true,
-            crossdomain: false,
-            datatype: "text",
+            crossDomain: false,
+            dataType: "text",
             success: function (data, status) {
                 if (status == "success" && !String.isNullOrEmpty(data)) {
                     var r;
                     try {
                         r = me._parseVatsimDataFile(data); // also updates timestamp / history
                     } catch (e) {
-                        globals.log.error("VATSIM file \"" + url + "\" ,parsing error " + e);
+                        globals.log.error("VATSIM file \"" + url + "\" ,parsing error " + e.message);
                         r = exports.VatsimClients.ParsingFailed;
                     }
                     if (r == exports.VatsimClients.Ok) {
@@ -193,7 +193,7 @@ namespace.module('vd.entity', function (exports) {
             error: function (xhr, textStatus, errorThrown) {
                 me.loading = false;
                 me.lastStatus = exports.VatsimClients.ReadFailed;
-                globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown + ". File: " + url);
+                globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown.message + ". File: " + url);
             }
         });
     };
@@ -326,7 +326,8 @@ namespace.module('vd.entity', function (exports) {
                 if (!Object.isNullOrUndefined(kv)) {
                     if (kv[0] == "UPDATE") {
                         var dt = Date.parseString(kv[1], "yyyyMMddHHmmss");
-                        if (this.readHistory.contains(dt))
+                        // in case of init (also "re-init") always read
+                        if (this.lastStatus != vd.entity.VatsimClients.Init && this.readHistory.contains(dt))
                             return exports.VatsimClients.NoNewData;
                         else {
                             this.update = dt;

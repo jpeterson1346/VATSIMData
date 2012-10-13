@@ -178,7 +178,7 @@ namespace.module('vd.page', function (exports) {
         this.groundedSpeedThreshold = 30; // 30kts
         this.groundedHeightThreshold = 100; // 100ft AGL considered "grounded"
 
-        // declination
+        // variation (=declination in WMM)
         this.worldMagneticModel = new WorldMagneticModel();
         this.worldMagneticModelDate = now.getFullYear() + (now.getMonth() / 12);
 

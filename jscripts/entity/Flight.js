@@ -460,7 +460,7 @@ namespace.module('vd.entity', function (exports, require) {
         if (this.flightSettings.displaySpeedAltitudeHeading) c = c.appendIfThisIsNotEmpty("<br>") + this.groundspeedAndUnit() + " " + this.altitudeAndUnit() + " MSL " + this.headingAndUnit();
         if (this.flightSettings.displayId && !String.isNullOrEmpty(this.id)) c = c.appendIfThisIsNotEmpty("<br>") + this.id;
         if (this.flightSettings.displayTransponder && !String.isNullOrEmpty(this.transponder)) c = c.appendIfThisIsNotEmpty("<br>") + "Squawk " + this.transponder;
-        if (this.flightSettings.displayHeightAndDeclination) c = c.appendIfThisIsNotEmpty("<br>") + this.heightAndUnit() + " AGL Dec: " + this.declinationAndUnit();
+        if (this.flightSettings.displayHeightAndDeclination) c = c.appendIfThisIsNotEmpty("<br>") + this.heightAndUnit() + " AGL Dec: " + this.variationAndUnit();
         return vd.util.UtilsWeb.spaceToNbsp(c);
     };
 
