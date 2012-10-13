@@ -66,6 +66,13 @@ namespace.module('vd.entity.base', function (exports) {
         * @type {Boolean}     
         */
         this._drawn = false;
+        /**
+        * Declination [deg], if provided. Magnetic variation is a synonym.
+        * @protected
+        * @type {Number}
+        * @see BaseEntityMap#variation()     
+        */
+        this._variation = Object.ifNotNullOrUndefined(mapProperties["variation"], null);
 
         /**
         * "Cached" value for grids, only valid if the corresponding methods has been called before. 
@@ -173,10 +180,11 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /*
-    * Magnetic declination (degrees).
+    * Magnetic variation (degrees). Magnetic variation is a synonym.
     * @return {Number}
     */
-    exports.BaseEntityMap.prototype.declination = function () {
+    exports.BaseEntityMap.prototype.variation = function () {
+        if (!Object.isNullOrUndefined(this._variation)) return this._variation; // provided
         return globals.worldMagneticModel.declination(vd.util.UtilsCalc.ftToKm(this.elevation), this.latitude, this.longitude, globals.worldMagneticModelDate).toFixed(globals.angelsDigitsDisplayed) * 1;
     };
 
@@ -206,7 +214,7 @@ namespace.module('vd.entity.base', function (exports) {
     // @return {Object} with property / value pairs
     exports.BaseEntityMap.prototype.toPropertyValue = function () {
         var pv = new Array();
-        pv["declination"] = this.declinationAndUnit();
+        pv["variation"] = this.variationAndUnit();
         pv["latitude"] = this.latitude.toFixed(globals.coordinatesDigitsDisplayed);
         pv["longitude"] = this.longitude.toFixed(globals.coordinatesDigitsDisplayed);
 

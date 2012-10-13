@@ -207,11 +207,11 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
-    * Magnetic declination with unit.
+    * Magnetic variation with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.declinationAndUnit = function () {
-        var d = this.declination();
+    exports.BaseEntityModel.prototype.variationAndUnit = function () {
+        var d = this.variation();
         if (!Object.isNumber(d)) return "?";
         return d + "&deg;";
     };

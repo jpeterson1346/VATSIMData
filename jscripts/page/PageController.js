@@ -754,25 +754,39 @@ namespace.module('vd.page', function(exports) {
         if (usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
             usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
             usageMode == vd.page.PageController.UsageModeFsxAndVatsim ||
-            usageMode == vd.page.PageController.UsageModeVatsimOnly ) {
+            usageMode == vd.page.PageController.UsageModeVatsimOnly) {
             if ((usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim
                 || usageMode == vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
                 this.displayInfo("Make sure FsxWs is running and connected.");
             }
 
             // set logical defaults for load time
-            if (usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly)
-                $("#inputTimerUpdateVatsim").val(-1);
-            else if (!vatsimLoadOn)
-                $("#inputTimerUpdateVatsim").val(30);
-
-            if (usageMode == vd.page.PageController.UsageModeVatsimOnly)
-                $("#inputTimerUpdateFsx").val(-1);
-            else if (!fsxLoadOn)
-                $("#inputTimerUpdateFsx").val(5);
-
+            var timerChange = false;
+            if (usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly) {
+                if ($("#inputTimerUpdateVatsim").val() >= 0) {
+                    $("#inputTimerUpdateVatsim").val(-1);
+                    timerChange = true;
+                }
+            } else if (!vatsimLoadOn) {
+                if ($("#inputTimerUpdateVatsim").val() <= 0) {
+                    $("#inputTimerUpdateVatsim").val(30);
+                    timerChange = true;
+                }
+            }
+            if (usageMode == vd.page.PageController.UsageModeVatsimOnly) {
+                if ($("#inputTimerUpdateFsx").val() >= 0) {
+                    $("#inputTimerUpdateFsx").val(-1);
+                    timerChange = true;
+                }
+            } else if (!fsxLoadOn) {
+                if ($("#inputTimerUpdateFsx").val() <= 0) {
+                    $("#inputTimerUpdateFsx").val(5);
+                    timerChange = true;
+                }
+            }
             // remember mode
             globals.usageMode = usageMode;
+            if (timerChange) this.resetUpdateTimer(false);
         } else {
             alert("Illegal usage mode, check origin");
         }
@@ -1687,7 +1701,7 @@ namespace.module('vd.page', function(exports) {
         }
         var entity = globals.allEntities.findByObjectId(rowId);
         if (Object.isNullOrUndefined(entity)) {
-            globals.log.warn("Center to map called with id " + rowId + " but no client");
+            globals.log.warn("Center to map called with id " + rowId + " but no entity");
             return;
         }
         globals.map.setCenter(entity.latLng());

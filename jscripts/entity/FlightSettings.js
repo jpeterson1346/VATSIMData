@@ -67,7 +67,7 @@ namespace.module('vd.entity', function(exports) {
         */
         this.displayRequireFlightplan = true;
         /**
-        * Display height (if available) and magnetic declination.
+        * Display height (if available) and magnetic variation.
         * @type {Boolean}
         */
         this.displayHeightAndDeclination = false;

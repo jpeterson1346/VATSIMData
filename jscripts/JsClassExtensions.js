@@ -330,6 +330,19 @@ Array.isNullOrEmpty = function(arr) {
     return arr.length < 1;
 };
 
+/**
+* Convert enumerable to a real array object.
+* @param {Object} arr
+* @return {Array}
+* @see http://stackoverflow.com/questions/5618548/convert-json-array-to-javascript-array
+*/
+Array.toArray = function (arr) {
+    if (Object.isNullOrUndefined(arr)) return true;
+    if (arr.constructor === Array) return arr; // already Array
+    var realArray = Array.prototype.slice.call(arr);
+    return realArray;
+};
+
 // Convert array values - which represent a number - to type number.
 // @param {Array} array
 // @returns {Array}

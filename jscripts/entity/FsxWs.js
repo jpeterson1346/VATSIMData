@@ -153,6 +153,7 @@ namespace.module('vd.entity', function (exports) {
         this.loading = !availability && true;
         var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
         if (!availability) this._statisticsRead.start();
+        var datatype = BrowserDetect.browser.toLowerCase() == "explorer" ? "jsonp" : "json";
         var me = this;
 
         // AJAX call
@@ -161,11 +162,9 @@ namespace.module('vd.entity', function (exports) {
             url: url,
             cache: false,
             async: true,
-            crossdomain: true,
-            datatype: "jsonp",
+            crossDomain: true,
+            dataType: datatype,
             success: function (data, status) {
-                // alert("Data returned :" + data);
-                // alert("Status :" + status);
                 if (status == "success" && !Object.isNullOrUndefined(data)) {
                     // testing?
                     if (availability) {
@@ -199,8 +198,8 @@ namespace.module('vd.entity', function (exports) {
                 me.loading = false;
                 if (autoEnableDisable) me.enabled = false;
                 me.lastStatus = exports.FsxWs.ReadFailed;
-                errorThrown = String.isNullOrEmpty(errorThrown) ? "N/A" : errorThrown;
-                var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorThrown + "\". URL: " + url;
+                var errorMsg = String.isNullOrEmpty(errorThrown.message) ? "N/A" : errorThrown.message;
+                var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorMsg + "\". URL: " + url;
                 if (availability)
                     globals.log.info(msg);
                 else
@@ -259,6 +258,7 @@ namespace.module('vd.entity', function (exports) {
                     String.toNumber(aircraft.groundAltitudeM, -1),
                     2),
                 "verticalspeed": String.toNumber(aircraft.verticalSpeedFts, -1),
+                "variation": String.toNumber(aircraft.magneticVariationDeg, 0),
                 "bankangle": String.toNumber(aircraft.bankAngleDeg, -1),
                 "pitchangle": String.toNumber(aircraft.pitchAngleDeg, -1),
                 "aoa": String.toNumber(aircraft.angleOfAttackDeg, -1),
@@ -317,9 +317,9 @@ namespace.module('vd.entity', function (exports) {
         }
         if (Array.isNullOrEmpty(mergedEntities))
             mergedEntities = fsxFlights;
-        else 
+        else
             mergedEntities = mergedEntities.concat(fsxFlights); // no matching flight @ VATSIM
-        
+
         // return
         return mergedEntities;
     };
