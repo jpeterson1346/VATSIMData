@@ -696,20 +696,22 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="2">
-                            .. when followed:
+                            .. followed:
                         </td>
                         <td colspan="2">
                             <input name="flightLabelsColorIfFollowed" id="inputFlightSettingLabelsColorIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input type="checkbox" id="inputFlightSettingLabelsColorIfFollowedTransparent" onchange="ctr.colorSettingsChanged();" /><label for="inputFlightSettingLabelsColorIfFollowedTransparent">trn.</label>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="2">
-                            .. when filtered:
+                            .. filtered:
                         </td>
                         <td colspan="2">
                             <input name="flightLabelsColorIfFiltered" id="inputFlightSettingLabelsColorIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                            <input type="checkbox" id="inputFlightSettingLabelsColorIfFilteredTransparent" onchange="ctr.colorSettingsChanged();" /><label for="inputFlightSettingLabelsColorIfFilteredTransparent">trn.</label>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">

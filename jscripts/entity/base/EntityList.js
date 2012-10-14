@@ -114,11 +114,12 @@ namespace.module('vd.entity.base', function (exports) {
     /**
     * Find by any id.
     * @param {String|Number} id
+    * @param {Boolean} [considerObjectId] 
     * @return {BaseEntityModel}
     */
-    exports.EntityList.prototype.findById = function (id) {
+    exports.EntityList.prototype.findById = function (id, considerObjectId) {
         if (Object.isNullOrUndefined(id)) return null;
-        return vd.entity.base.BaseEntityModel.findByIdFirst(this.entities, id);
+        return vd.entity.base.BaseEntityModel.findByIdFirst(this.entities, id, considerObjectId);
     };
 
     /**

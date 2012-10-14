@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function(exports) {
+namespace.module('vd.entity', function (exports) {
     /**
     * @constructor
     * @classdesc 
@@ -15,7 +15,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @author KWB
     */
-    exports.FsxWs = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+    exports.FsxWs = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         /**
         * Enabled, disabled? Disables primarily read.
         * @type {Boolean}
@@ -93,7 +93,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @return {Boolean} true values have been reset, false nothing changed (values remain)
     */
-    exports.FsxWs.prototype.initServerValues = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+    exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         this.serverUrl = null;
         this.serverPort = -1;
         this.serverLocation = null;
@@ -137,7 +137,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {function} [successfulReadCallback] call if really read data
     * @see vd.entity.VatsimClients.readFromVatsim 
     */
-    exports.FsxWs.prototype.readFromFsxWs = function(availability, autoEnableDisable, successfulReadCallback) {
+    exports.FsxWs.prototype.readFromFsxWs = function (availability, autoEnableDisable, successfulReadCallback) {
         availability = Object.ifNotNullOrUndefined(availability, false);
         autoEnableDisable = Object.ifNotNullOrUndefined(autoEnableDisable, true);
         if (!availability && !this.enabled) return;
@@ -150,7 +150,7 @@ namespace.module('vd.entity', function(exports) {
 
         // init
         successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
-        this.loading = !availability && true;
+        this.loading = !availability;
         var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
         if (!availability) this._statisticsRead.start();
         var datatype = BrowserDetect.browser.toLowerCase() == "explorer" ? "jsonp" : "json";
@@ -164,7 +164,7 @@ namespace.module('vd.entity', function(exports) {
             async: true,
             crossDomain: true,
             dataType: datatype,
-            success: function(data, status) {
+            success: function (data, status) {
                 if (status == "success" && !Object.isNullOrUndefined(data)) {
                     // testing?
                     if (availability) {
@@ -199,7 +199,7 @@ namespace.module('vd.entity', function(exports) {
                 }
                 me.loading = false;
             },
-            error: function(xhr, textStatus, errorThrown) {
+            error: function (xhr, textStatus, errorThrown) {
                 me.loading = false;
                 if (autoEnableDisable) me.enabled = false;
                 me.lastStatus = exports.FsxWs.ReadFailed;
@@ -217,7 +217,7 @@ namespace.module('vd.entity', function(exports) {
     * Successful read?
     * @return success
     */
-    exports.FsxWs.prototype.successfulRead = function() {
+    exports.FsxWs.prototype.successfulRead = function () {
         return this.lastStatus == exports.FsxWs.Ok;
     };
 
@@ -225,7 +225,7 @@ namespace.module('vd.entity', function(exports) {
     * Dispose the "stored data" (hide as well).
     * @return {Boolean} info whether something was disposed
     */
-    exports.FsxWs.prototype.disposeData = function() {
+    exports.FsxWs.prototype.disposeData = function () {
         if (this.loading) return false;
         if (this.lastStatus == vd.entity.FsxWs.Init) return false;
         this.aircrafts = new Array();
@@ -240,7 +240,7 @@ namespace.module('vd.entity', function(exports) {
     * @param {Array} aircrafts array of JSON Aircrafts
     * @return {Array} flight
     */
-    exports.FsxWs.prototype.aircraftsToFlight = function(aircrafts) {
+    exports.FsxWs.prototype.aircraftsToFlight = function (aircrafts) {
         aircrafts = Object.ifNotNullOrUndefined(aircrafts, this.aircrafts);
         var flights = new Array();
         if (Array.isNullOrEmpty(aircrafts)) return flights;
@@ -284,7 +284,7 @@ namespace.module('vd.entity', function(exports) {
     * @param  {Boolean} [addNonExisitingVatsimFlights] flights in VATSIM only will be added
     * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimFlights = function(vatsimClients, addNonExisitingVatsimFlights) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients, addNonExisitingVatsimFlights) {
         addNonExisitingVatsimFlights = Object.ifNotNullOrUndefined(addNonExisitingVatsimFlights, true);
 
         // VATSIM data?
@@ -312,9 +312,10 @@ namespace.module('vd.entity', function(exports) {
                 // no equivalent flight
                 if (addNonExisitingVatsimFlights) mergedEntities.push(vatsimEntity); // simply add VASTIM flight
             } else {
-                fsxFlights.remove(sameFlight);
+                fsxFlights.removeByValue(sameFlight);
                 // following is by reference and changes this.flight[x] as well, but this has no negative side effects
                 sameFlight.pilot = vatsimEntity.pilot;
+                sameFlight.name = vatsimEntity.name;
                 sameFlight.vatsimId = vatsimEntity.vatsimId;
                 sameFlight.flightplan = vatsimEntity.flightplan;
                 mergedEntities.push(sameFlight); // updated FsxFlight (data of VATSIM and FsxWs)
@@ -385,24 +386,24 @@ namespace.module('vd.entity', function(exports) {
     * @type {Number}
     * @return {String}
     */
-    exports.FsxWs.statusToInfo = function(status) {
+    exports.FsxWs.statusToInfo = function (status) {
         var info;
         switch (status) {
-        case vd.entity.FsxWs.Init:
-            info = "Init";
-            break;
-        case vd.entity.FsxWs.Ok:
-            info = "Data loaded";
-            break;
-        case vd.entity.FsxWs.ReadFailed:
-            info = "Read failed";
-            break;
-        case vd.entity.FsxWs.NoFsxWs.ReadNoData:
-            info = "No data";
-            break;
-        default:
-            info = "Unknown, check console";
-            break;
+            case vd.entity.FsxWs.Init:
+                info = "Init";
+                break;
+            case vd.entity.FsxWs.Ok:
+                info = "Data loaded";
+                break;
+            case vd.entity.FsxWs.ReadFailed:
+                info = "Read failed";
+                break;
+            case vd.entity.FsxWs.NoFsxWs.ReadNoData:
+                info = "No data";
+                break;
+            default:
+                info = "Unknown, check console";
+                break;
         }
         return info;
     };
