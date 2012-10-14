@@ -148,7 +148,9 @@ namespace.module('vd.page', function(exports) {
         globals.styles.setFlightWaypointColor($("#inputFlightSettingsWaypointLinesColor").val());
         globals.styles.flightLabelBackground = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColor").val(), globals.styles.flightLabelBackground).toHex();
         globals.styles.flightLabelBackgroundIfFollowed = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColorIfFollowed").val(), globals.styles.flightLabelBackgroundIfFollowed).toHex();
+        globals.styles.flightLabelBackgroundIfFollowedTransparent = vd.util.UtilsWeb.checkboxChecked("inputFlightSettingLabelsColorIfFollowedTransparent");
         globals.styles.flightLabelBackgroundIfFiltered = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsColorIfFiltered").val(), globals.styles.flightLabelBackgroundIfFiltered).toHex();
+        globals.styles.flightLabelBackgroundIfFilteredTransparent = vd.util.UtilsWeb.checkboxChecked("inputFlightSettingLabelsColorIfFilteredTransparent");
         globals.styles.flightLabelFontColor = vd.util.Utils.getValidColor($("#inputFlightSettingLabelsFontColor").val(), globals.styles.flightLabelFontColor).toHex();
         globals.styles.airportLabelBackground = vd.util.Utils.getValidColor($("#inputAirportSettingLabelsColor").val(), globals.styles.airportLabelBackground).toHex();
         globals.styles.airportLabelFontColor = vd.util.Utils.getValidColor($("#inputAirportSettingLabelsFontColor").val(), globals.styles.airportLabelFontColor).toHex();
@@ -166,9 +168,9 @@ namespace.module('vd.page', function(exports) {
     exports.PageController.prototype.filterSettingsChanged = function(filterParams) {
         filterParams = Object.ifNotNullOrUndefined(filterParams, { });
         var tf = !Object.isNullOrUndefined(filterParams["toogleFilter"]) && filterParams["toogleFilter"];
-        var f = tf ? vd.util.UtilsWeb.toggleCheckbox("inputApplyFilter") : vd.util.UtilsWeb.checked("inputApplyFilter");
+        var f = tf ? vd.util.UtilsWeb.toggleCheckbox("inputApplyFilter") : vd.util.UtilsWeb.checkboxChecked("inputApplyFilter");
         if (f) {
-            var it = "Filter is on";
+            var it = "Filter is on.";
             if (globals.filter.isEmpty()) it += ". Warning, empty filter!";
             this.displayInfo(it);
         } else {

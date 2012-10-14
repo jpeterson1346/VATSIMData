@@ -360,13 +360,13 @@ namespace.module('vd.entity', function (exports, require) {
         // build the plane icon
         // view-source:http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.7/examples/infobox-basic.html
         this._setImage();
-        var planeImageLabelBoxStyle = (this.isFollowed()) ? {
+        var planeImageLabelBoxStyle = (!globals.styles.flightLabelBackgroundIfFollowedTransparent && this.isFollowed()) ? {
             background: globals.styles.flightLabelBackgroundIfFollowed,
             opacity: globals.styles.flightLabelOpacity
         } :
         // Show if in filter, but filter is not active
         // When filtered, only the selected flights are visible, so no need to highlight them
-            (!globals.filtered && this.isInFilter()) ? {
+            (!globals.filtered && !globals.styles.flightLabelBackgroundIfFilteredTransparent && this.isInFilter()) ? {
                 background: globals.styles.flightLabelBackgroundIfFiltered,
                 opacity: globals.styles.flightLabelOpacity
             } : null;
