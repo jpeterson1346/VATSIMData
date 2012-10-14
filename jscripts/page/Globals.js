@@ -40,6 +40,7 @@ namespace.module('vd.page', function (exports) {
         this.urlVatasimPilot = "http://www.vataware.com/pilot.cfm?cid=";
         this.urlVatsimMetar = "http://metar.vatsim.net/search_metar.php?id=";
         this.urlFsxWsDefault = "http://localhost:8080/";
+        this.urlFsxWsProject = "http://fsxws.codeplex.com";
 
         // global id counter
         this._idCounter = 0;
@@ -315,7 +316,10 @@ namespace.module('vd.page', function (exports) {
         // ReSharper restore InconsistentNaming
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
-        if (xmlhttp.status == 200) this.version = xmlhttp.responseText;
+        if (xmlhttp.status == 200) {
+            var v = xmlhttp.responseText;
+            if (!String.isNullOrEmpty(v)) this.version = v;
+        }
     };
 
     /**
