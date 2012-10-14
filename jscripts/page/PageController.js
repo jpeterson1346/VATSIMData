@@ -1699,9 +1699,9 @@ namespace.module('vd.page', function(exports) {
             globals.log.warn("Center to map called without row id");
             return;
         }
-        var entity = globals.allEntities.findByObjectId(rowId);
+        var entity = globals.allEntities.findByObjectId(rowId, true); // deep search, also finds secondary entities
         if (Object.isNullOrUndefined(entity)) {
-            globals.log.warn("Center to map called with id " + rowId + " but no entity");
+            globals.log.warn("Center to map called with id " + rowId + ", but no entity");
             return;
         }
         globals.map.setCenter(entity.latLng());
