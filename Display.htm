@@ -339,7 +339,7 @@
                             <input name="followId" id="inputFollowId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followId(null); }); "/>
                         </td>
                         <td colspan="2">
-                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { gridHidden: false, atcGridHidden: true, detailsGridHidden: true, filterGridHidden: true }); " title="Show data"><span class="ui-icon ui-icon-link" title="Show data"></span></button>
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.selectTab('D', { gridHidden: false, atcGridHidden: true, detailsGridHidden: true, filtergriHidden: true }); " title="Show data"><span class="ui-icon ui-icon-link" title="Show data"></span></button>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.followId(); " title="Follow"><span class="ui-icon ui-icon-check" title="Follow"></span></button>
                         </td>
                     </tr>
@@ -780,17 +780,22 @@
                 <table id="sideBarData" class="sideBarStandard, sideBarGrids">
                     <tr>
                         <td>
+                            <a href="javascript:ctr.updateGrids(true);">Update data</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <table id="detailsData"></table>
                         </td>
                     </tr>
                     <tr>
-                        <td id="sideBarFlightData" onmouseover="ctr.gridMouseState(true, null);" onmouseout="ctr.gridMouseState(false, null);">
+                        <td id="sideBarFlightData" onmouseover=" ctr.gridMouseState(true, null); " onmouseout=" ctr.gridMouseState(false, null); ">
                             <table id="flightData"></table>
                             <div id="flightDataPager"></div>
                         </td>
                     </tr>
                     <tr>
-                        <td id="sideBarAtcData" onmouseover="ctr.gridMouseState(null, true);" onmouseout="ctr.gridMouseState(null, false);">
+                        <td id="sideBarAtcData" onmouseover=" ctr.gridMouseState(null, true); " onmouseout=" ctr.gridMouseState(null, false); ">
                             <table id="atcData"></table>
                             <div id="atcDataPager"></div>
                         </td>
@@ -938,8 +943,9 @@
                         <td>
                             <ul>
                                 <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectGettingInvolved, true); ">This software (join ..)</a></li>
+                                <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlFsxWsProject, true); ">FsxWs</a></li>
                                 <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectFeatureRequests, true); ">Feature requests</a></li>
-                                <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true); ">Report bugs or typos</a>.<br/>Please read corresponding section in the <a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); ">user manual</a>.</li>
+                                <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectReportBugs, true); ">Report bugs or typos</a>.<br/>Please read corresponding<br/>section in the <a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlUserManual, true); ">user manual</a>.</li>
                                 <li><a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectProvideCharts, true); ">Provide charts</a></li>
                             </ul>
                         </td>

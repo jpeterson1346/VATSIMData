@@ -206,7 +206,7 @@ namespace.module('vd.entity', function(exports) {
                 var errorMsg = String.isNullOrEmpty(errorThrown.message) ? "N/A" : errorThrown.message;
                 var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorMsg + "\". URL: " + url;
                 if (availability)
-                    globals.log.info(msg);
+                    globals.log.info("FsxWs test, but " + msg);
                 else
                     globals.log.error(msg);
             }
