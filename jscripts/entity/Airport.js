@@ -105,7 +105,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @return {String} metar
     */
     exports.Airport.prototype.metar = function () {
-        return globals.metar.readFromVatsim(this.callsign);
+        return globals.vatsimMetar.readFromVatsim(this.callsign);
     };
 
     /**
@@ -220,16 +220,22 @@ namespace.module('vd.entity', function (exports, require) {
             this.overlays.display(true);
             if (!this._drawn) this._airportLabel.draw(); // 1st time force a draw
 
-            // Register event for the popup. I had to extend the Infobox.js for this, but this way is the
-            // only one I got reliable working.
+            // Register event for the popup. I had to extend the Infobox.js for this, 
+            // but this way is the only one I got reliable working.
             var me = this;
             if (Object.isNullOrUndefined(this._airportLabel.eventMouseDownHookIn)) {
-                this._airportLabel.eventMouseDownHookIn = function () {
-                    me._displayPopUp();
-                };
-                this._airportLabel.eventCloseHookIn = function () {
-                    me._displayPopUp();
-                };
+                // assert
+                if (typeof this._airportLabel.eventMouseDownHookIn === "undefined") {
+                    alert("Missing code modification in Infobox.js");
+                    globals.log.error("Missing code modification in Infobox.js");
+                } else {
+                    this._airportLabel.eventMouseDownHookIn = function() {
+                        me._displayPopUp();
+                    };
+                    this._airportLabel.eventCloseHookIn = function() {
+                        me._displayPopUp();
+                    };
+                }
             }
         }
 
@@ -345,6 +351,24 @@ namespace.module('vd.entity', function (exports, require) {
         var atc = atisAtcs[0];
         if (String.isNullOrEmpty(atc.atis)) return null;
         return atc.atis;
+    };
+
+    /**
+    * Is representing object id, allows to search on child objects as well (deep search).
+    * @param {String|Number} id 
+    * @param {Boolean} deepSearch
+    * @return {vd.entity.base.BaseNtityModel}
+    */
+    exports.Airport.prototype.matchingObject = function (id, deepSearch) {
+        var entitiy = this.matchingObject$BaseEntityModelOnMap(id, deepSearch);
+        if (!Object.isNullOrUndefined(entitiy)) return entitiy;
+
+        // search on own children
+        for (var a = 0, len = this.atcs.length; a < len; a++) {
+            var atc = this.atcs[a];
+            if (atc.objectId == id) return atc;
+        }
+        return null;
     };
 
     /**

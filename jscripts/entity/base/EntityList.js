@@ -103,11 +103,12 @@ namespace.module('vd.entity.base', function (exports) {
     /**
     * Find by object id.
     * @param {String|Number} objectId
+    * @param {Boolean} deepSearch
     * @return {BaseEntityModel}
     */
-    exports.EntityList.prototype.findByObjectId = function (objectId) {
+    exports.EntityList.prototype.findByObjectId = function (objectId, deepSearch) {
         if (!Object.isNumber(objectId)) return null;
-        return vd.entity.base.BaseEntityModel.findByObjectId(this.entities, objectId);
+        return vd.entity.base.BaseEntityModel.findByObjectId(this.entities, objectId, deepSearch);
     };
 
     /**

@@ -5,7 +5,7 @@
 namespace.module('vd.entity.base', function (exports, require) {
 
     var listBase = require("vd.entity.base");
-    var util = require("vd.util.Utils");
+    var util = require("vd.util");
 
     /**
     * @classdesc List of entities.
@@ -17,13 +17,16 @@ namespace.module('vd.entity.base', function (exports, require) {
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
         // after this, the subclass extends EntityList
         vd.entity.base.EntityList.call(this, otherEntities);
-
-        /**
-        * Log parse statistics.
-        * @type {vd.util.RuntimeStatistics}
-        */
-        this._statisticsDisplay = new vd.util.RuntimeStatistics("EntityMap display");
     };
+
+    /**
+    * Log parse statistics. I only want one stats entry for all maps,
+    * so I declare it static. An object instance would create entries for all new instances.
+    * @type {vd.util.RuntimeStatistics}
+    * @static
+    * @private
+    */
+    exports.EntityMapList._statisticsDisplay = new util.RuntimeStatistics("EntityMap display");
 
     /**
     * Display the clients (invoke display on all entities).
@@ -53,7 +56,7 @@ namespace.module('vd.entity.base', function (exports, require) {
                 entity.display(false);
             }
         }
-        this._statisticsDisplay.add(statsEntry, true);
+        exports.EntityMapList._statisticsDisplay.add(statsEntry, true);
         globals.log.trace(statsEntry.toString());
     };
 
@@ -81,5 +84,5 @@ namespace.module('vd.entity.base', function (exports, require) {
     };
 
     // Inheritance must be last!
-    util.inheritPrototypes(exports.EntityMapList, listBase.EntityList, "EntityList");
+    util.Utils.inheritPrototypes(exports.EntityMapList, listBase.EntityList, "EntityList");
 });
