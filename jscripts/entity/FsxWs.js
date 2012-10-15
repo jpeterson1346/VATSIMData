@@ -294,10 +294,9 @@ namespace.module('vd.entity', function (exports) {
         }
 
         // FsxWs data?
-        if (Array.isNullOrEmpty(this.flights)) {
-            return vatsimClients;
-        }
+        if (Array.isNullOrEmpty(this.flights)) return vatsimClients;
 
+        // merge
         var mergedEntities = new Array();
         var fsxFlights = this.flights.slice(0); // copy of array
 
@@ -316,8 +315,9 @@ namespace.module('vd.entity', function (exports) {
                 // following is by reference and changes this.flight[x] as well, but this has no negative side effects
                 sameFlight.pilot = vatsimEntity.pilot;
                 sameFlight.name = vatsimEntity.name;
+                sameFlight.aircraft = vatsimEntity.aircraft;
                 sameFlight.vatsimId = vatsimEntity.vatsimId;
-                sameFlight.flightplan = vatsimEntity.flightplan;
+                if (Object.isNullOrUndefined(vatsimEntity.flightplan)) sameFlight.flightplan = vatsimEntity.flightplan;
                 mergedEntities.push(sameFlight); // updated FsxFlight (data of VATSIM and FsxWs)
             }
         }

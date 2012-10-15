@@ -114,7 +114,8 @@ namespace.module('vd.entity.base', function(exports) {
     * @return {Boolean} origin is FSX
     */
     exports.BaseEntityModel.prototype.isMyFsxAircraft = function() {
-        return this.fsxId == 1;
+        var id = this.fsxId; // leave this line in, its easier to debug
+        return  id == 1;
     };
 
     /**
