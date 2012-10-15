@@ -210,14 +210,14 @@ namespace.module('vd.entity', function (exports, require) {
 
         // display checks
         if (dispose) {
-            display = false;
+            display = false; // force disappearing
         } else if (this.isFollowed()) {
             display = true;
         } else {
             display = display && this.flightSettings.displayFlight; // hide anyway
             display = display && this.displayedAtZoomLevel(); // too small to be displayed?
-            display = display && (this.flightSettings.displayOnGround || !this.isGrounded() || this.isMyFsxAircraft()); // grounded?
-            display = display && (!this.flightSettings.displayRequireFlightplan || this.hasFlightplan());
+            display = display && (this.isMyFsxAircraft() || this.flightSettings.displayOnGround || !this.isGrounded()); // grounded?
+            display = display && (this.isFsxBased() || !this.flightSettings.displayRequireFlightplan || this.hasFlightplan());
             display = display && this.compliesWithFilter();
         }
         // display
@@ -479,7 +479,7 @@ namespace.module('vd.entity', function (exports, require) {
         this.setLatitudeLongitude(newFlightInformation.latitude, newFlightInformation.longitude);
 
         if (this.isMyFsxAircraft()) {
-            // actually this should newer changed, but when user switches aircraft ...
+            // actually this should never changed, but when user switches aircraft ...
             this._isHelicopter = newFlightInformation._isHelicopter;
             this.aircraft = newFlightInformation.aircraft;
             this.callsign = newFlightInformation.callsign;

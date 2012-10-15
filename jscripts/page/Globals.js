@@ -43,7 +43,7 @@ namespace.module('vd.page', function (exports) {
         this.urlFsxWsProject = "http://fsxws.codeplex.com";
 
         // global id counter
-        this._idCounter = 0;
+        this._idCounter = 1000000; // starting value, makes it easier to distinguish from other ids
         this._objects = null;
 
         /**
