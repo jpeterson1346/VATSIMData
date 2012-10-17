@@ -1,4 +1,5 @@
-﻿/**
+﻿
+/**
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
@@ -246,6 +247,9 @@ namespace.module('vd.entity', function (exports) {
         if (Array.isNullOrEmpty(aircrafts)) return flights;
         for (var a = 0, len = aircrafts.length; a < len; a++) {
             var aircraft = aircrafts[a];
+            // in rare cases we do not have waypoints yet in FsxWs, so no position
+            if (Object.isNullOrUndefined(aircraft.latitude) || Object.isNullOrUndefined(aircraft.longitude)) continue;
+
             // VatGM: Create Flight from FsxWs aircraft
             var fp = {
                 "idfsx": aircraft.id,
@@ -282,14 +286,18 @@ namespace.module('vd.entity', function (exports) {
     * (this will change the flight data of FsxWs).
     * @param  {Array} vatsimClients
     * @param  {Boolean} [addNonExisitingVatsimFlights] flights in VATSIM only will be added
+    * @param  {Boolean} [hideDanglingFlights] flights not in the merged flights will be hidden
     * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients, addNonExisitingVatsimFlights) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients, addNonExisitingVatsimFlights, hideDanglingFlights) {
+
         addNonExisitingVatsimFlights = Object.ifNotNullOrUndefined(addNonExisitingVatsimFlights, true);
+        hideDanglingFlights = Object.ifNotNullOrUndefined(hideDanglingFlights, true);
 
         // VATSIM data?
         if (Array.isNullOrEmpty(vatsimClients)) {
             if (Array.isNullOrEmpty(this.flights)) return new Array();
+            vd.entity.base.BaseEntityModel.resetIds(this.flights, false, true); // reset all VATSIM ids
             return this.flights;
         }
 
@@ -306,19 +314,22 @@ namespace.module('vd.entity', function (exports) {
                 mergedEntities.push(vatsimEntity);
                 continue;
             }
-            var sameFlight = vd.entity.base.BaseEntityModel.findByCallsignFirst(fsxFlights, vatsimEntity.callsign);
-            if (Object.isNullOrUndefined(sameFlight)) {
-                // no equivalent flight
-                if (addNonExisitingVatsimFlights) mergedEntities.push(vatsimEntity); // simply add VASTIM flight
+            var sameFlightInFsx = vd.entity.base.BaseEntityModel.findByCallsignFirst(fsxFlights, vatsimEntity.callsign);
+            if (Object.isNullOrUndefined(sameFlightInFsx)) {
+                // no equivalent flight in FSX
+                vatsimEntity.fsxId = null;
+                if (addNonExisitingVatsimFlights) mergedEntities.push(vatsimEntity); // simply add VATSIM flight
             } else {
-                fsxFlights.removeByValue(sameFlight);
+                fsxFlights.removeByValue(sameFlightInFsx);
                 // following is by reference and changes this.flight[x] as well, but this has no negative side effects
-                sameFlight.pilot = vatsimEntity.pilot;
-                sameFlight.name = vatsimEntity.name;
-                sameFlight.aircraft = vatsimEntity.aircraft;
-                sameFlight.vatsimId = vatsimEntity.vatsimId;
-                if (Object.isNullOrUndefined(vatsimEntity.flightplan)) sameFlight.flightplan = vatsimEntity.flightplan;
-                mergedEntities.push(sameFlight); // updated FsxFlight (data of VATSIM and FsxWs)
+                sameFlightInFsx.pilot = vatsimEntity.pilot;
+                sameFlightInFsx.name = vatsimEntity.name;
+                sameFlightInFsx.aircraft = vatsimEntity.aircraft;
+                sameFlightInFsx.transponder = vatsimEntity.transponder; // this is not correctly set in FSX with VATSIM
+                sameFlightInFsx.vatsimId = vatsimEntity.vatsimId;
+                if (Object.isNullOrUndefined(vatsimEntity.flightplan)) sameFlightInFsx.flightplan = vatsimEntity.flightplan;
+                mergedEntities.push(sameFlightInFsx); // updated FsxFlight (data of VATSIM and FsxWs)
+                if (hideDanglingFlights) vatsimEntity.display(false); // the VATSIM only object will be hidden
             }
         }
         if (Array.isNullOrEmpty(mergedEntities))

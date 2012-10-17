@@ -50,11 +50,6 @@ namespace.module('vd.entity.base', function (exports) {
         * @type {Boolean}     
         */
         this.displayed = false;
-        /**
-        * Disposed?
-        * @type {Boolean}     
-        */
-        this.disposed = false;
         /*
         * All overlays belonging to this entity.
         * @type {vd.gm.OverlayGroup}
@@ -98,7 +93,6 @@ namespace.module('vd.entity.base', function (exports) {
     exports.BaseEntityMap.prototype.dispose = function () {
         this.overlays.clear();
         this.overlays = null;
-        this.disposed = true;
     };
 
     /**

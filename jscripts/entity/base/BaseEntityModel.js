@@ -2,7 +2,7 @@
 * @module vd.entity.base
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function(exports) {
+namespace.module('vd.entity.base', function (exports) {
 
     /**
     * @constructor
@@ -18,12 +18,17 @@ namespace.module('vd.entity.base', function(exports) {
     * @author KWB
     * @since 0.8
     */
-    exports.BaseEntityModel = function(properties) {
+    exports.BaseEntityModel = function (properties) {
         /**
         * Unique object id (key). This is unique amog all objects 
         * @type {Number}
         */
         this.objectId = globals.register(this);
+        /**
+        * Disposed?
+        * @type {Boolean}     
+        */
+        this.disposed = false;
         /**
         * FSX id.
         * @type {String}
@@ -97,15 +102,19 @@ namespace.module('vd.entity.base', function(exports) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.BaseEntityModel.prototype.dispose = function() {
+    exports.BaseEntityModel.prototype.dispose = function () {
         // code goes here
+        this.disposed = true;
+        this.vatsimId = null;
+        this.fsxId = null;
+        this.objectId = null;
     };
 
     /**
     * Based on FSX data?
     * @return {Boolean} origin is FSX
     */
-    exports.BaseEntityModel.prototype.isFsxBased = function() {
+    exports.BaseEntityModel.prototype.isFsxBased = function () {
         return !String.isNullOrEmpty(this.fsxId);
     };
 
@@ -113,16 +122,16 @@ namespace.module('vd.entity.base', function(exports) {
     * Is my FSX aircraft?
     * @return {Boolean} origin is FSX
     */
-    exports.BaseEntityModel.prototype.isMyFsxAircraft = function() {
+    exports.BaseEntityModel.prototype.isMyFsxAircraft = function () {
         var id = this.fsxId; // leave this line in, its easier to debug
-        return  id == 1;
+        return id == 1;
     };
 
     /**
     * Based on VATSIM data?
     * @return {Boolean} origin is FSX
     */
-    exports.BaseEntityModel.prototype.isVatsimBased = function() {
+    exports.BaseEntityModel.prototype.isVatsimBased = function () {
         return !String.isNullOrEmpty(this.vatsimId);
     };
 
@@ -132,7 +141,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Boolean} deepSearch
     * @return {vd.entity.base.BaseEnityModel}
     */
-    exports.BaseEntityModel.prototype.matchingObject = function(id, deepSearch) {
+    exports.BaseEntityModel.prototype.matchingObject = function (id, deepSearch) {
         if (this.objectId == id) return this;
         // ReSharper disable AssignedValueIsNeverUsed
         deepSearch = Object.ifNotNullOrUndefined(deepSearch, false);
@@ -146,7 +155,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Based on both data (FSX and VATSIM)?
     * @return {Boolean} origin is FSX
     */
-    exports.BaseEntityModel.prototype.isCombinedDataBased = function() {
+    exports.BaseEntityModel.prototype.isCombinedDataBased = function () {
         return this.isVatsimBased() && this.isFsxBased();
     };
 
@@ -154,7 +163,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Property / value.
     * @return {Object} property / value pairs
     */
-    exports.BaseEntityModel.prototype.toPropertyValue = function() {
+    exports.BaseEntityModel.prototype.toPropertyValue = function () {
         var pv = new Array();
         if (!String.isNullOrEmpty(this.vatsimId)) pv["id vatsim"] = this.vatsimId;
         if (!String.isNullOrEmpty(this.fsxId)) pv["id fsx"] = this.fsxId;
@@ -173,7 +182,7 @@ namespace.module('vd.entity.base', function(exports) {
     * QNH with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.qnhAndUnit = function() {
+    exports.BaseEntityModel.prototype.qnhAndUnit = function () {
         if (!Object.isNumber(this.qnh)) return "?";
         return this.qnh + "hPa";
     };
@@ -182,7 +191,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Speed with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.groundspeedAndUnit = function() {
+    exports.BaseEntityModel.prototype.groundspeedAndUnit = function () {
         if (this.groundspeed < 0) return "?";
         return ("km" == globals.unitDistance) ? "GS" + vd.util.UtilsCalc.ktsToKmh(this.groundspeed).toFixed(0) + "km/h" : "GS" + this.groundspeed + "kts";
     };
@@ -191,7 +200,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Frequency with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.frequencyAndUnit = function() {
+    exports.BaseEntityModel.prototype.frequencyAndUnit = function () {
         if (!Object.isNumber(this.frequency)) return "?";
         return this.frequency < 1 ? (this.frequency * 1000) + "kHz" : this.frequency + "MHz";
     };
@@ -200,7 +209,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Visibility with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.visibilityAndUnit = function() {
+    exports.BaseEntityModel.prototype.visibilityAndUnit = function () {
         if (!Object.isNumber(this.visibility)) return "?";
         return this.visibility + "XXX";
     };
@@ -209,7 +218,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Altitude with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.altitudeAndUnit = function() {
+    exports.BaseEntityModel.prototype.altitudeAndUnit = function () {
         if (!Object.isNumber(this.altitude)) return "?";
         return ("m" == globals.unitAltitude) ? vd.util.UtilsCalc.ftToM(this.altitude).toFixed(0) + "m" : this.altitude + "ft";
     };
@@ -218,7 +227,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Heading with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.headingAndUnit = function() {
+    exports.BaseEntityModel.prototype.headingAndUnit = function () {
         if (!Object.isNumber(this.heading)) return "?";
         return this.heading + "&deg;";
     };
@@ -227,7 +236,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Magnetic variation with unit.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.variationAndUnit = function() {
+    exports.BaseEntityModel.prototype.variationAndUnit = function () {
         var d = this.variation();
         if (!Object.isNumber(d)) return "?";
         return d + "&deg;";
@@ -237,7 +246,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Is this an entity being followed on the map?
     * @return {Boolean}
     */
-    exports.BaseEntityModel.prototype.isFollowed = function() {
+    exports.BaseEntityModel.prototype.isFollowed = function () {
         return this.objectId == globals.mapFollowId;
     };
 
@@ -245,7 +254,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Is this an entity which fullfils the filter criteria?
     * @return {Boolean}
     */
-    exports.BaseEntityModel.prototype.compliesWithFilter = function() {
+    exports.BaseEntityModel.prototype.compliesWithFilter = function () {
         return (!globals.filtered || globals.filter.contains(this));
     };
 
@@ -253,7 +262,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Is in filter?
     * @return {Boolean}
     */
-    exports.BaseEntityModel.prototype.isInFilter = function() {
+    exports.BaseEntityModel.prototype.isInFilter = function () {
         return (globals.filter.contains(this));
     };
 
@@ -261,7 +270,7 @@ namespace.module('vd.entity.base', function(exports) {
     * String representation.
     * @return {String}
     */
-    exports.BaseEntityModel.prototype.toString = function() {
+    exports.BaseEntityModel.prototype.toString = function () {
         var s = "objId:" + this.objectId;
         s = s.appendIfNotEmpty([this.vatsimId, this.fsxId, this.callsign], " ");
         return s;
@@ -271,7 +280,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Equals another object.
     * @return {Boolean}
     */
-    exports.BaseEntityModel.prototype.equals = function(otherEntity) {
+    exports.BaseEntityModel.prototype.equals = function (otherEntity) {
         if (otherEntity == this) return true;
         if (Object.isNullOrUndefined(otherEntity)) return false;
         if (this.objectId == otherEntity.objectId) return true;
@@ -283,11 +292,11 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {String} callsign
     * @return {String} formatted callsign
     **/
-    exports.BaseEntityModel.formatCallsign = function(callsign) {
+    exports.BaseEntityModel.formatCallsign = function (callsign) {
         if (String.isNullOrEmpty(callsign)) return null;
         var newcs = callsign.toUpperCase();
         newcs = newcs.replace(/\W/g, '');
-        return newcs;
+        return newcs.cleanUp();
     };
 
     /**
@@ -297,7 +306,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {Boolean} deepSearch
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByObjectId = function(entities, objectId, deepSearch) {
+    exports.BaseEntityModel.findByObjectId = function (entities, objectId, deepSearch) {
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(objectId)) return null;
         deepSearch = Object.ifNotNullOrUndefined(deepSearch, false);
         for (var be = 0, len = entities.length; be < len; be++) {
@@ -318,7 +327,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {String} vatsimId
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findByVatsimId = function(entites, vatsimId) {
+    exports.BaseEntityModel.findByVatsimId = function (entites, vatsimId) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(vatsimId)) return null;
         var entities = new Array();
         for (var e = 0, len = entites.length; e < len; e++) {
@@ -335,7 +344,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} [considerObjectId]
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findById = function(entites, id, considerObjectId) {
+    exports.BaseEntityModel.findById = function (entites, id, considerObjectId) {
         if (Array.isNullOrEmpty(entites) || String.isNullOrEmpty(id)) return null;
         var withObjId = Object.isNullOrUndefined(considerObjectId) ? false : considerObjectId;
         var entities = new Array();
@@ -355,18 +364,18 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {String} id
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByVatsimIdFirst = function(entities, id) {
+    exports.BaseEntityModel.findByVatsimIdFirst = function (entities, id) {
         var baseEntities = exports.BaseEntityModel.findByVatsimId(entities, id);
         return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
     };
 
     /**
-    * Find the first entity by FSX id.
-    * @param {Array}  entities Array of entities
+    * Find the entity by FSX id (FSX ids are unique).
+    * @param {Array} entities Array of entities
     * @param {String} id
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByFsxIdFirst = function(entities, id) {
+    exports.BaseEntityModel.findByFsxId = function (entities, id) {
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
             if (id == baseEntity.fsxId) return entities[e];
@@ -381,7 +390,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} [considerObjectId]
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByIdFirst = function(entities, id, considerObjectId) {
+    exports.BaseEntityModel.findByIdFirst = function (entities, id, considerObjectId) {
         var baseEntities = exports.BaseEntityModel.findById(entities, id, considerObjectId);
         return (Array.isNullOrEmpty(baseEntities)) ? null : baseEntities[0];
     };
@@ -392,7 +401,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {String} callsign
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findByCallsign = function(entities, callsign) {
+    exports.BaseEntityModel.findByCallsign = function (entities, callsign) {
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(callsign)) return baseEntities;
         callsign = exports.BaseEntityModel.formatCallsign(callsign);
@@ -409,7 +418,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param {String} callsign
     * @return {BaseEntityModel}
     */
-    exports.BaseEntityModel.findByCallsignFirst = function(entities, callsign) {
+    exports.BaseEntityModel.findByCallsignFirst = function (entities, callsign) {
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(callsign)) return null;
         var baseEntities = vd.entity.base.BaseEntityModel.findByCallsign(entities, callsign);
         return Array.isNullOrEmpty(baseEntities) ? null : baseEntities[0];
@@ -421,7 +430,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {String} name
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findByName = function(entities, name) {
+    exports.BaseEntityModel.findByName = function (entities, name) {
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(name)) return baseEntities;
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -438,7 +447,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {String} [alternativeType]
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findByType = function(entities, type, alternativeType) {
+    exports.BaseEntityModel.findByType = function (entities, type, alternativeType) {
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities) || String.isNullOrEmpty(type)) return baseEntities;
         var at = !Object.isNullOrUndefined();
@@ -459,7 +468,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} [vatsimOnly] only purely VATSIM based entities
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findVatsimBased = function(entities, vatsimOnly) {
+    exports.BaseEntityModel.findVatsimBased = function (entities, vatsimOnly) {
         vatsimOnly = Object.ifNotNullOrUndefined(vatsimOnly, false);
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities)) return baseEntities;
@@ -477,7 +486,7 @@ namespace.module('vd.entity.base', function(exports) {
     * @param  {Boolean} [fsxWsOnly] only purely FsxWs based entities
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findFsxBased = function(entities, fsxWsOnly) {
+    exports.BaseEntityModel.findFsxBased = function (entities, fsxWsOnly) {
         fsxWsOnly = Object.ifNotNullOrUndefined(fsxWsOnly, false);
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities)) return baseEntities;
@@ -493,7 +502,7 @@ namespace.module('vd.entity.base', function(exports) {
     * Dispose entities.
     * @param  {Array}  entities Array of entities
     */
-    exports.BaseEntityModel.dispose = function(entities) {
+    exports.BaseEntityModel.dispose = function (entities) {
         if (Array.isNullOrEmpty(entities)) return;
         for (var e = 0, len = entities.length; e < len; e++) {
             var baseEntity = entities[e];
@@ -502,11 +511,26 @@ namespace.module('vd.entity.base', function(exports) {
     };
 
     /**
+    * Reset FSX and VATSIM id.
+    * @param {Array}  entities Array of entities
+    * @param {Boolean} fsxId
+    * @param {Boolean} vatsimId
+    */
+    exports.BaseEntityModel.resetIds = function (entities, fsxId, vatsimId) {
+        if (Array.isNullOrEmpty(entities)) return;
+        for (var e = 0, len = entities.length; e < len; e++) {
+            var baseEntity = entities[e];
+            if (fsxId) baseEntity.fsxId = null;
+            if (vatsimId) baseEntity.vatsimId = null;
+        }
+    };
+
+    /**
     * Find already disposed entities.
     * @param  {Array}  entities Array of entities
     * @return {Array} BaseEntityModel objects
     */
-    exports.BaseEntityModel.findDisposed = function(entities) {
+    exports.BaseEntityModel.findDisposed = function (entities) {
         var baseEntities = new Array();
         if (Array.isNullOrEmpty(entities)) return baseEntities;
         for (var e = 0, len = entities.length; e < len; e++) {
