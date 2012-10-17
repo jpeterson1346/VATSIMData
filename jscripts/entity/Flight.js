@@ -479,7 +479,7 @@ namespace.module('vd.entity', function (exports, require) {
         this.setLatitudeLongitude(newFlightInformation.latitude, newFlightInformation.longitude);
 
         if (this.isMyFsxAircraft()) {
-            // actually this should never changed, but when user switches aircraft ...
+            // actually this should never change, but when user switches aircraft ...
             this._isHelicopter = newFlightInformation._isHelicopter;
             this.aircraft = newFlightInformation.aircraft;
             this.callsign = newFlightInformation.callsign;
@@ -544,7 +544,7 @@ namespace.module('vd.entity', function (exports, require) {
         for (var f = 0, len = newFlights.length; f < len; f++) {
             var newFlight = newFlights[f];
             var foundInExistingFlights = newFlight.isFsxBased() ?
-                vd.entity.base.BaseEntityModel.findByFsxIdFirst(existingFlightsCopy, newFlight.fsxId) :
+                vd.entity.base.BaseEntityModel.findByFsxId(existingFlightsCopy, newFlight.fsxId) :
                 vd.entity.base.BaseEntityModel.findByVatsimIdFirst(existingFlightsCopy, newFlight.vatsimId);
             if (Object.isNullOrUndefined(foundInExistingFlights)) {
                 flights.push(newFlight);

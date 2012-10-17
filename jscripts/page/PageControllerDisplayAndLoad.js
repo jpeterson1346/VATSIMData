@@ -246,7 +246,7 @@ namespace.module('vd.page', function(exports) {
             }
         } else if (!Object.isNullOrUndefined(globals.fsxWs)) {
             var addNonExisitingVatsimFlights = !(globals.usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim);
-            var fsxAndVatsimEntites = globals.fsxWs.mergeWithVatsimFlights(vatsimEntities, addNonExisitingVatsimFlights);
+            var fsxAndVatsimEntites = globals.fsxWs.mergeWithVatsimFlights(vatsimEntities, addNonExisitingVatsimFlights, true);
             mergedList = new vd.entity.base.EntityMapList(fsxAndVatsimEntites);
         } else {
             mergedList = new vd.entity.base.EntityMapList(vatsimEntities);
