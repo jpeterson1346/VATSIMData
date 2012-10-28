@@ -94,6 +94,25 @@ namespace.module('vd.page', function(exports) {
     };
 
     /**
+    * Settings for the navaids has been changed.
+    * @param {Object} mode specify further actions { initializeOnly: only initialize, ... }
+    */
+    exports.PageController.prototype.navaidSettingsChanged = function (mode) {
+        // make sure we have a mode
+        mode = Object.ifNotNullOrUndefined(mode, {});
+
+        var ns = globals.navaidSettings;
+        ns.set({
+            displayVOR: document.getElementById("inputNavaidsDisplayVOR").checked,
+            displayNDB: document.getElementById("inputNavaidsDisplayNDB").checked
+        }
+        );
+
+        // redisplay
+        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();
+    };
+
+    /**
     * Log level has been changed.
     */
     exports.PageController.prototype.logLevelChanged = function() {
