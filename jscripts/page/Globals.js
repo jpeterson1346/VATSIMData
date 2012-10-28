@@ -89,6 +89,7 @@ namespace.module('vd.page', function (exports) {
         this.sideBarEntitiesDisplay = null;
         this.sideBarCreditsDisplay = null;
         this.sideBarRouteDisplay = null;
+        this.sideBarNavaidsDisplay = null;
         this.sideBarOverlaysDisplay = null;
         this.sideBarAboutDisplay = null;
         this.sideBarFsxWsUrlMaxChars = 30; // truncate too long URLs
@@ -166,6 +167,9 @@ namespace.module('vd.page', function (exports) {
 
         // route
         this.routeSettings = new vd.entity.RouteSettings();
+
+        // navaids
+        this.navaidSettings = new vd.entity.NavaidSettings();
 
         // filter
         this.filtered = false;

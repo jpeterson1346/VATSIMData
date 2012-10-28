@@ -55,6 +55,7 @@
         <script type="text/javascript" src="jscripts/entity/GroundOverlay.js"> </script>
         <script type="text/javascript" src="jscripts/entity/AirportSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Airport.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/NavaidSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/VatsimClients.js"> </script>
         <script type="text/javascript" src="jscripts/entity/FsxWs.js"> </script>
         <script type="text/javascript" src="jscripts/entity/RouteSettings.js"> </script>
@@ -117,6 +118,7 @@
                     <option>Settings</option>
                     <option>Data</option>
                     <option>Overlays</option>
+                    <option>Navaids</option>
                     <option>Route</option>
                     <option>About</option>
                     <option>Credits</option>
@@ -158,7 +160,7 @@
                     </tr>
                     <tr class="ui-widget-content sideBarTopAlign">
                         <td>
-                            FSX Ws:
+                            <a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlFsxWsProject, true); ">FsxWs</a>:
                         </td>
                         <td colspan="2">
                             <div id="inputFsxWsURL">not set</div>
@@ -787,6 +789,7 @@
                     </tr>
                     <tr>
                         <td>
+                            <!-- details grid will go here -->
                             <table id="detailsData"></table>
                         </td>
                     </tr>
@@ -898,6 +901,31 @@
                     </tr>
                 </table>
                 <!-- overlay end -->
+                <!-- navaids start -->
+                <table id="sideBarNavaids" class="sideBarStandard">
+                    <tr class="ui-widget-header">
+                        <th colspan="4" class="sideBarHeader">
+                            Display Navaids
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Show VORs:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowVORs" id="inputNavaidsDisplayVOR" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                        <td>
+                            Show NDBs:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNDBs" id="inputNavaidsDisplayNDB" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                    </tr>
+                    
+
+                </table>                
+                <!-- navaids end -->
                 <!-- route start -->
                 <table id="sideBarRoute" class="sideBarStandard">
                     <tr class="ui-widget-header">
@@ -976,8 +1004,9 @@
                     <tr>
                         <td>
                             <ul>
-                                <li>Based on Google maps. Consider the copyright of the maps as on the bottom line of the map (TerraMetrics, Google, NASA, Tele Atlas et.al.)</li>
+                                <li>Based on Google maps. Copyright on the bottom line of the map (TerraMetrics, Google, NASA, Tele Atlas et.al.).</li>
                                 <li>Flight data based on <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.vatsim.net/', true);">VATSIM</a></li>
+                                <li>Navigraph data need to be licensed, see <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.navigraph.com', true);">here</a>.</li>
                             </ul>
                         </td>                    
                     </tr>

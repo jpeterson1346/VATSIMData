@@ -426,6 +426,7 @@ namespace.module('vd.page', function (exports) {
         var sideBarEntities = document.getElementById("sideBarEntities");
         var sideBarCredits = document.getElementById("sideBarCredits");
         var sideBarRoute = document.getElementById("sideBarRoute");
+        var sideBarNavaids = document.getElementById("sideBarNavaids");
         var sideBarOverlays = document.getElementById("sideBarOverlays");
         var mapCanvas = document.getElementById("mapCanvas");
         var altitudeProfile = document.getElementById("mapAltitudeProfile");
@@ -442,6 +443,7 @@ namespace.module('vd.page', function (exports) {
             globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
             globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
             globals.sideBarRouteDisplay = $(sideBarRoute).css('display');
+            globals.sideBarNavaidsDisplay = $(sideBarNavaids).css('display');
             globals.sideBarOverlaysDisplay = $(sideBarOverlays).css('display');
             if (Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
         }
@@ -469,6 +471,7 @@ namespace.module('vd.page', function (exports) {
             sideBarCredits.style.display = selected.startsWith("C") ? globals.sideBarCreditsDisplay : "none";
             sideBarEntities.style.display = selected.startsWith("E") ? globals.sideBarEntitiesDisplay : "none";
             sideBarRoute.style.display = selected.startsWith("R") ? globals.sideBarRouteDisplay : "none";
+            sideBarNavaids.style.display = selected.startsWith("N") ? globals.sideBarNavaidsDisplay : "none";
             sideBarOverlays.style.display = selected.startsWith("O") ? globals.sideBarOverlaysDisplay : "none";
 
             // further updates
@@ -1094,6 +1097,7 @@ namespace.module('vd.page', function (exports) {
 
         // more detailed setups
         this.vatsimClientSettingsChanged({ initializeOnly: true }); // init the settings only
+        this.navaidSettingsChanged({ initializeOnly: true });
         this._initGrids();
         this._initColorInputs();
         this._initFsxWsSettings();
