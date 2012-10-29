@@ -67,6 +67,15 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpRouteLineColor = "red";
         this.wpRouteLineStrokeWeight = 3;
 
+        // Navaids
+        this.navaidLabelBorder = "1px solid gray";
+        this.navaidLabelPadding = "2px";
+        this.navaidLabelBackground = "white";
+        this.navaidLabelOpacity = 0.75;
+        this.navaidLabelTextAlign = "left";
+        this.navaidLabelFontSize = "7pt";
+        this.navaidLabelFontColor = "black";
+
         // ground overlays
         this.groundOverlayOpacity = 0.7;
         this.groundOverlayBackground = "white";

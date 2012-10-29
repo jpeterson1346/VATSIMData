@@ -53,15 +53,22 @@ namespace.module('vd.entity', function (exports) {
         */
         this.readHistory = new Array();
         /**
-        * Read JSON aircrafts
+        * Read JSON aircrafts. Aircraft is not a vd.entity, but a JSON object.
         * @type {Array}
         */
         this.aircrafts = null;
         /**
         * JSON aircrafts converted to flights
         * @type {Array}
+        * @see vd.entity.Flight
         */
         this.flights = null;
+        /** 
+        * Navaids such as VOR, NDB ...
+        * @type {Array}
+        * @see vd.entity.Navaid
+        */
+        this.navaids = null;
         /**
         * Loading in progress
         * @type {Boolean}

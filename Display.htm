@@ -50,6 +50,8 @@
         <script type="text/javascript" src="jscripts/entity/helper/VatsimMetar.js"> </script>
         <script type="text/javascript" src="jscripts/entity/helper/WaypointSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/FlightSettings.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/Navaid.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/NavaidSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Flight.js"> </script>
         <script type="text/javascript" src="jscripts/entity/GroundOverlaySettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/GroundOverlay.js"> </script>
@@ -58,6 +60,7 @@
         <script type="text/javascript" src="jscripts/entity/NavaidSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/VatsimClients.js"> </script>
         <script type="text/javascript" src="jscripts/entity/FsxWs.js"> </script>
+        <script type="text/javascript" src="jscripts/entity/FsxWsNavaids.js"> </script>
         <script type="text/javascript" src="jscripts/entity/RouteSettings.js"> </script>
         <script type="text/javascript" src="jscripts/entity/Route.js"> </script>
         <script type="text/javascript" src="jscripts/page/Globals.js"> </script>
@@ -163,7 +166,7 @@
                             <a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlFsxWsProject, true); ">FsxWs</a>:
                         </td>
                         <td colspan="2">
-                            <div id="inputFsxWsURL">not set</div>
+                            <div id="fsxWsURL">not set</div>
                         </td>
                         <td>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.refreshFsxWsInfo(); " ><span class="ui-icon ui-icon-link" title="Test connection"></span></button>
@@ -905,6 +908,16 @@
                 <table id="sideBarNavaids" class="sideBarStandard">
                     <tr class="ui-widget-header">
                         <th colspan="4" class="sideBarHeader">
+                            FsxWs
+                        </th>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="4">
+                            <div id="fsxWsNavaidStatus">not set</div>
+                        </td>
+                    </tr> 
+                    <tr class="ui-widget-header">
+                        <th colspan="4" class="sideBarHeader">
                             Display Navaids
                         </th>
                     </tr>
@@ -920,6 +933,20 @@
                         </td>
                         <td>
                             <input type="checkbox" checked="checked" name="ShowNDBs" id="inputNavaidsDisplayNDB" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Show TACANs:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowTACANs" id="inputNavaidsDisplayTACAN" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                        <td>
+                            Show Navaids:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNavaids" id="inputNavaidsDisplay" onchange=" ctr.navaidSettingsChanged() " />
                         </td>
                     </tr>
                     
