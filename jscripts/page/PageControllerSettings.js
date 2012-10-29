@@ -104,7 +104,9 @@ namespace.module('vd.page', function(exports) {
         var ns = globals.navaidSettings;
         ns.set({
             displayVOR: document.getElementById("inputNavaidsDisplayVOR").checked,
-            displayNDB: document.getElementById("inputNavaidsDisplayNDB").checked
+            displayNDB: document.getElementById("inputNavaidsDisplayNDB").checked,
+            displayTACAN: document.getElementById("inputNavaidsDisplayTACAN").checked,
+            displayNavaid: document.getElementById("inputNavaidsDisplay").checked
         }
         );
 

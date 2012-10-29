@@ -34,7 +34,7 @@ namespace.module('vd.entity', function (exports, require) {
         */
         this.flightSettings = Object.ifNotNullOrUndefined(flightSettings, globals.flightSettings);
         /**
-        * Settings temporarily saved.
+        * Settings temporarily saved (when settings are modified during mouse over).
         * @type {vd.entity.FlightSettings}
         * @private
         */

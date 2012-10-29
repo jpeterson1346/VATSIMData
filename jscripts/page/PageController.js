@@ -1560,16 +1560,30 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._setFsxWsInfoFields = function () {
-        var td = document.getElementById("inputFsxWsURL");
+        var info;
+        
+        // FsxWs info in general
+        var td = document.getElementById("fsxWsURL");
         $(td).empty();
         if (String.isNullOrEmpty(globals.fsxWs.serverUrl))
-            td.appendChild(document.createTextNode("No connection info"));
+            info = "No connection info";
         else {
-            var info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.serverUrl);
+            info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.serverUrl);
             info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
             info += globals.isFsxAvailable() ? " (connected)" : " (disconnected)";
-            td.appendChild(document.createTextNode(info));
         }
+        td.appendChild(document.createTextNode(info));
+
+        // Navaid status
+        td = document.getElementById("fsxWsNavaidStatus");
+        $(td).empty();
+        if (Object.isNullOrUndefined(globals.fsxWs) || !globals.fsxWs.enabled)
+            info = "FsxWs not available / disabled. No Navaids available!";
+        else if (!globals.fsxWs.hasNavaids())
+            info = "No Navaids available. See FsxWs setup.";
+        else
+            info = "Navaids available";
+        td.appendChild(document.createTextNode(info));
     };
 
     /**

@@ -23,18 +23,33 @@ namespace.module('vd.entity', function (exports) {
 
         // make sure we have an options object
         options = Object.ifNotNullOrUndefined(options, {});
-
         /**
-        * Display VORs.
+        * Display VORs?
         * @type {Boolean}
         */
         this.displayVOR = Object.ifNotNullOrUndefined(options["displayVOR"], true);
-
         /**
-        * Display NDBs.
+        * Display NDBs?
         * @type {Boolean}
         */
         this.displayNDB = Object.ifNotNullOrUndefined(options["displayNDB"], true);
+        /**
+        * Display TACANs?
+        * @type {Boolean}
+        */
+        this.displayTACAN = Object.ifNotNullOrUndefined(options["displayTACAN"], true);
+        /**
+        * Display navaid at all?
+        * @type {Boolean}
+        */
+        this.displayNavaid = Object.ifNotNullOrUndefined(options["displayNavaids"],
+            this.displayVOR || this.displayTACAN || this.displayNDB);
+
+        /**
+        * Display name?
+        * @type {Boolean}
+        */
+        this.displayName = Object.ifNotNullOrUndefined(options["displayName"], false);
     };
 
     /**
@@ -42,8 +57,9 @@ namespace.module('vd.entity', function (exports) {
     * @return {Number}
     */
     exports.NavaidSettings.prototype.displayedElements = function () {
-        var c = this.displayNDB ? 1 : 0;
-        if (this.displayVOR) c++;
+        if (!this.displayNavaid) return 0;
+        var c = this.displayFrequency ? 1 : 0;
+        if (this.displayName) c++;
         return c;
     };
 });
