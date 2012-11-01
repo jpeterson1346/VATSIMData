@@ -41,6 +41,24 @@ namespace.module('vd.entity.base', function (exports) {
     };
 
     /**
+    * Add new entities.
+    * @param {Array} entities
+    * @param {Boolean} checkUniqueness
+    */
+    exports.EntityList.prototype.addEntities = function (entities, checkUniqueness) {
+        checkUniqueness = Object.ifNotNullOrUndefined(checkUniqueness, false);
+        if (Array.isNullOrEmpty(entities)) return;
+        if (checkUniqueness) {
+            for (var e = 0, len = entities.length; e < len; e++) {
+                var entity = entities[e];
+                this.remove(entity);
+            }
+        } else {
+            this.entities = this.entities.concat(entities);
+        }
+    };
+
+    /**
     * Add a new entity from the global lists.
     * @param {Number} objectId
     * @param {Boolean} added?
@@ -231,12 +249,4 @@ namespace.module('vd.entity.base', function (exports) {
     exports.EntityList.prototype.fsxWsEntities = function (fsxWsOnly) {
         return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, fsxWsOnly);
     };
-
-    /**
-    * Dispose entities.
-    */
-    exports.EntityList.prototype.fsxWsEntities = function () {
-        return vd.entity.base.BaseEntityModel.dispose(this.entities);
-    };
-
 });

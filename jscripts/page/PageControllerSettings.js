@@ -103,12 +103,17 @@ namespace.module('vd.page', function(exports) {
 
         var ns = globals.navaidSettings;
         ns.set({
+            displayNavaid: document.getElementById("inputNavaidsDisplay").checked,
             displayVOR: document.getElementById("inputNavaidsDisplayVOR").checked,
             displayNDB: document.getElementById("inputNavaidsDisplayNDB").checked,
             displayTACAN: document.getElementById("inputNavaidsDisplayTACAN").checked,
-            displayNavaid: document.getElementById("inputNavaidsDisplay").checked
-        }
-        );
+            displayILS: document.getElementById("inputNavaidsDisplayILS").checked,
+            displayVORTAC: document.getElementById("inputNavaidsDisplayVORTAC").checked,
+            displayName: document.getElementById("inputNavaidsDisplayName").checked,
+            displayFrequency: document.getElementById("inputNavaidsDisplayFrequency").checked,
+            displayType: document.getElementById("inputNavaidsDisplayType").checked,
+            displayCallsign: document.getElementById("inputNavaidsDisplayCallsign").checked
+        });
 
         // redisplay
         if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();

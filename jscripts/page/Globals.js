@@ -170,9 +170,11 @@ namespace.module('vd.page', function (exports) {
 
         // navaids
         this.navaidSettings = new vd.entity.NavaidSettings();
-        this.navaidImageWidth = 16;
-        this.navaidImageHeight = 16;
+        this.navaidImageWidth = 20;
+        this.navaidImageHeight = 20;
         this.navaidHideZoomLevel = 4;
+        this.navaidMouseoverTimeout = 6 * 1000; //ms
+
 
         // filter
         this.filtered = false;

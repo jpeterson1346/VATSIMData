@@ -202,7 +202,7 @@ namespace.module('vd.entity.base', function (exports) {
     */
     exports.BaseEntityModel.prototype.frequencyAndUnit = function () {
         if (!Object.isNumber(this.frequency)) return "?";
-        return this.frequency < 1 ? (this.frequency * 1000) + "kHz" : this.frequency + "MHz";
+        return this.frequency < 1 ? (this.frequency * 1000).toFixed(3) + "kHz" : this.frequency.toFixed(3) + "MHz";
     };
 
     /**

@@ -911,11 +911,18 @@
                             FsxWs
                         </th>
                     </tr>
-                    <tr class="ui-widget-content">
-                        <td colspan="4">
+                    <tr class="ui-widget-content sideBarTopAlign">
+                        <td>Status:</td>
+                        <td colspan="3">
                             <div id="fsxWsNavaidStatus">not set</div>
                         </td>
-                    </tr> 
+                    </tr>
+                    <tr class="ui-widget-content sideBarTopAlign" id="fsxWsNavaidsLoad">
+                        <td>Data:</td>
+                        <td colspan="3">
+                            <a href="javascript:ctr.loadAndDisplayNavaids();">Load Navaids</a>
+                        </td>
+                    </tr>
                     <tr class="ui-widget-header">
                         <th colspan="4" class="sideBarHeader">
                             Display Navaids
@@ -943,14 +950,54 @@
                             <input type="checkbox" checked="checked" name="ShowTACANs" id="inputNavaidsDisplayTACAN" onchange=" ctr.navaidSettingsChanged() " />
                         </td>
                         <td>
+                            Show VORTACs:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowVORTACs" id="inputNavaidsDisplayVORTAC" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Show ILS:
+                        </td>
+                        <td>
+                            <input type="checkbox" name="ShowILS" id="inputNavaidsDisplayILS" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                        <td>
                             Show Navaids:
                         </td>
                         <td>
                             <input type="checkbox" checked="checked" name="ShowNavaids" id="inputNavaidsDisplay" onchange=" ctr.navaidSettingsChanged() " />
                         </td>
                     </tr>
-                    
-
+                    <tr class="ui-widget-content">
+                        <td>
+                            Show name:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNavaidsName" id="inputNavaidsDisplayName" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                        <td>
+                            Callsign:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNavaidsCallsign" id="inputNavaidsDisplayCallsign" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td>
+                            Show freq.:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNavaidsFrequency" id="inputNavaidsDisplayFrequency" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                        <td>
+                            Show type:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked="checked" name="ShowNavaidsType" id="inputNavaidsDisplayType" onchange=" ctr.navaidSettingsChanged() " />
+                        </td>
+                    </tr>
                 </table>                
                 <!-- navaids end -->
                 <!-- route start -->
