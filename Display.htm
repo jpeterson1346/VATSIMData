@@ -781,6 +781,16 @@
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
                         </td>
                     </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="2">
+                             Navaid labels:
+                        </td>
+                        <td colspan="2">
+                            <input name="navaidLabelsColor" id="inputNavaidSettingLabelsColor" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
+                            <input type="checkbox" id="inputNavaidSettingLabelsColorTransparent" onchange=" ctr.colorSettingsChanged(); " />transp.
+                            <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
+                        </td>
+                    </tr>
                 </table>
                 <!-- tab settings ends here -->
                 <!-- tab data (flight/atc) starts here -->
@@ -944,7 +954,7 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td>
-                            Show TACANs:
+                            Show&nbsp;TACANs:
                         </td>
                         <td>
                             <input type="checkbox" checked="checked" name="ShowTACANs" id="inputNavaidsDisplayTACAN" onchange=" ctr.navaidSettingsChanged() " />
@@ -975,7 +985,7 @@
                             Show name:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowNavaidsName" id="inputNavaidsDisplayName" onchange=" ctr.navaidSettingsChanged() " />
+                            <input type="checkbox" name="ShowNavaidsName" id="inputNavaidsDisplayName" onchange=" ctr.navaidSettingsChanged() " />
                         </td>
                         <td>
                             Callsign:
@@ -995,7 +1005,7 @@
                             Show type:
                         </td>
                         <td>
-                            <input type="checkbox" checked="checked" name="ShowNavaidsType" id="inputNavaidsDisplayType" onchange=" ctr.navaidSettingsChanged() " />
+                            <input type="checkbox" name="ShowNavaidsType" id="inputNavaidsDisplayType" onchange=" ctr.navaidSettingsChanged() " />
                         </td>
                     </tr>
                 </table>                

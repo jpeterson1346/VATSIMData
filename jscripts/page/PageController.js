@@ -132,6 +132,13 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.DisplayMapMoved = 3;
     /**
+    * Navaids have been added or settings changed.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayNavaidsChanged = 4;
+    /**
     * Usage mode.
     * @type {Number}
     * @const
@@ -670,11 +677,13 @@ namespace.module('vd.page', function (exports) {
     /**
     * Redisplay the clients.
     * @param {Boolean} withInfo
+    * @param {Number} displayReason further details why to refresh
     */
-    exports.PageController.prototype.refresh = function (withInfo) {
+    exports.PageController.prototype.refresh = function (withInfo, displayReason) {
         var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
         withInfo = Object.ifNotNullOrUndefined(withInfo, false);
-        this.displayEntities(withInfo, "Refresh.");
+        displayReason = Object.ifNotNullOrUndefined(displayReason, false);
+        this.displayEntities(withInfo, "Refresh.", displayReason);
 
         // statistics / logging
         this._statisticsRefresh.add(statsEntry, true);
@@ -683,14 +692,18 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Redisplay the entities (after some delay in the background).
-    * @param {Boolean} forceRedraw
+    * Multiple same events are collected and only fired once.
+    * @param {Number} displayReason further details why to refresh
+    * @see PageController.DisplayForceRedisplay 
+    * @see PageController.DisplayNewDataVatsim
     */
-    exports.PageController.prototype.backgroundRefresh = function () {
+    exports.PageController.prototype.backgroundRefresh = function (displayReason) {
         var me = this;
+        displayReason = Object.ifNotNullOrUndefined(displayReason, null);
         if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
             this._backgroundRefreshCollectEvent = new vd.util.CollectingEvent(
                 function () {
-                    me.refresh();
+                    me.refresh(displayReason);
                 }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
         else
             this._backgroundRefreshCollectEvent.fire();
@@ -1066,6 +1079,8 @@ namespace.module('vd.page', function (exports) {
         $("#inputRouteSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputRouteSettingRouteLineColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLineColor, "CCCCCC").toHex(), true));
         $("#inputGroundOverlayBackgroundColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.groundOverlayBackground, "CCCCCC").toHex(), true));
+        $("#inputNavaidSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.navaidLabelBackground, "CCCCCC").toHex(), true));
+        vd.util.UtilsWeb.checkboxChecked("inputNavaidSettingLabelsColorTransparent", globals.styles.navaidLabelBackgroundTransparent);
     };
 
     /** 
