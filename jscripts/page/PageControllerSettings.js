@@ -90,7 +90,7 @@ namespace.module('vd.page', function(exports) {
         });
 
         // redisplay
-        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();
+        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh(vd.page.PageController.DisplayNewDataVatsim);
     };
 
     /**
@@ -116,7 +116,7 @@ namespace.module('vd.page', function(exports) {
         });
 
         // redisplay
-        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();
+        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh(vd.page.PageController.DisplayNavaidsChanged);
     };
 
     /**
@@ -183,6 +183,9 @@ namespace.module('vd.page', function(exports) {
         globals.styles.wpRouteLabelBackground = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsColor").val(), globals.styles.wpRouteLabelBackground).toHex();
         globals.styles.wpRouteLabelFontColor = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsFontColor").val(), globals.styles.wpRouteLabelFontColor).toHex();
         globals.styles.wpRouteLineColor = vd.util.Utils.getValidColor($("#inputRouteSettingRouteLineColor").val(), globals.styles.wpRouteLineColor).toHex();
+        globals.styles.navaidLabelBackground = vd.util.Utils.getValidColor($("#inputNavaidSettingLabelsColor").val(), globals.styles.navaidLabelBackground).toHex();
+        globals.styles.navaidLabelBackgroundTransparent = vd.util.UtilsWeb.checkboxChecked("inputNavaidSettingLabelsColorTransparent");
+
         this._displayAltitudeColorBar();
         if (refresh) this.backgroundRefresh();
     };

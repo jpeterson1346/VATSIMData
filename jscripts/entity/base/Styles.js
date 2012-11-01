@@ -68,11 +68,12 @@ namespace.module('vd.entity.base', function (exports) {
         this.wpRouteLineStrokeWeight = 3;
 
         // Navaids
-        this.navaidLabelBorder = "1px solid gray";
+        this.navaidLabelBorder = "1px solid black";
         this.navaidLabelPadding = "2px";
         this.navaidImageBackground = "transparent";
         this.navaidImageOpacity = 1;
-        this.navaidLabelBackground = "white";
+        this.navaidLabelBackground = "yellow";
+        this.navaidLabelBackgroundTransparent = true;
         this.navaidLabelOpacity = 0.75;
         this.navaidLabelTextAlign = "left";
         this.navaidLabelFontSize = "7pt";

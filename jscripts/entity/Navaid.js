@@ -259,18 +259,18 @@ namespace.module('vd.entity', function (exports, require) {
                 content: content,
                 // style goes to a div element -> see there for documentation
                 boxStyle: {
-                    "border": globals.styles.navaidLabelBorder,
+                    "border": globals.styles.navaidLabelBackgroundTransparent ? "0px" : globals.styles.navaidLabelBorder,
                     "padding": globals.styles.navaidLabelPadding,
-                    "background": globals.styles.navaidLabelBackground,
+                    "background": globals.styles.navaidLabelBackgroundTransparent ? "transparent" : globals.styles.navaidLabelBackground,
                     "opacity": globals.styles.navaidLabelOpacity,
                     "textAlign": globals.styles.navaidLabelTextAlign,
                     "fontSize": globals.styles.navaidLabelFontSize,
                     "color": globals.styles.navaidLabelFontColor,
                     "width": "auto",
                     "white-space": "nowrap",
-                    "zIndex": this.altitude < 0 ? 100 : this.altitude
+                    "zIndex": 100
                 },
-                "zIndex": this.altitude < 0 ? 100 : this.altitude,
+                "zIndex": 100,
                 "disableAutoPan": true,
                 "pixelOffset": new google.maps.Size(0, -imgOffsetH),
                 "position": latlng,
