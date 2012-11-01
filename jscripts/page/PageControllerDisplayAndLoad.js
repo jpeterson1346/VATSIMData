@@ -124,6 +124,20 @@ namespace.module('vd.page', function(exports) {
         }
         return info;
     };
+
+    /**
+    * Load the navaids (via fsx).
+    * @param {Boolean} [display]
+    */
+    exports.PageController.prototype.loadAndDisplayNavaids = function(display) {
+        if (!globals.isFsxAvailable()) return;
+        var cbDisplay = vd.util.UtilsWeb.checkboxChecked("inputNavaidsDisplay");
+        display = Object.ifNotNullOrUndefined(display, cbDisplay);
+        globals.fsxWs.readNavigraphNavaids(vd.entity.FsxWs.Navaids,
+            function() {
+                vd.entity.base.BaseEntityMap.display(globals.fsxWs.navaids, display, true);
+            });
+    };
     // #endregion ------------ clients, flights (VATSIM / FSX) data display ------------
 
     // #region ------------ Timers for automatic updates ------------
@@ -186,21 +200,24 @@ namespace.module('vd.page', function(exports) {
 
         // check for FSX data
         var timePassed = (this.timerFsxDataUpdateLastCall.getTime() + this.timerFsxDataUpdate < now);
-        if (this.isFsxWsEnabled() && timePassed) {
-            var autoDisable = true;
-            if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Init)
-                globals.fsxWs.readFromFsxWs(true, autoDisable); // run one test
-            else if (globals.fsxWs.enabled) {
-                globals.fsxWs.readFromFsxWs(false, autoDisable,
-                    function() {
-                        me.successfulDataReadFsxWs();
-                    }); // trigger a new read
+        if (timePassed) {
+            if (this.isFsxWsEnabled()) {
+                var autoDisable = true;
+                if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Init)
+                    globals.fsxWs.readFromFsxWs(true, autoDisable); // run one test
+                else if (globals.fsxWs.enabled) {
+                    globals.fsxWs.readFromFsxWs(false, autoDisable,
+                        function() {
+                            me.successfulDataReadFsxWs();
+                        }); // trigger a new read
+                }
+
+                // time stamp
+                this.timerFsxDataUpdateLastCall = new Date();
             }
 
-            // time stamp
-            this.timerFsxDataUpdateLastCall = new Date();
-
             // update fields after a delay, hopefully the async check is completed by then
+            // I recheck always, even with FsxWs disabled, because sometimes an event is missed
             setTimeout(function() {
                 me._setFsxWsInfoFields();
             }, globals.fsxWsAvailabilityDelay);
@@ -252,6 +269,11 @@ namespace.module('vd.page', function(exports) {
             mergedList = new vd.entity.base.EntityMapList(vatsimEntities);
         }
 
+        // NaviGraph data will be added on top, irregardless of usage mode
+        if (!Object.isNullOrUndefined(globals.fsxWs)) {
+            if (globals.fsxWs.hasNavaids()) mergedList.addEntities(globals.fsxWs.navaids);
+        }
+
         // make globally available
         globals.allEntities = mergedList;
     };
@@ -280,7 +302,6 @@ namespace.module('vd.page', function(exports) {
     /**
     * Trigger new data loads (VATSIM, FsxWs).
     * Loading is an asynchronous process.
-    *
     * @param {Boolean} [display] show an info
     */
     exports.PageController.prototype.triggerNewLoad = function(display) {

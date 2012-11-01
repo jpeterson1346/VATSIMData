@@ -34,22 +34,51 @@ namespace.module('vd.entity', function (exports) {
         */
         this.displayNDB = Object.ifNotNullOrUndefined(options["displayNDB"], true);
         /**
+        * Display DMEs?
+        * @type {Boolean}
+        */
+        this.displayNDB = Object.ifNotNullOrUndefined(options["displayDME"], true);
+        /**
+        * Display ILSs?
+        * @type {Boolean}
+        */
+        this.displayILS = Object.ifNotNullOrUndefined(options["displayILS"], true);
+        /**
         * Display TACANs?
         * @type {Boolean}
         */
         this.displayTACAN = Object.ifNotNullOrUndefined(options["displayTACAN"], true);
         /**
+        * Display VORTACs?
+        * @type {Boolean}
+        */
+        this.displayVORTAC = Object.ifNotNullOrUndefined(options["displayVORTAC"], true);
+        /**
         * Display navaid at all?
         * @type {Boolean}
         */
         this.displayNavaid = Object.ifNotNullOrUndefined(options["displayNavaids"],
-            this.displayVOR || this.displayTACAN || this.displayNDB);
-
+            this.displayVOR || this.displayTACAN || this.displayNDB || this.displayILS || this.displayVORTAC || this.displayTACAN);
         /**
         * Display name?
         * @type {Boolean}
         */
         this.displayName = Object.ifNotNullOrUndefined(options["displayName"], false);
+        /**
+        * Display type?
+        * @type {Boolean}
+        */
+        this.displayType = Object.ifNotNullOrUndefined(options["displayType"], true);
+        /**
+        * Display frequency?
+        * @type {Boolean}
+        */
+        this.displayFrequency = Object.ifNotNullOrUndefined(options["displayFrequency"], true);
+        /**
+        * Display callsign?
+        * @type {Boolean}
+        */
+        this.displayCallsign = Object.ifNotNullOrUndefined(options["displayCallsign"], true);
     };
 
     /**
@@ -60,6 +89,36 @@ namespace.module('vd.entity', function (exports) {
         if (!this.displayNavaid) return 0;
         var c = this.displayFrequency ? 1 : 0;
         if (this.displayName) c++;
+        if (this.displayFrequency) c++;
+        if (this.displayType) c++;
+        if (this.displayCallsign) c++;
         return c;
+    };
+
+    /**
+    * Clone.
+    * @return {vd.entity.NavaidSettings}
+    */
+    exports.NavaidSettings.prototype.clone = function () {
+        return new exports.NavaidSettings(this);
+    };
+
+    /**
+    * All values to true.
+    * @return {NavaidSettings}
+    */
+    exports.NavaidSettings.prototype.displayAll = function () {
+        this.displayVOR = true;
+        this.displayNDB = true;
+        this.displayTACAN = true;
+        this.displayVORTAC = true;
+        this.displayILS = true;
+        this.displayDME = true;
+        this.displayNavaid = true;
+        this.displayName = true;
+        this.displayFrequency = true;
+        this.displayType = true;
+        this.displayCallsign = true;
+        return this;
     };
 });

@@ -23,10 +23,15 @@ namespace.module('vd.entity', function (exports) {
         */
         this.enabled = true;
         /**
-        * URL of FsxWs Web service
+        * URL of FsxWs server
         * @type {String}
         */
         this.serverUrl = null;
+        /**
+        * URL of FsxWs aircaraft web service
+        * @type {String}
+        */
+        this.aircraftsUrl = null;
         /**
         * Location of FsxWs Web service
         * @type {String}
@@ -102,7 +107,7 @@ namespace.module('vd.entity', function (exports) {
     * @return {Boolean} true values have been reset, false nothing changed (values remain)
     */
     exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
-        this.serverUrl = null;
+        this.aircraftsUrl = null;
         this.serverPort = -1;
         this.serverLocation = null;
 
@@ -134,8 +139,9 @@ namespace.module('vd.entity', function (exports) {
         // set URL
         var url = "http://" + this.serverLocation;
         if (this.serverPort != 80) url += ":" + this.serverPort;
-        url += "/" + exports.FsxWs.PathJsonService;
         this.serverUrl = url;
+        url += "/" + exports.FsxWs.PathJsonService;
+        this.aircraftsUrl = url;
     };
 
     /**
@@ -143,23 +149,26 @@ namespace.module('vd.entity', function (exports) {
     * @param {Boolean}  [availability] check
     * @param {Boolean}  [autoEnableDisable] error / success leads to enabled / disabled service
     * @param {function} [successfulReadCallback] call if really read data
-    * @see vd.entity.VatsimClients.readFromVatsim 
+    * @see vd.entity.VatsimClients.readFromVatsim
+    * @see vd.entity.FsxWs.readNavigraphNavaids
     */
     exports.FsxWs.prototype.readFromFsxWs = function (availability, autoEnableDisable, successfulReadCallback) {
         availability = Object.ifNotNullOrUndefined(availability, false);
         autoEnableDisable = Object.ifNotNullOrUndefined(autoEnableDisable, true);
         if (!availability && !this.enabled) return;
-        if (Object.isNullOrUndefined(this.serverUrl)) return;
+        if (Object.isNullOrUndefined(this.aircraftsUrl)) return;
         if (!jQuery.support.cors) alert("jQuery CORS not enabled");
         if (this.loading && !availability) {
-            alert("Concurrent loading from FsxWs");
-            return;
+            if (confirm("Concurrent loading from FsxWs. Reset flag and continue?"))
+                this.loading = true;
+            else
+                return;
         }
 
         // init
         successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
         this.loading = !availability;
-        var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
+        var url = availability ? this.aircraftsUrl + exports.FsxWs.QueryParameterTest : this.aircraftsUrl + exports.FsxWs.QueryParameterNoWaypoints;
         if (!availability) this._statisticsRead.start();
         var datatype = BrowserDetect.browser.toLowerCase() == "explorer" ? "jsonp" : "json";
         var me = this;
@@ -180,28 +189,29 @@ namespace.module('vd.entity', function (exports) {
                     } else {
                         if (!(data.constructor === Array)) {
                             // detect JSON problems / crossdomain problems
-                            alert("Json call workin properly? Returned not an array.");
-                            globals.log.trace("FsxWs Data loaded, no array type, type: " + datatype);
-                            me.lastStatus = exports.FsxWs.ReadNoData;
+                            alert("Json call working properly? Returned not an array.");
+                            globals.log.error("FsxWs Data loaded, no array type, type: " + datatype);
+                            me.lastStatus = exports.FsxWs.ReadWrongReturnType;
                         } else if (data.length > 0) {
                             // normal mode
                             var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                             globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
                             me.aircrafts = data;
-                            var newFlights = me.aircraftsToFlight(data);
+                            var newFlights = me._aircraftsToFlight(data);
                             me.flights = vd.entity.Flight.updateFlights(me.flights, newFlights);
                             me.lastStatus = exports.FsxWs.Ok;
                             if (!Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                         } else {
-                            globals.log.trace("FsxWs Data loaded, but no data in array");
-                            me.lastStatus = exports.FsxWs.ReadNoData;
+                            if (me.lastStatus != exports.FsxWs.ReadNoFsxData) globals.log.trace("FsxWs Data loaded, but no data in array");
+                            me.lastStatus = exports.FsxWs.ReadNoFsxData;
                         }
                     }
                     // final state and callback
                     if (autoEnableDisable) me.enabled = true;
-                    if (me.lastStatus == exports.FsxWs.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
+                    if ((me.lastStatus == exports.FsxWs.Ok || me.lastStatus == exports.FsxWs.ReadNoFsxData)
+                        && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                 } else {
-                    me.lastStatus = exports.FsxWs.ReadNoData;
+                    me.lastStatus = exports.FsxWs.ReadWrongReturnType;
                     if (autoEnableDisable) me.enabled = false;
                     globals.log.error("Reading from FsxWs success, but not data");
                 }
@@ -226,7 +236,7 @@ namespace.module('vd.entity', function (exports) {
     * @return success
     */
     exports.FsxWs.prototype.successfulRead = function () {
-        return this.lastStatus == exports.FsxWs.Ok;
+        return this.lastStatus == exports.FsxWs.Ok || this.lastStatus == exports.FsxWs.ReadNoFsxData;
     };
 
     /**
@@ -239,6 +249,8 @@ namespace.module('vd.entity', function (exports) {
         this.aircrafts = new Array();
         vd.entity.base.BaseEntityModel.dispose(this.flights);
         this.flights = new Array();
+        vd.entity.base.BaseEntityModel.dispose(this.navaids);
+        this.navaids = new Array();
         this.lastStatus = vd.entity.FsxWs.Init;
         return true;
     };
@@ -247,8 +259,9 @@ namespace.module('vd.entity', function (exports) {
     * Aircrafts to flight.
     * @param {Array} aircrafts array of JSON Aircrafts
     * @return {Array} flight
+    * @private
     */
-    exports.FsxWs.prototype.aircraftsToFlight = function (aircrafts) {
+    exports.FsxWs.prototype._aircraftsToFlight = function (aircrafts) {
         aircrafts = Object.ifNotNullOrUndefined(aircrafts, this.aircrafts);
         var flights = new Array();
         if (Array.isNullOrEmpty(aircrafts)) return flights;
@@ -382,7 +395,13 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.FsxWs.Ok = 0;
     /**
-    * Reading OK.
+    * Reading succeeded, but no data.
+    * @type {Number}
+    * @const
+    */
+    exports.FsxWs.ReadNoFsxData = 1;
+    /**
+    * No FsxWs service at all.
     * @type {Number}
     * @const
     */
@@ -394,11 +413,11 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.FsxWs.ReadFailed = 11;
     /**
-    * Reading succeeded, but no data.
+    * Reading returned wrong signature.
     * @type {Number}
     * @const
     */
-    exports.FsxWs.ReadNoData = 12;
+    exports.FsxWs.ReadWrongReturnType = 12;
     /**
     * Status code to readable message.
     * @type {Number}
@@ -413,11 +432,17 @@ namespace.module('vd.entity', function (exports) {
             case vd.entity.FsxWs.Ok:
                 info = "Data loaded";
                 break;
+            case vd.entity.FsxWs.ReadNoFsxData:
+                info = "No data";
+                break;
             case vd.entity.FsxWs.ReadFailed:
                 info = "Read failed";
                 break;
-            case vd.entity.FsxWs.NoFsxWs.ReadNoData:
-                info = "No data";
+            case vd.entity.FsxWs.NoFsxWs:
+                info = "No FsxWs service";
+                break;
+            case vd.entity.FsxWs.ReadWrongReturnType:
+                info = "Wrong return type";
                 break;
             default:
                 info = "Unknown, check console";

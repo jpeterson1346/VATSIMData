@@ -1561,29 +1561,45 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._setFsxWsInfoFields = function () {
         var info;
-        
+
         // FsxWs info in general
         var td = document.getElementById("fsxWsURL");
         $(td).empty();
-        if (String.isNullOrEmpty(globals.fsxWs.serverUrl))
+        if (String.isNullOrEmpty(globals.fsxWs.aircraftsUrl))
             info = "No connection info";
         else {
-            info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.serverUrl);
+            info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.aircraftsUrl);
             info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
-            info += globals.isFsxAvailable() ? " (connected)" : " (disconnected)";
+            if (globals.isFsxAvailable()) {
+                if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Ok)
+                    info += " (connected)";
+                else if (globals.fsxWs.lastStatus == vd.entity.FsxWs.ReadNoFsxData)
+                    info += " (connected, no data)";
+                else
+                    info += " (inconsistent)";
+            } else
+                info += " (disconnected)";
         }
         td.appendChild(document.createTextNode(info));
 
         // Navaid status
         td = document.getElementById("fsxWsNavaidStatus");
+        var loadNavaids = false;
         $(td).empty();
-        if (Object.isNullOrUndefined(globals.fsxWs) || !globals.fsxWs.enabled)
+        if (!globals.isFsxAvailable()) {
             info = "FsxWs not available / disabled. No Navaids available!";
-        else if (!globals.fsxWs.hasNavaids())
+        } else if (!globals.fsxWs.hasNavaids()) {
             info = "No Navaids available. See FsxWs setup.";
-        else
+            loadNavaids = true;
+        } else {
             info = "Navaids available";
+            loadNavaids = true;
+        }
         td.appendChild(document.createTextNode(info));
+        if (loadNavaids)
+            $("#fsxWsNavaidsLoad").show();
+        else
+            $("#fsxWsNavaidsLoad").hide();
     };
 
     /**
