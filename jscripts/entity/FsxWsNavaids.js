@@ -139,7 +139,7 @@ namespace.module('vd.entity', function (exports) {
                 "type": type,
                 "dunno": whatIsThis
             };
-            navaid = new vd.entity.Navaid(navaidProps);
+            navaid = new vd.entity.Navaid(navaidProps, globals.navaidSettings);
             this.navaids.push(navaid);
         }
     };

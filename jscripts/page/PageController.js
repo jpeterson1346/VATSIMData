@@ -604,6 +604,7 @@ namespace.module('vd.page', function (exports) {
                 // by entry in fields
                 entity = globals.allEntities.findById(id, false); // by FSX id and VATSIM id
                 if (Object.isNullOrUndefined(entity)) entity = globals.allEntities.findByObjectId(id); // search by object id first
+                if (Object.isNullOrUndefined(entity)) entity = globals.allEntities.findByCallsign(id); // assume we have a callsign
             }
         }
 
@@ -1585,7 +1586,7 @@ namespace.module('vd.page', function (exports) {
         else {
             info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.aircraftsUrl);
             info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
-            if (globals.isFsxAvailable()) {
+            if (globals.isFsxWsAvailable()) {
                 if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Ok)
                     info += " (connected)";
                 else if (globals.fsxWs.lastStatus == vd.entity.FsxWs.ReadNoFsxData)
@@ -1601,10 +1602,10 @@ namespace.module('vd.page', function (exports) {
         td = document.getElementById("fsxWsNavaidStatus");
         var loadNavaids = false;
         $(td).empty();
-        if (!globals.isFsxAvailable()) {
+        if (!globals.isFsxWsAvailable()) {
             info = "FsxWs not available / disabled. No Navaids available!";
         } else if (!globals.fsxWs.hasNavaids()) {
-            info = "No Navaids available. See FsxWs setup.";
+            info = "No Navaids available. Try 'Load' and / or check FsxWs setup.";
             loadNavaids = true;
         } else {
             info = "Navaids available";

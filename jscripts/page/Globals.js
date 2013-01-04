@@ -234,7 +234,7 @@ namespace.module('vd.page', function (exports) {
     * Is the FsxWs service available?
     * @return {Boolean} available
     **/
-    exports.Globals.prototype.isFsxAvailable = function () {
+    exports.Globals.prototype.isFsxWsAvailable = function () {
         if (Object.isNullOrUndefined(this.fsxWs)) return false;
         return this.fsxWs.successfulRead();
     };

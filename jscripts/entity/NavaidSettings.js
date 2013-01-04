@@ -37,7 +37,7 @@ namespace.module('vd.entity', function (exports) {
         * Display DMEs?
         * @type {Boolean}
         */
-        this.displayNDB = Object.ifNotNullOrUndefined(options["displayDME"], true);
+        this.displayDME = Object.ifNotNullOrUndefined(options["displayDME"], true);
         /**
         * Display ILSs?
         * @type {Boolean}
@@ -58,7 +58,7 @@ namespace.module('vd.entity', function (exports) {
         * @type {Boolean}
         */
         this.displayNavaid = Object.ifNotNullOrUndefined(options["displayNavaids"],
-            this.displayVOR || this.displayTACAN || this.displayNDB || this.displayILS || this.displayVORTAC || this.displayTACAN);
+            this.displayVOR || this.displayTACAN || this.displayNDB || this.displayILS || this.displayVORTAC || this.displayDME);
         /**
         * Display name?
         * @type {Boolean}
