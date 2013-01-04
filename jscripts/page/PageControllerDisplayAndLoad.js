@@ -131,7 +131,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Boolean} [display]
     */
     exports.PageController.prototype.loadAndDisplayNavaids = function (display) {
-        if (!globals.isFsxAvailable()) return;
+        if (!globals.isFsxWsAvailable()) return;
         var cbDisplay = vd.util.UtilsWeb.checkboxChecked("inputNavaidsDisplay");
         display = Object.ifNotNullOrUndefined(display, cbDisplay);
         globals.fsxWs.readNavigraphNavaids(vd.entity.FsxWs.Navaids,
