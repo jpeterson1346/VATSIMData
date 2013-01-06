@@ -297,28 +297,20 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
-                        <th colspan="4" class="sideBarHeader">
-                            Elevation services
-                        </th>
+                        <th colspan="4" class="sideBarHeader">Elevation services</th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="3">
-                            Service (generally enable / disable):
-                        </td>
+                        <td colspan="3">Service (generally enable / disable):</td>
                         <td>
                             <input name="showProfile" id="inputElevationService" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Alt.profile:
-                        </td>
+                        <td>Alt.profile:</td>
                         <td>
                             <input name="showProfile" id="inputAltitudeProfileShow" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
-                        <td>
-                            Elev.profile:
-                        </td>
+                        <td>Elev.profile:</td>
                         <td>
                             <input name="elevationProfile" id="inputAltitudeProfileElevationLine" type="checkbox" onchange = " ctr.altitudeProfileSettings(); "/>
                         </td>
@@ -329,9 +321,7 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Id:
-                        </td>
+                        <td>Id:</td>
                         <td>
                             <input name="followId" id="inputFollowId" type="text" size="10" onkeydown=" ctr.onEnter(event, function() { ctr.followId(null); }); "/>
                         </td>
@@ -350,9 +340,7 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Apply&nbsp;filter:
-                        </td>
+                        <td>Apply&nbsp;filter:</td>
                         <td colspan="2">
                             <input name="applyFilter" id="inputApplyFilter" type="checkbox" onchange = " ctr.filterSettingsChanged(); "/>
                         </td>
@@ -365,70 +353,50 @@
                 <!-- tab entities display starts here -->
                 <table id="sideBarEntities" class="sideBarStandard">
                     <tr class="ui-widget-header">
-                        <th colspan="4" class="sideBarHeader">
-                            Flights
-                        </th>
+                        <th colspan="4" class="sideBarHeader">Flights</th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Show Flights:
-                        </td>
+                        <td>Show Flights:</td>
                         <td>
                             <input type="checkbox" checked="checked" name="ShowFlight" id="inputFlightSettingsShowFlight" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
-                        <td>
-                            Show on gnd:
-                        </td>
+                        <td>Show on gnd:</td>
                         <td>
                             <input type="checkbox" name="OnGround" id="inputFlightSettingsOnGround" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Require flightplan:
-                        </td>
+                        <td>Require flightplan:</td>
                         <td>
                             <input type="checkbox" checked="checked" name="RequireFlightplan" id="inputFlightSettingsRequireFlightplan" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
-                        <td>
-                            Height / m.dec.:
-                        </td>
+                        <td>Height / m.dec.:</td>
                         <td>
                             <input type="checkbox" name="HeightAndDeclination" id="inputFlightSettingsHeightAndDeclination" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Callsign:
-                        </td>
+                        <td>Callsign:</td>
                         <td>
                             <input type="checkbox" checked="checked" name="Callsign" id="inputFlightSettingsCallsign" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
-                        <td>
-                            Pilot:
-                        </td>
+                        <td>Pilot:</td>
                         <td>
                             <input type="checkbox" name="Pilot" id="inputFlightSettingsPilot" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Id:
-                        </td>
+                        <td>Id:</td>
                         <td>
                             <input type="checkbox" name="FlightId" id="inputFlightSettingsId" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
-                        <td>
-                            Transponder:
-                        </td>
+                        <td>Transponder:</td>
                         <td>
                             <input type="checkbox" name="Transponder" id="inputFlightSettingsTransponder" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Speed, alt.,hdg.:
-                        </td>
+                        <td>Speed, alt.,hdg.:</td>
                         <td>
                             <input type="checkbox" name="SpeedAltHeading" id="inputFlightSettingsSpeedAltitudeHeading" onchange=" ctr.vatsimClientSettingsChanged() " />
                         </td>
@@ -1004,7 +972,7 @@
                             <ul>
                                 <li>Based on Google maps. Copyright on the bottom line of the map (TerraMetrics, Google, NASA, Tele Atlas et.al.).</li>
                                 <li>Flight data based on <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.vatsim.net/', true);">VATSIM</a></li>
-                                <li>Navigraph data need to be licensed, see <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.navigraph.com', true);">here</a>.</li>
+                                <li>FMC data need to be <a href="javascript: vd.util.UtilsWeb.newLocation('http://vatgm.codeplex.com/wikipage?title=Legal', true);">licensed</a>.</li>
                             </ul>
                         </td>                    
                     </tr>
