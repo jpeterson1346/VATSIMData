@@ -17,6 +17,16 @@ String.prototype.endsWith = function(suffix) {
 };
 
 /**
+* Wrap string.
+* @param {String} wrapper
+* @return {String}
+*/
+String.prototype.wrap = function(wrapper) {
+    if (String.isNullOrEmpty(wrapper)) return this;
+    return wrapper + this + wrapper;
+};
+
+/**
 * Append String if this string is not empty.
 * @param {String} append String being checked and appended
 */
@@ -30,7 +40,7 @@ String.prototype.appendIfThisIsNotEmpty = function(append) {
 * @return {Array}
 */
 String.prototype.toCharacters = function() {
-    if (this.length < 1) return new Array();
+    if (this.length < 1) return [];
     return this.split("");
 };
 
@@ -40,7 +50,7 @@ String.prototype.toCharacters = function() {
 * @return {Array}
 */
 String.prototype.toCharacterCodes = function(withCharInfo) {
-    var codes = new Array();
+    var codes = [];
     withCharInfo = Object.ifNotNullOrUndefined(withCharInfo, false);
     if (this.length < 1) return codes;
     for (var i = 0, len = this.length; i < len; i++) {
@@ -96,7 +106,7 @@ String.prototype.latinise = function() {
 * @return {Booelan}
 */
 String.prototype.isLatin = function() {
-    return this == this.latinise();
+    return this === this.latinise();
 };
 
 /**
@@ -111,18 +121,22 @@ String.prototype.ascii = function() {
 * Append String / Array if not null/undefined/empty.
 * @param {String|Array} append String being checked and appended
 * @param {String} [separator]
+* @param {String} [wrapAppend]
 */
-String.prototype.appendIfNotEmpty = function(append, separator) {
+String.prototype.appendIfNotEmpty = function(append, separator, wrapAppend) {
     if (Object.isNullOrUndefined(append)) return this;
+    var wrap = !Object.isNullOrUndefined(wrapAppend);
     if (append instanceof Array) {
         var st = this;
         for (var a = 0, len = append.length; a < len; a++) {
             var s = append[a];
+            if (wrap) s = s.wrap(wrapAppend);
             st = st.appendIfNotEmpty(s, separator);
         }
         return st;
     } else {
         if (String.isNullOrEmpty(append)) return this;
+        if (wrap) append = append.wrap(wrapAppend);
         separator = Object.ifNotNullOrUndefined(separator, "");
         return (String.isNullOrEmpty(separator)) ? this + append : this + separator + append;
     }
@@ -133,7 +147,7 @@ String.prototype.appendIfNotEmpty = function(append, separator) {
 * @return {Boolean}
 */
 String.prototype.isWhitespace = function() {
-    if (this.length != 1) return false;
+    if (this.length !== 1) return false;
     // http://stackoverflow.com/questions/1496826/check-if-a-single-character-is-a-whitespace
     return /\s/.test(this);
 };
@@ -143,7 +157,7 @@ String.prototype.isWhitespace = function() {
 * @return {Boolean}
 */
 String.prototype.isLinebreak = function() {
-    return "\n" == this;
+    return '\n' == this;
 };
 
 /**
@@ -210,8 +224,8 @@ String.prototype.leading = function(length, leadingChar) {
 * @return {String}
 */
 String.prototype.multiply = function(times) {
-    if (times == 1) return this;
-    if (times == 0) return "";
+    if (times === 1) return this;
+    if (times === 0) return "";
     var str = this;
     var acc = [];
     for (var i = 0; (1 << i) <= times; i++) {
@@ -295,7 +309,7 @@ String.prototype.truncateRight = function(maxLength, useWordBoundary) {
 * @return {Boolean}
 * @see <a href="http://www.mapbender.org/JavaScript_pitfalls:_null,_false,_undefined,_NaN">Pitfalls</a>
 */
-Object.isNullOrUndefined = function (candidate) {
+Object.isNullOrUndefined = function(candidate) {
     if (candidate === 0) return false; // a number 0 shall not be considered null
     return (candidate === null || candidate === undefined);
 };
@@ -336,7 +350,7 @@ Array.isNullOrEmpty = function(arr) {
 * @return {Array}
 * @see http://stackoverflow.com/questions/5618548/convert-json-array-to-javascript-array
 */
-Array.toArray = function (arr) {
+Array.toArray = function(arr) {
     if (Object.isNullOrUndefined(arr)) return true;
     if (arr.constructor === Array) return arr; // already Array
     var realArray = Array.prototype.slice.call(arr);
@@ -347,7 +361,7 @@ Array.toArray = function (arr) {
 // @param {Array} array
 // @returns {Array}
 Array.arrayValuesToNumber = function(array) {
-    var a = new Array();
+    var a = [];
     for (var i in array) {
         var v = this[i];
         if (isNaN(v))

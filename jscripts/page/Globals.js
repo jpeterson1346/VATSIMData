@@ -28,6 +28,7 @@ namespace.module('vd.page', function (exports) {
         this.logUseAppenderPopUp = true;
         this.logUseAppenderConsole = true;
         this._initLogger();
+        this.traceSemaphores = false;
 
         // urls
         this.urlUserManual = "./doc/Help.pdf";
@@ -175,7 +176,6 @@ namespace.module('vd.page', function (exports) {
         this.navaidHideZoomLevel = 4;
         this.navaidMouseoverTimeout = 6 * 1000; //ms
 
-
         // filter
         this.filtered = false;
         this.filter = new vd.entity.base.EntityList();
@@ -217,7 +217,7 @@ namespace.module('vd.page', function (exports) {
     **/
     exports.Globals.prototype.assignMap = function (map) {
         this.allEntities.disposeData(); // re-entry, clean up
-        this._objects = new Array();
+        this._objects = [];
         this.map = map;
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
@@ -254,7 +254,7 @@ namespace.module('vd.page', function (exports) {
     * @return {Number} objectId
     */
     exports.Globals.prototype.register = function (newObject) {
-        if (newObject == null) return -1;
+        if (Object.isNullOrUndefined(newObject)) return -1;
         var id = this._idCounter++;
         this._objects[id] = newObject;
         return id;
@@ -289,14 +289,14 @@ namespace.module('vd.page', function (exports) {
 
         // FsxWs data, do not recycle but create new, maybe params have changed
         if (!Object.isNullOrUndefined(this.fsxWs)) this.fsxWs.disposeData();
-        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"], this.urlFsxWsDefault);
+        this.fsxWs = new vd.entity.FsxWs(this.queryParameters.fsxlocation, this.queryParameters.fsxwsport, this.urlFsxWsDefault);
 
         //  VATSIM
         if (!Object.isNullOrUndefined(this.vatsimClients)) this.vatsimClients.disposeData();
         this.vatsimClients = new vd.entity.VatsimClients();
 
         // new objects
-        this._objects = new Array();
+        this._objects = [];
     };
 
     /**
@@ -305,11 +305,11 @@ namespace.module('vd.page', function (exports) {
     * @return {Array} 0..n objects
     */
     exports.Globals.prototype.getObjects = function (ids) {
-        var objs = new Array();
-        if (ids == null || objs.length < 1) return objs;
+        var objs = [];
+        if (Array.isNullOrEmpty(ids)) return objs;
         for (var id in ids) {
             var o = this._objects[id];
-            if (o != null) objs.push(o);
+            if (!Object.isNullOrUndefined(o)) objs.push(o);
         }
         return objs;
     };
@@ -325,7 +325,7 @@ namespace.module('vd.page', function (exports) {
         // ReSharper restore InconsistentNaming
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
-        if (xmlhttp.status == 200) {
+        if (xmlhttp.status === 200) {
             var v = xmlhttp.responseText;
             if (!String.isNullOrEmpty(v)) this.version = v;
         }
