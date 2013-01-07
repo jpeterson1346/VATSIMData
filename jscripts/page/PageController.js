@@ -68,7 +68,7 @@ namespace.module('vd.page', function (exports) {
         * @see vd.module:entity.GroundOverlay
         * @private
         */
-        this._groundOverlays = new Array();
+        this._groundOverlays = [];
         /**
         * Ground overlays, when read
         * @type {vd.module.GroundOverlay}
@@ -347,7 +347,7 @@ namespace.module('vd.page', function (exports) {
             function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
                     var latLng = results[0].geometry.location;
-                    var fullName = results[0]['formatted_address'];
+                    var fullName = results[0].formatted_address;
                     ePlace.value = fullName;
                     if (!Object.isNullOrUndefined(latLng)) {
                         me.newLocation(center, latLng, zoomLevel);
@@ -368,7 +368,7 @@ namespace.module('vd.page', function (exports) {
         globals.geocoder.geocode({ 'latLng': latLng, 'bounds': globals.map.getBounds() },
             function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
-                    var fullName = results[0]['formatted_address'];
+                    var fullName = results[0].formatted_address;
                     document.getElementById("inputPlace").value = fullName;
                 }
             });
@@ -383,7 +383,7 @@ namespace.module('vd.page', function (exports) {
         if (!vd.util.UtilsCalc.isValidlatLon(elat.value, elon.value)) return;
         var latLng = new google.maps.LatLng(elat.value, elon.value);
         var latLngFormatted = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
-        var title = latLngFormatted["lat"] + "/" + latLngFormatted["lng"];
+        var title = latLngFormatted.lat + "/" + latLngFormatted.lng;
         var markerOptions = { position: latLng, map: globals.map, title: title };
         var marker = new google.maps.Marker(markerOptions);
         this._markers.add(marker);
@@ -414,8 +414,8 @@ namespace.module('vd.page', function (exports) {
         if (center) globals.map.setCenter(latLng);
         if (Object.isNumber(zoomLevel)) globals.map.setZoom(zoomLevel);
         var fll = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
-        elat.value = fll["lat"];
-        elon.value = fll["lng"];
+        elat.value = fll.lat;
+        elon.value = fll.lng;
     };
 
     /**
@@ -788,18 +788,18 @@ namespace.module('vd.page', function (exports) {
         var usageMode = String.toNumber($("#inputUsageMode").val(), vd.page.PageController.UsageModeIllegal);
         var vatsimLoadOn = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) > 0;
         var fsxLoadOn = String.toNumber($("#inputTimerUpdateFsx").val(), -1) > 0;
-        if (usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
-            usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
-            usageMode == vd.page.PageController.UsageModeFsxAndVatsim ||
-            usageMode == vd.page.PageController.UsageModeVatsimOnly) {
-            if ((usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim
-                || usageMode == vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
+        if (usageMode === vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
+            usageMode === vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
+            usageMode === vd.page.PageController.UsageModeFsxAndVatsim ||
+            usageMode === vd.page.PageController.UsageModeVatsimOnly) {
+            if ((usageMode === vd.page.PageController.UsageModeFsxMovingMapWithVatsim
+                || usageMode === vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
                 this.displayInfo("Make sure FsxWs is running and connected.");
             }
 
             // set logical defaults for load time
             var timerChange = false;
-            if (usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly) {
+            if (usageMode === vd.page.PageController.UsageModeFsxMovingMapFsxOnly) {
                 if ($("#inputTimerUpdateVatsim").val() >= 0) {
                     $("#inputTimerUpdateVatsim").val(-1);
                     timerChange = true;
@@ -810,7 +810,7 @@ namespace.module('vd.page', function (exports) {
                     timerChange = true;
                 }
             }
-            if (usageMode == vd.page.PageController.UsageModeVatsimOnly) {
+            if (usageMode === vd.page.PageController.UsageModeVatsimOnly) {
                 if ($("#inputTimerUpdateFsx").val() >= 0) {
                     $("#inputTimerUpdateFsx").val(-1);
                     timerChange = true;
@@ -1463,9 +1463,9 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._displayMapBounds = function () {
-        if (globals.map == null) return; // during init
+        if (Object.isNullOrUndefined(globals.map)) return; // during init
         var bounds = globals.map.getBounds();
-        if (bounds == null) return; // during init
+        if (Object.isNullOrUndefined(bounds)) return; // during init
         var center = globals.map.getCenter();
 
         var unitD = globals.unitDistance;
@@ -1474,8 +1474,8 @@ namespace.module('vd.page', function (exports) {
         var southWest = bounds.getSouthWest();
         var formatSw = vd.util.UtilsMap.formatLatLngValues(southWest, globals.coordinatesDigitsDisplayed);
         var centerBounds = new google.maps.LatLngBounds(southWest, center);
-        var txt1 = "NE: " + formatNe["lat"] + " / " + formatNe["lng"];
-        var txt2 = "SW: " + formatSw["lat"] + " / " + formatSw["lng"];
+        var txt1 = "NE: " + formatNe.lat + " / " + formatNe.lng;
+        var txt2 = "SW: " + formatSw.lat + " / " + formatSw.lng;
         var txt3 = "invalid";
 
         // distances 
@@ -1484,12 +1484,12 @@ namespace.module('vd.page', function (exports) {
             // The earth is a globe ;-)
             // Since I have to calculate the "longest" distance I have to go via center and *2
             var distances = vd.util.UtilsCalc.boundsDistances(centerBounds, unitD);
-            distances["h"] = distances["h"] * 2; // horizontal
-            distances["v"] = distances["v"] * 2; // vertical
-            distances["d"] = distances["d"] * 2; // diagonal
-            var h = (distances["h"] >= 1000 ? distances["h"].toFixed(0) : distances["h"].toFixed(1)) + unitD;
-            var v = (distances["v"] >= 1000 ? distances["v"].toFixed(0) : distances["v"].toFixed(1)) + unitD;
-            var d = (distances["d"] >= 1000 ? distances["d"].toFixed(0) : distances["d"].toFixed(1)) + unitD;
+            distances.h = distances.h * 2; // horizontal
+            distances.v = distances.v * 2; // vertical
+            distances.d = distances.d * 2; // diagonal
+            var h = (distances.h >= 1000 ? distances.h.toFixed(0) : distances.h.toFixed(1)) + unitD;
+            var v = (distances.v >= 1000 ? distances.v.toFixed(0) : distances.v.toFixed(1)) + unitD;
+            var d = (distances.d >= 1000 ? distances.d.toFixed(0) : distances.d.toFixed(1)) + unitD;
             txt3 = h + " x " + v + " / " + d;
         }
 
@@ -1503,8 +1503,8 @@ namespace.module('vd.page', function (exports) {
         td.appendChild(document.createTextNode(txt3));
         center = globals.map.getCenter();
         var formatCenter = vd.util.UtilsMap.formatLatLngValues(center, globals.coordinatesDigitsDisplayed);
-        document.getElementById("inputLatitude").value = formatCenter["lat"];
-        document.getElementById("inputLongitude").value = formatCenter["lng"];
+        document.getElementById("inputLatitude").value = formatCenter.lat;
+        document.getElementById("inputLongitude").value = formatCenter.lng;
     };
 
     /**
@@ -1587,9 +1587,9 @@ namespace.module('vd.page', function (exports) {
             info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.aircraftsUrl);
             info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
             if (globals.isFsxWsAvailable()) {
-                if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Ok)
+                if (globals.fsxWs.lastStatus === vd.entity.FsxWs.Ok)
                     info += " (connected)";
-                else if (globals.fsxWs.lastStatus == vd.entity.FsxWs.ReadNoFsxData)
+                else if (globals.fsxWs.lastStatus === vd.entity.FsxWs.ReadNoFsxData)
                     info += " (connected, no data)";
                 else
                     info += " (inconsistent)";
@@ -1736,6 +1736,7 @@ namespace.module('vd.page', function (exports) {
                         var url = globals.urlVatasimPilot + globals.gridSelectedEntity.vatsimId;
                         vd.util.UtilsWeb.newLocation(url, true);
                     }
+                    break;
                 default:
                     break;
             }
@@ -1794,7 +1795,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype._entityDislayedInfo = function (entity) {
         if (Object.isNullOrUndefined(entity)) return;
         var msg = "";
-        if (entity.entity == "Flight") {
+        if (entity.entity === "Flight") {
             if (Object.isNullOrUndefined(entity.flightplan) && globals.flightSettings.displayRequireFlightplan) msg = "No flightplan. ";
             if (entity.isGrounded() && !globals.flightSettings.displayOnGround) msg += "Flight on ground. ";
         }
@@ -1812,7 +1813,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._gridsVisible = function () {
         var d = document.getElementById("sideBarData").style.display;
-        return !(d.toLowerCase() == "none");
+        return (d.toLowerCase() !== "none");
     };
 
     /**

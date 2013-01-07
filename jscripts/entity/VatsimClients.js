@@ -52,7 +52,7 @@ namespace.module('vd.entity', function (exports) {
         * List of all updates.
         * @type {Array} 
         */
-        this.readHistory = new Array();
+        this.readHistory = [];
         /**
         * When in test mode, current file number for test data.
         * @type {Number}
@@ -61,9 +61,9 @@ namespace.module('vd.entity', function (exports) {
         this._testModeFileNumber = 0;
         /**
         * Loading in progress
-        * @type {Boolean}
+        * @type {vd.util.Semaphore}
         */
-        this.loading = false;
+        this.loading = new vd.util.Semaphore(vd.entity.VatsimClients.SemaphoreContext);
 
         //
         // ---- helper entities
@@ -74,13 +74,13 @@ namespace.module('vd.entity', function (exports) {
         * @type {Array}
         * @see Atc
         */
-        this.atcs = new Array();
+        this.atcs = [];
         /**
         * All read flight plans.
         * @type {Array}
         * @see Flightplan
         */
-        this.flightplans = new Array();
+        this.flightplans = [];
 
         //
         // ---- main entities
@@ -91,13 +91,13 @@ namespace.module('vd.entity', function (exports) {
         * @type {Array}
         * @see Flight
         */
-        this.flights = new Array();
+        this.flights = [];
         /**
         * All read Airports.
         * @type {Array}
         * @see Airport
         */
-        this.airports = new Array();
+        this.airports = [];
 
         //
         // ---- statistics
@@ -142,14 +142,12 @@ namespace.module('vd.entity', function (exports) {
         // checks
         if (!this.enabled) return;
         if (!jQuery.support.cors) alert("jQuery CORS not enabled");
-        if (this.loading) {
-            alert("Concurrent loading from VATSIM");
-            return;
-        }
+
+        var displayAlert = vd.util.UtilsWeb.isLocalServer();
+        if (!this.loading.lock("read", displayAlert)) return;
 
         // prepare
         successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
-        this.loading = true;
         this._setDatafile();
         var url = this.datafile;
         if (String.isNullOrEmpty(url)) alert("VATSIM read URL empty / undefined");
@@ -188,10 +186,10 @@ namespace.module('vd.entity', function (exports) {
                     me.lastStatus = exports.VatsimClients.ReadFailed;
                     globals.log.error("Reading from VATSIM success, but not data");
                 }
-                me.loading = false;
+                me.loading.unlock("read", displayAlert);
             },
             error: function (xhr, textStatus, errorThrown) {
-                me.loading = false;
+                me.loading.unlock("read", displayAlert);
                 me.lastStatus = exports.VatsimClients.ReadFailed;
                 globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown.message + ". File: " + url);
             }
@@ -227,10 +225,10 @@ namespace.module('vd.entity', function (exports) {
         var statsEntry = new vd.util.RuntimeEntry("Parsing file (VatsimClients)");
         var lines = rawData.split("\n");
         var section = "";
-        var flights = new Array();
-        var flightplans = new Array();
-        var atcs = new Array();
-        var airports = new Array();
+        var flights = [];
+        var flightplans = [];
+        var atcs = [];
+        var airports = [];
         var currentAirport = null;
         var status;
 
@@ -461,6 +459,12 @@ namespace.module('vd.entity', function (exports) {
         return vd.entity.base.BaseEntityMap.findInBounds(this.flights, inBounds);
     };
 
+    /**
+    * Semaphore context
+    * @type {String}
+    * @const
+    */
+    exports.VatsimClients.SemaphoreContext = "ReadVatsimClients";
     /**
     * Never read, init status
     * @type {Number}

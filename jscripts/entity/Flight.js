@@ -44,17 +44,17 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {String}
         * @example B737, C172, J41
         */
-        this.aircraft = Object.ifNotNullOrUndefined(flightProperties["aircraft"], null);
+        this.aircraft = Object.ifNotNullOrUndefined(flightProperties.aircraft, null);
         /**
         * Pilot.
         * @type {String}
         */
-        this.pilot = String.isNullOrEmpty(this.name) ? Object.ifNotNullOrUndefined(flightProperties["pilot"], null) : this.name;
+        this.pilot = String.isNullOrEmpty(this.name) ? Object.ifNotNullOrUndefined(flightProperties.pilot, null) : this.name;
         /**
         * Flightplan.
         * @type {vd.entity.helper.Flightplan}
         */
-        this.flightplan = Object.ifNotNullOrUndefined(flightProperties["flightplan"], null);
+        this.flightplan = Object.ifNotNullOrUndefined(flightProperties.flightplan, null);
         if (this.isFsxBased() && Object.isNullOrUndefined(this.flightplan))
             this.flightplan = vd.entity.helper.Flightplan.getFsxDummyFlightplan();
         /**
@@ -62,37 +62,37 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {Array}
         * @see vd.entity.helper.Waypoint
         */
-        this.waypoints = new Array();
+        this.waypoints = [];
         /**
         * Transponder code.
         * @type {String}
         * @example 7000, 2000
         */
-        this.transponder = String.isNullOrEmpty(flightProperties["transponder"]) ? null : flightProperties["transponder"];
+        this.transponder = String.isNullOrEmpty(flightProperties.transponder) ? null : flightProperties.transponder;
         /**
         * Bank angle [deg].
         * @type {Number}
         * @example 5, 10
         */
-        this.bankAngle = String.toNumber(flightProperties["bankangle"], 0, 2);
+        this.bankAngle = String.toNumber(flightProperties.bankangle, 0, 2);
         /**
         * Pitch angle [deg].
         * @type {Number}
         * @example 5, 10
         */
-        this.pitchAngle = String.toNumber(flightProperties["pitchangle"], 0, 2);
+        this.pitchAngle = String.toNumber(flightProperties.pitchangle, 0, 2);
         /**
         * Angle of attack angle [deg].
         * @type {Number}
         * @example 5, 10
         */
-        this.angleOfAttack = String.toNumber(flightProperties["aoa"], 0, 2);
+        this.angleOfAttack = String.toNumber(flightProperties.aoa, 0, 2);
         /**
         * Vertical speed [ft/s].
         * @type {Number}
         * @example 100, 1000
         */
-        this.verticalSpeed = String.toNumber(flightProperties["verticalspeed"], 0, 2);
+        this.verticalSpeed = String.toNumber(flightProperties.verticalspeed, 0, 2);
         /**
         * Is grounded, also caching the value of isGrounded (for grids).
         * VATSIM: Requires a call of isGrounded to get a valid value.
@@ -100,7 +100,7 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {Boolean}
         * @protected
         */
-        this._isGrounded = Object.ifNotNullOrUndefined(flightProperties["grounded"], false);
+        this._isGrounded = Object.ifNotNullOrUndefined(flightProperties.grounded, false);
         /**
         * Helicopter?.
         * VATSIM: Requires a call of isHelicopter to get a valid value.
@@ -108,7 +108,7 @@ namespace.module('vd.entity', function (exports, require) {
         * @type {Boolean}
         * @protected
         */
-        this._isHelicopter = Object.ifNotNullOrUndefined(flightProperties["helicopter"], false);
+        this._isHelicopter = Object.ifNotNullOrUndefined(flightProperties.helicopter, false);
         /**
         * Corresponding plane image.
         * @type {HTMLDOMElement}
@@ -244,7 +244,7 @@ namespace.module('vd.entity', function (exports, require) {
     */
     exports.Flight.prototype.setHeading = function (heading, force) {
         if (Object.isNullOrUndefined(force)) force = false;
-        if (this.heading == heading && !force) return;
+        if (this.heading === heading && !force) return;
         this.heading = heading;
         if (Object.isNumber(this.heading)) $(this._img).rotate(this.heading);
     };
@@ -322,18 +322,18 @@ namespace.module('vd.entity', function (exports, require) {
     exports.Flight.prototype.toPropertyValue = function () {
         var pv = this.toPropertyValue$BaseEntityModelOnMap();
         if (this.isFsxBased()) {
-            pv["aoa"] = this.angleOfAttackAndUnit();
+            pv.aoa = this.angleOfAttackAndUnit();
             pv["bank angle"] = this.bankAngleAndUnit();
             pv["pitch angle"] = this.pitchAngleAndUnit();
             pv["vertical speed"] = this.verticalSpeedAndUnit();
         }
-        if (!String.isNullOrEmpty(this.pilot)) pv["pilot"] = this.pilot;
-        if (!String.isNullOrEmpty(this.aircraft)) pv["aircraft"] = this.aircraft;
-        if (!String.isNullOrEmpty(this.transponder)) pv["squawk"] = this.transponder;
-        if (!Object.isNullOrUndefined(this.flightplan)) pv["flightplan"] = "<u>Goto flightplan</u>";
-        if (!String.isNullOrEmpty(this.vatsimId)) pv["vataware"] = "<u>Show @ Vataware</u>";
-        pv["grounded"] = this.isGrounded();
-        pv["helicopter"] = this.isHelicopter();
+        if (!String.isNullOrEmpty(this.pilot)) pv.pilot = this.pilot;
+        if (!String.isNullOrEmpty(this.aircraft)) pv.aircraft = this.aircraft;
+        if (!String.isNullOrEmpty(this.transponder)) pv.squawk = this.transponder;
+        if (!Object.isNullOrUndefined(this.flightplan)) pv.flightplan = "<u>Goto flightplan</u>";
+        if (!String.isNullOrEmpty(this.vatsimId)) pv.vataware = "<u>Show @ Vataware</u>";
+        pv.grounded = this.isGrounded();
+        pv.helicopter = this.isHelicopter();
         return pv;
     };
 
@@ -347,7 +347,7 @@ namespace.module('vd.entity', function (exports, require) {
         var latlng = this.latLng();
 
         // assertion check
-        if (this.entity != "Flight") {
+        if (this.entity !== "Flight") {
             globals.log.error("Flight draw called on none flight object");
             return;
         }
@@ -440,7 +440,7 @@ namespace.module('vd.entity', function (exports, require) {
         if (!this._drawn) planeImageLabel.draw(); // 1st time force a draw, otherwise rotating the image will fail because an asynchronously drawn object has not all tags in place
 
         // set the heading if required
-        if (this.heading != 0) this.setHeading(this.heading, true);
+        if (this.heading !== 0) this.setHeading(this.heading, true);
 
         // mark as drawn    
         this._drawn = true;
@@ -539,7 +539,7 @@ namespace.module('vd.entity', function (exports, require) {
         if (Array.isNullOrEmpty(newFlights)) return existingFlights;
         if (Array.isNullOrEmpty(existingFlights)) return newFlights;
 
-        var flights = new Array();
+        var flights = [];
         var existingFlightsCopy = existingFlights.slice(0); // make a copy of the array
         for (var f = 0, len = newFlights.length; f < len; f++) {
             var newFlight = newFlights[f];

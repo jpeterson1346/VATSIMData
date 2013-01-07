@@ -33,6 +33,8 @@
         <script type="text/javascript" src="jscripts/util/MapUtilities.js"> </script>
         <script type="text/javascript" src="jscripts/util/CollectingEvent.js"> </script>
         <script type="text/javascript" src="jscripts/util/RuntimeStatistics.js"> </script>
+        <script type="text/javascript" src="jscripts/util/TimeDiff.js"> </script>
+        <script type="text/javascript" src="jscripts/util/Semaphore.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/EntityList.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/EntityMapList.js"> </script>
         <script type="text/javascript" src="jscripts/entity/base/Styles.js"> </script>
@@ -194,8 +196,8 @@
                             <select id="inputUsageMode" onchange=" ctr.usageModeChanged(); ">
                                 <!-- values must match witch constants in PageController -->
                                 <option value ="0" selected="selected">VATSIM and FSX</option>
-                                <option value ="1">FSX MM + VATSIM data</option>
-                                <option value ="2">FSX MM only</option>
+                                <option value ="1">FSX mv.map+VATSIM data</option>
+                                <option value ="2">FSX mv.map only</option>
                                 <option value ="3">VATSIM only</option>
                             </select>
                         </td>
@@ -556,9 +558,7 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="2">
-                            Log.level for console:
-                        </td>
+                        <td colspan="2">Log.level (console):</td>
                         <td colspan="2">
                             <select id="inputSettingsLogLevel" class="sideBarRightAlign" onchange=" ctr.logLevelChanged() ">
                                 <!-- options will be set in init -->
@@ -566,11 +566,15 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="3">
-                            Check console pop up:
-                        </td>
+                        <td colspan="3">Check console pop up:</td>
                         <td colspan="1">
                             <button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppenderPopUp.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button>
+                        </td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="3">Trace locks (semaphores):</td>
+                        <td colspan="1">
+                            <input class="sideBarRightAlign" type="checkbox" name="TraceLocks" id="inputTraceLocks" onchange=" ctr.logLevelChanged() " />
                         </td>
                     </tr>
                     <tr class="ui-widget-header">
@@ -661,7 +665,7 @@
                         <td colspan="2">0 - FL30</td>
                         <td colspan="2">
                             <!-- colour gradient will go here -->
-                            <canvas width="125px" height="15px" id="inputFlightWaypointsLegend"></canvas>
+                            <canvas width="125" height="15" id="inputFlightWaypointsLegend"></canvas>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
@@ -971,7 +975,7 @@
                         <td>
                             <ul>
                                 <li>Based on Google maps. Copyright on the bottom line of the map (TerraMetrics, Google, NASA, Tele Atlas et.al.).</li>
-                                <li>Flight data based on <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.vatsim.net/', true);">VATSIM</a></li>
+                                <li>Flight data based on <a href="javascript: vd.util.UtilsWeb.newLocation('http://www.vatsim.net/', true);">VATSIM.</a></li>
                                 <li>FMC data need to be <a href="javascript: vd.util.UtilsWeb.newLocation('http://vatgm.codeplex.com/wikipage?title=Legal', true);">licensed</a>.</li>
                             </ul>
                         </td>                    
@@ -982,8 +986,8 @@
                     <tr>
                         <td>
                             <ul>
-                                <li>FSX JSON data <a href="javascript: vd.util.UtilsWeb.newLocation('http://fsxws.codeplex.com/', true);">FsxWs</a></li>
-                                <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://ssg.codeplex.com/', true);">SSG</a>.</li>
+                                <li>FSX JSON data <a href="javascript: vd.util.UtilsWeb.newLocation('http://fsxws.codeplex.com/', true);">FsxWs</a>.</li>
+                                <li><a href="javascript: vd.util.UtilsWeb.newLocation('http://ssg.codeplex.com/', true);">SSG</a> (KML, ESE, SCT).</li>
                             </ul>
                         </td>                    
                     </tr>
