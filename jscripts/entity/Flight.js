@@ -154,11 +154,7 @@ namespace.module('vd.entity', function (exports, require) {
         if (Object.isNullOrUndefined(this._img)) this._img = document.createElement('img');
         this._img.alt = this.toString();
         this._img.id = this.entity + "_" + this.objectId;
-        if (this.isHelicopter()) {
-            this._img.src = (this.isGrounded()) ? "images/HelicopterGnd.png" : this._img.src = "images/Helicopter.png";
-        } else {
-            this._img.src = (this.isGrounded()) ? "images/AircraftJetGnd.png" : this._img.src = "images/AircraftJet.png";
-        }
+        this._img.src = this._mapIcon();
         this._img.width = globals.flightImageWidth;
         this._img.height = globals.flightImageHeight;
         this._img.style.visibility = true;
