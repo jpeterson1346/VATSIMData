@@ -44,6 +44,11 @@ namespace.module('vd.entity', function (exports) {
         */
         this.datafile = null;
         /**
+        * Test URL, testing the proxy.
+        * @type {String}
+        */
+        this.datafileTestProxy = null;
+        /**
         * Last status. see define status codes.
         * @type {Number}
         */
@@ -121,13 +126,13 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.VatsimClients.prototype.disposeData = function () {
         if (this.loading) return false;
-        if (this.lastStatus == vd.entity.VatsimClients.Init) return false;
-        this.atcs = new Array();
-        this.flightplans = new Array();
+        if (this.lastStatus === vd.entity.VatsimClients.Init) return false;
+        this.atcs = [];
+        this.flightplans = [];
         vd.entity.base.BaseEntityModel.dispose(this.airports);
-        this.airports = new Array();
+        this.airports = [];
         vd.entity.base.BaseEntityModel.dispose(this.flights);
-        this.flights = new Array();
+        this.flights = [];
         this.lastStatus = vd.entity.VatsimClients.Init;
         return true;
     };
@@ -163,25 +168,25 @@ namespace.module('vd.entity', function (exports) {
             crossDomain: false,
             dataType: "text",
             success: function (data, status) {
-                if (status == "success" && !String.isNullOrEmpty(data)) {
+                if (status === "success" && !String.isNullOrEmpty(data)) {
                     var r;
                     try {
                         r = me._parseVatsimDataFile(data); // also updates timestamp / history
                     } catch (e) {
-                        globals.log.error("VATSIM file \"" + url + "\" ,parsing error " + e.message);
+                        globals.log.error("VATSIM file \"" + url + "\" , parsing error " + e.message);
                         r = exports.VatsimClients.ParsingFailed;
                     }
-                    if (r == exports.VatsimClients.Ok) {
+                    if (r === exports.VatsimClients.Ok) {
                         var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                         globals.googleAnalyticsEvent("readFromVatsim", "FULLREAD", rtEntry.timeDifference);
-                    } else if (r == exports.VatsimClients.NoNewData)
+                    } else if (r === exports.VatsimClients.NoNewData)
                         globals.log.trace("VATSIM Data loaded but no new data");
                     else
                         globals.log.error("Parsing VATSIM data failed");
 
                     // final state and callback
                     me.lastStatus = r;
-                    if (r == exports.VatsimClients.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
+                    if (r === exports.VatsimClients.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                 } else {
                     me.lastStatus = exports.VatsimClients.ReadFailed;
                     globals.log.error("Reading from VATSIM success, but not data");
@@ -208,9 +213,11 @@ namespace.module('vd.entity', function (exports) {
             this._testModeFileNumber = (this._testModeFileNumber > 8) ? 1 : this._testModeFileNumber + 1;
             var file = this._testModeFileNumber + "_vatsim-data.txt";
             this.datafile = vd.util.UtilsWeb.replaceCurrentPage("data/" + file); // full url required for Chrome
+            this.datafileTestProxy = null;
         } else {
             // normal mode
             if (String.isNullOrEmpty(this.datafile)) this.datafile = vd.util.UtilsWeb.replaceCurrentPage("php/VatsimProxy.php5");
+            this.datafileTestProxy = this.datafile + "?testurls1";
         }
     };
 
@@ -242,7 +249,7 @@ namespace.module('vd.entity', function (exports) {
                 section = line.substring(1, line.length - 1);
                 continue;
             }
-            if (section == "CLIENTS") {
+            if (section === "CLIENTS") {
                 // 00 callsign: 1 cid: 2 realname: 3 clienttype: 4 frequency: 5 latitude: 6 longitude: 7 altitude: 8 groundspeed
                 // 09 planned_aircraft: 10 planned_tascruise: 11 planned_depairport: 12 planned_altitude: 13 planned_destairport
                 // 14 server: 15 protrevision: 16 rating: 17 transponder: 18 facilitytype: 19 visualrange:
@@ -259,7 +266,7 @@ namespace.module('vd.entity', function (exports) {
 
                 if (String.isNullOrEmpty(type) || String.isNullOrEmpty(callsign) || String.isNullOrEmpty(id) || !Object.isNumber(lat) || !Object.isNumber(lng))
                     continue; // inconsistent dataset
-                if (type == "PILOT") {
+                if (type === "PILOT") {
                     var flightplan = null;
                     if (!String.isNullOrEmpty(clientElements[11]) && !String.isNullOrEmpty(clientElements[13])) {
                         flightplan = new vd.entity.helper.Flightplan(
@@ -293,7 +300,7 @@ namespace.module('vd.entity', function (exports) {
                         });
                     if (!Object.isNullOrUndefined(flightplan)) flightplan.flight = flight;
                     flights.push(flight);
-                } else if (type == "ATC") {
+                } else if (type === "ATC") {
                     var atis = vd.entity.helper.Atc.formatAtis(clientElements[35]);
                     var atc = new vd.entity.helper.Atc(
                         {
@@ -311,7 +318,7 @@ namespace.module('vd.entity', function (exports) {
                         });
                     if (atc.isAirportAtc()) {
                         var airport = atc.getCallsignMainPart();
-                        if (Object.isNullOrUndefined(currentAirport) || currentAirport.name != airport) {
+                        if (Object.isNullOrUndefined(currentAirport) || currentAirport.name !== airport) {
                             currentAirport = new vd.entity.Airport({ name: airport, callsign: airport, idvatsim: id });
                             airports.push(currentAirport);
                         }
@@ -319,19 +326,19 @@ namespace.module('vd.entity', function (exports) {
                     }
                     atcs.push(atc);
                 }
-            } else if (section == "GENERAL") {
+            } else if (section === "GENERAL") {
                 var kv = this._splitGeneralSection(line);
                 if (!Object.isNullOrUndefined(kv)) {
-                    if (kv[0] == "UPDATE") {
+                    if (kv[0] === "UPDATE") {
                         var dt = Date.parseString(kv[1], "yyyyMMddHHmmss");
                         // in case of init (also "re-init") always read
-                        if (this.lastStatus != vd.entity.VatsimClients.Init && this.readHistory.contains(dt))
+                        if (this.lastStatus !== vd.entity.VatsimClients.Init && this.readHistory.contains(dt))
                             return exports.VatsimClients.NoNewData;
                         else {
                             this.update = dt;
                             this.readHistory.unshift(this.update);
                         }
-                    } else if (kv[0] == "CONNECTED CLIENTS") this.clientsConnected = kv[1] * 1;
+                    } else if (kv[0] === "CONNECTED CLIENTS") this.clientsConnected = kv[1] * 1;
                 }
             }
         } // end parsing lines
