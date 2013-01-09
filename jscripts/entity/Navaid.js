@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -16,7 +16,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @author KWB
     * @since 0.8, starting with 0.8 FSX support
     */
-    exports.Navaid = function (navaidProperties, navaidSettings) {
+    exports.Navaid = function(navaidProperties, navaidSettings) {
 
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
         // after this, the subclasses are "merged" into flight
@@ -33,7 +33,7 @@ namespace.module('vd.entity', function (exports, require) {
         * @const
         * @type {String}
         */
-        this.type = this._normalizeType(navaidProperties["type"]);
+        this.type = this._normalizeType(navaidProperties.type);
         /**
         * Settings for a Navaid
         * @type {vd.entity.NavaidSettings}
@@ -51,7 +51,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.Navaid.prototype.dispose = function () {
+    exports.Navaid.prototype.dispose = function() {
         if (this.disposed) return;
         this.display(false, false, false, true);
         if (!Object.isNullOrUndefined(this._img)) {
@@ -65,7 +65,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Adjust the image.
     * @private
     */
-    exports.Navaid.prototype._setImage = function () {
+    exports.Navaid.prototype._setImage = function() {
         var me = this;
         var t = this._typeToImage();
         if (!Object.isNullOrUndefined(t)) {
@@ -76,8 +76,8 @@ namespace.module('vd.entity', function (exports, require) {
             this._img.width = globals.navaidImageWidth;
             this._img.height = globals.navaidImageHeight;
             this._img.style.visibility = true;
-            this._img.onmouseover = function () { me._imageMouseover(); };
-            this._img.onmouseout = function () { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
+            this._img.onmouseover = function() { me._imageMouseover(); };
+            this._img.onmouseout = function() { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
         } else {
             this._img = null;
         }
@@ -88,7 +88,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @return {String} image
     */
-    exports.Navaid.prototype._typeToImage = function () {
+    exports.Navaid.prototype._typeToImage = function() {
         var img = "images/";
         if (this.type === "VOR")
             img += "VOR20.png";
@@ -111,7 +111,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display this particular type?
     * @return {Boolean}
     */
-    exports.Navaid.prototype._displayType = function () {
+    exports.Navaid.prototype._displayType = function() {
         if (Object.isNullOrUndefined(this.navaidSettings)) return false;
         if (!this.navaidSettings.displayNavaid) return false;
         if (this.type === "VOR") return this.navaidSettings.displayVOR;
@@ -128,7 +128,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {String} type
     * @return {String} standardized type
     */
-    exports.Navaid.prototype._normalizeType = function (type) {
+    exports.Navaid.prototype._normalizeType = function(type) {
         if (String.isNullOrEmpty(type)) return null;
         var t = type.toUpperCase();
         if (t === "VORD") return "VORDME";
@@ -141,7 +141,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Mouse over image.
     * @private
     */
-    exports.Navaid.prototype._imageMouseover = function () {
+    exports.Navaid.prototype._imageMouseover = function() {
         if (this.disposed) return; // no longer valid
         if (!Object.isNullOrUndefined(this._navaidSettings)) return; // already in this mode
         this._navaidSettings = this.navaidSettings;
@@ -153,14 +153,14 @@ namespace.module('vd.entity', function (exports, require) {
         var me = this;
         var timeout = globals.navaidMouseoverTimeout;
         if (!Object.isNullOrUndefined(this._img) && Object.isNullOrUndefined(this._img.onmouseout)) timeout = timeout * 3; // in case of failing mouseout
-        setTimeout(function () { me._imgMouseout(); }, timeout);
+        setTimeout(function() { me._imgMouseout(); }, timeout);
     };
 
     /**
     * Reset the mouse over effect, timeout based since onmouseout did not work reliable.
     * @private
     */
-    exports.Navaid.prototype._imgMouseout = function () {
+    exports.Navaid.prototype._imgMouseout = function() {
         if (this.disposed) return; // no longer valid
         if (Object.isNullOrUndefined(this._navaidSettings)) return; // nothing to reset
         this.navaidSettings = this._navaidSettings;
@@ -175,7 +175,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     * @param {Boolean} [dispose] disposing, hide in any case
     */
-    exports.Navaid.prototype.display = function (display, center, forceRedraw, dispose) {
+    exports.Navaid.prototype.display = function(display, center, forceRedraw, dispose) {
         dispose = Object.ifNotNullOrUndefined(dispose, false);
 
         // display checks
@@ -197,7 +197,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display this entity at the current map zoom level.
     * @return {Boolean}
     */
-    exports.Navaid.prototype.displayedAtZoomLevel = function () {
+    exports.Navaid.prototype.displayedAtZoomLevel = function() {
         return globals.map.getZoom() > globals.navaidHideZoomLevel;
     };
 
@@ -205,7 +205,7 @@ namespace.module('vd.entity', function (exports, require) {
     * To an object containing the properties.
     * @return {Array} with property / value pairs
     */
-    exports.Navaid.prototype.toPropertyValue = function () {
+    exports.Navaid.prototype.toPropertyValue = function() {
         var pv = this.toPropertyValue$BaseEntityModelOnMap();
         return pv;
     };
@@ -215,7 +215,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.Navaid.prototype._draw = function (forceRedraw) {
+    exports.Navaid.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
         var latlng = this.latLng();
 
@@ -295,7 +295,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @return {String}
     */
-    exports.Navaid.prototype._getContent = function () {
+    exports.Navaid.prototype._getContent = function() {
         var c = (this.navaidSettings.displayCallsign) ? this.callsign : "";
         if (this.navaidSettings.displayType && !String.isNullOrEmpty(this.type)) c = c.appendIfThisIsNotEmpty(" ") + this.type;
         if (this.navaidSettings.displayName && !String.isNullOrEmpty(this.name)) c = c.appendIfThisIsNotEmpty(" ") + this.name;
@@ -308,7 +308,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.Navaid.prototype.toString = function () {
+    exports.Navaid.prototype.toString = function() {
         var s = this.toString$BaseEntityModelOnMap();
         return s;
     };

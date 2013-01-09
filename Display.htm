@@ -154,9 +154,7 @@
                         </th>
                     </tr>                   
                     <tr class="ui-widget-content sideBarTopAlign">
-                        <td>
-                            Data file:
-                        </td>
+                        <td><a href="javascript:vd.util.UtilsWeb.newLocation(globals.vatsimClients.datafileTestProxy, true); ">Data file:</a></td>
                         <td colspan="2">
                             <div id="inputDatafileInfo">not read</div>
                         </td>
@@ -609,9 +607,7 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="2">
-                            .. followed:
-                        </td>
+                        <td colspan="2">.. followed:</td>
                         <td colspan="2">
                             <input name="flightLabelsColorIfFollowed" id="inputFlightSettingLabelsColorIfFollowed" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
@@ -619,9 +615,7 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td colspan="2">
-                            .. filtered:
-                        </td>
+                        <td colspan="2">.. filtered:</td>
                         <td colspan="2">
                             <input name="flightLabelsColorIfFiltered" id="inputFlightSettingLabelsColorIfFiltered" onkeydown=" ctr.onEnter(event, 'ctr.colorSettingsChanged()'); " class="color" type="text" size="8"/>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.colorSettingsChanged(); "><span class="ui-icon ui-icon-check"></span></button>
@@ -752,17 +746,14 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Charts:
-                        </td>
+                        <td>Charts:</td>
                         <td>
                             <select id="inputGroundOverlaysAirportCharts" class="sideBarGroundOverlaySelect" onchange=" ctr.displayOverlayChart(); "></select>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.displayOverlayChart(); " title="Display ground overlay"><span class="ui-icon ui-icon-plus" title="Display ground overlay"></span></button>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                        </td>
+                        <td></td>
                         <td>
                             <a href="javascript:vd.util.UtilsWeb.newLocation(globals.urlProjectProvideCharts, true); ">Providing charts</a>
                             <button class="ui-button sideBarRightAlign" onclick=" ctr.removeOverlayChart(); " title="Hide ground overlay"><span class="ui-icon ui-icon-minus" title="Hide ground overlay"></span></button>
@@ -775,17 +766,13 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Details:
-                        </td>
+                        <td>Details:</td>
                         <td>
                             <a id="inputGroundOverlayDetails" href= "javascript:vd.util.UtilsWeb.newLocation(ctr.groundOverlayDisplayed.infoUrl);">Further info</a>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Chart:
-                        </td>
+                        <td>Chart:</td>
                         <td>
                             <a id="inputGroundOverlayChartLatestVersion" href= "javascript:vd.util.UtilsWeb.newLocation(ctr.groundOverlayDisplayed.originalChartUrl);">Latest version</a>
                         </td>
@@ -796,9 +783,7 @@
                         </th>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Background:
-                        </td>
+                        <td>Background:</td>
                         <td>
                             <input name="groundOverlayBackgroundColor" id="inputGroundOverlayBackgroundColor" onkeydown=" ctr.onEnter(event, 'ctr.groundOverlayChanged()'); " class="color" type="text" size="8"/>
                             <input type="checkbox" id="inputGroundOverlayBackgroundTransparent" onchange=" ctr.groundOverlayChanged(); " />transp.
@@ -806,17 +791,13 @@
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Opacity:
-                        </td>
+                        <td>Opacity:</td>
                         <td>
                             <select id="inputGroundOverlayOpacity" onchange=" ctr.groundOverlayChanged(); "></select>
                         </td>
                     </tr>
                     <tr class="ui-widget-content">
-                        <td>
-                            Rotate:
-                        </td>
+                        <td>Rotate:</td>
                         <td>
                             <input name="groundOverlayRotate" id="inputGroundOverlayRotate" onkeydown=" ctr.onEnter(event, 'ctr.groundOverlayChanged()'); " type="text" size="4"/>
                         </td>
