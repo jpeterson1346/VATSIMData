@@ -189,14 +189,16 @@ namespace.module('vd.entity', function (exports) {
                     if (r === exports.VatsimClients.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                 } else {
                     me.lastStatus = exports.VatsimClients.ReadFailed;
-                    globals.log.error("Reading from VATSIM success, but not data");
+                    globals.log.error("Reading from VATSIM success, but no valid data");
+                    if (!String.isNullOrEmpty(data) && data.length < 200) globals.log.error("Possible PHP error: " + data);
                 }
                 me.loading.unlock("read", displayAlert);
             },
             error: function (xhr, textStatus, errorThrown) {
                 me.loading.unlock("read", displayAlert);
                 me.lastStatus = exports.VatsimClients.ReadFailed;
-                globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown.message + ". File: " + url);
+                globals.log.error("VATSIM data cannot be loaded, status " + textStatus + ". Error: " + errorThrown + ". File: " + url);
+                globals.log.error("Check the servers availability at: " + globals.vatsimClients.datafileTestProxy);
             }
         });
     };

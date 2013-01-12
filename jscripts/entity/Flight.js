@@ -2,7 +2,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports, require) {
+namespace.module('vd.entity', function(exports, require) {
 
     var entityBase = require("vd.entity.base");
     var util = require("vd.util.Utils");
@@ -16,7 +16,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @author KWB
     * @since 0.7, starting with 0.8 FSX support
     */
-    exports.Flight = function (flightProperties, flightSettings) {
+    exports.Flight = function(flightProperties, flightSettings) {
 
         // see http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586
         // after this, the subclasses are "merged" into flight
@@ -93,6 +93,27 @@ namespace.module('vd.entity', function (exports, require) {
         * @example 100, 1000
         */
         this.verticalSpeed = String.toNumber(flightProperties.verticalspeed, 0, 2);
+        /** 
+        * Engines 
+        * @type {Number}
+        */
+        this.engines = -1;
+        /**
+        * Engine type
+        * @type {String}
+        */
+        this.enginesType = null;
+        /**
+        * Wake turbulence
+        * @type {String}
+        */
+        this.wakeTurbulenceCategory = null;
+        /**
+        * Aircraft data mapped, does not necessarily means they have been found
+        * @private
+        * @type {Boolean}
+        */
+        this._aircraftDataMapped = false;
         /**
         * Is grounded, also caching the value of isGrounded (for grids).
         * VATSIM: Requires a call of isGrounded to get a valid value.
@@ -135,7 +156,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Destructor, removing memory leak sensitive parts will go here
     * or method will be overridden by subclass.
     */
-    exports.Flight.prototype.dispose = function () {
+    exports.Flight.prototype.dispose = function() {
         if (this.disposed) return;
         this.display(false, false, false, true);
         if (!Object.isNullOrUndefined(this._img)) {
@@ -147,27 +168,31 @@ namespace.module('vd.entity', function (exports, require) {
 
     /**
     * Adjust the image.
+    * @return {Object} icon size and path
     * @private
     */
-    exports.Flight.prototype._setImage = function () {
+    exports.Flight.prototype._setImage = function() {
         var me = this;
         if (Object.isNullOrUndefined(this._img)) this._img = document.createElement('img');
         this._img.alt = this.toString();
         this._img.id = this.entity + "_" + this.objectId;
-        this._img.src = this._mapIcon();
-        this._img.width = globals.flightImageWidth;
-        this._img.height = globals.flightImageHeight;
+        var iconInfo = this._mapIcon();
+        if (Object.isNullOrUndefined(iconInfo)) alert("Missing icon info for " + this.toString());
+        this._img.src = iconInfo.path;
+        this._img.width = iconInfo.sizeW;
+        this._img.height = iconInfo.sizeH;
         this._img.style.visibility = true;
-        this._img.onmouseover = function () { me._imageMouseover(); };
-        this._img.onmouseout = function () { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
+        this._img.onmouseover = function() { me._imageMouseover(); };
+        this._img.onmouseout = function() { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
         this.setHeading(this.heading, true);
+        return iconInfo;
     };
 
     /**
     * Mouse over image.
     * @private
     */
-    exports.Flight.prototype._imageMouseover = function () {
+    exports.Flight.prototype._imageMouseover = function() {
         if (this.disposed) return; // no longer valid
         if (!Object.isNullOrUndefined(this._flightSettings)) return; // already in this mode
         this._flightSettings = this.flightSettings;
@@ -179,14 +204,14 @@ namespace.module('vd.entity', function (exports, require) {
         var me = this;
         var timeout = globals.flightMouseoverTimeout;
         if (!Object.isNullOrUndefined(this._img) && Object.isNullOrUndefined(this._img.onmouseout)) timeout = timeout * 3; // in case of failing mouseout
-        setTimeout(function () { me._imgMouseout(); }, timeout);
+        setTimeout(function() { me._imgMouseout(); }, timeout);
     };
 
     /**
     * Reset the mouse over effect, timeout based since onmouseout did not work reliable.
     * @private
     */
-    exports.Flight.prototype._imgMouseout = function () {
+    exports.Flight.prototype._imgMouseout = function() {
         if (this.disposed) return; // no longer valid
         if (Object.isNullOrUndefined(this._flightSettings)) return; // nothing to reset
         this.flightSettings = this._flightSettings;
@@ -201,7 +226,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Boolean} [forceRedraw] redraw, e.g. because settings changed
     * @param {Boolean} [dispose] disposing, hide in any case
     */
-    exports.Flight.prototype.display = function (display, center, forceRedraw, dispose) {
+    exports.Flight.prototype.display = function(display, center, forceRedraw, dispose) {
         dispose = Object.ifNotNullOrUndefined(dispose, false);
 
         // display checks
@@ -229,7 +254,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Display this entity at the current map zoom level.
     * @return {Boolean}
     */
-    exports.Flight.prototype.displayedAtZoomLevel = function () {
+    exports.Flight.prototype.displayedAtZoomLevel = function() {
         return globals.map.getZoom() > globals.flightHideZoomLevel;
     };
 
@@ -238,7 +263,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Number} heading 0-359
     * @param {Boolean} [force]
     */
-    exports.Flight.prototype.setHeading = function (heading, force) {
+    exports.Flight.prototype.setHeading = function(heading, force) {
         if (Object.isNullOrUndefined(force)) force = false;
         if (this.heading === heading && !force) return;
         this.heading = heading;
@@ -249,7 +274,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Helicopter?
     * @return {Boolean}
     */
-    exports.Flight.prototype.isHelicopter = function () {
+    exports.Flight.prototype.isHelicopter = function() {
 
         // FSX sets the value
         if (this.isFsxBased()) return this._isHelicopter;
@@ -260,7 +285,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Airborne or grounded?
     * @return {Boolean}
     */
-    exports.Flight.prototype.isGrounded = function () {
+    exports.Flight.prototype.isGrounded = function() {
 
         // FSX sets the value
         if (this.isFsxBased()) return this._isGrounded;
@@ -290,7 +315,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Flightplan available?
     * @return {Boolean}
     */
-    exports.Flight.prototype.hasFlightplan = function () {
+    exports.Flight.prototype.hasFlightplan = function() {
         return !Object.isNullOrUndefined(this.flightplan);
     };
 
@@ -298,7 +323,7 @@ namespace.module('vd.entity', function (exports, require) {
     * In vicinity of the departing / or arrival airport.
     * @returns {Boolean} 
     */
-    exports.Flight.prototype.isInAirportVicinity = function () {
+    exports.Flight.prototype.isInAirportVicinity = function() {
         if (!this.hasFlightplan()) return false;
         if (!Object.isNullOrUndefined(this.flightplan.airportDeparting)) {
             if (this.flightplan.airportDeparting.isInVicinity(this))
@@ -315,7 +340,7 @@ namespace.module('vd.entity', function (exports, require) {
     * To an object containing the properties.
     * @return {Array} with property / value pairs
     */
-    exports.Flight.prototype.toPropertyValue = function () {
+    exports.Flight.prototype.toPropertyValue = function() {
         var pv = this.toPropertyValue$BaseEntityModelOnMap();
         if (this.isFsxBased()) {
             pv.aoa = this.angleOfAttackAndUnit();
@@ -338,7 +363,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @param {Boolean} [forceRedraw]
     */
-    exports.Flight.prototype._draw = function (forceRedraw) {
+    exports.Flight.prototype._draw = function(forceRedraw) {
         if (!forceRedraw && this._drawn) return;
         var latlng = this.latLng();
 
@@ -355,12 +380,12 @@ namespace.module('vd.entity', function (exports, require) {
 
         // build the plane icon
         // view-source:http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.7/examples/infobox-basic.html
-        this._setImage();
+        var iconInfo = this._setImage();
         var planeImageLabelBoxStyle = (!globals.styles.flightLabelBackgroundIfFollowedTransparent && this.isFollowed()) ? {
             background: globals.styles.flightLabelBackgroundIfFollowed,
             opacity: globals.styles.flightLabelOpacity
         } :
-        // Show if in filter, but filter is not active
+            // Show if in filter, but filter is not active
         // When filtered, only the selected flights are visible, so no need to highlight them
             (!globals.filtered && !globals.styles.flightLabelBackgroundIfFilteredTransparent && this.isInFilter()) ? {
                 background: globals.styles.flightLabelBackgroundIfFiltered,
@@ -368,8 +393,8 @@ namespace.module('vd.entity', function (exports, require) {
             } : null;
 
         // IE issue, img.width/height might be 0
-        var imgOffsetW = this._img.width == 0 ? globals.flightImageWidth : this._img.width;
-        var imgOffsetH = this._img.height == 0 ? globals.flightImageHeight : this._img.height;
+        var imgOffsetW = this._img.width == 0 ? iconInfo.sizeW : this._img.width;
+        var imgOffsetH = this._img.height == 0 ? iconInfo.sizeH : this._img.height;
 
         var planeImageLabelOptions = {
             content: this._img,
@@ -447,7 +472,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @return {String}
     */
-    exports.Flight.prototype._getContent = function () {
+    exports.Flight.prototype._getContent = function() {
         var origin = "(" + (this.isVatsimBased() ? "V" : "") + (this.isFsxBased() ? "F" : "") + ")";
         var c = (this.flightSettings.displayCallsign) ? (this.callsign + " " + origin) : "";
         if (this.flightSettings.displayAircraft && !String.isNullOrEmpty(this.aircraft)) c = c.appendIfThisIsNotEmpty(" ") + this.aircraft;
@@ -465,7 +490,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Flight|Object} newFlightInformation with the appropriate data
     * @return {Boolean} updated?
     */
-    exports.Flight.prototype.update = function (newFlightInformation) {
+    exports.Flight.prototype.update = function(newFlightInformation) {
         this._isGrounded = newFlightInformation._isGrounded;
         this.groundspeed = newFlightInformation.groundspeed;
         this.altitude = newFlightInformation.altitude;
@@ -487,7 +512,7 @@ namespace.module('vd.entity', function (exports, require) {
     * String representation.
     * @return {String}
     */
-    exports.Flight.prototype.toString = function () {
+    exports.Flight.prototype.toString = function() {
         var s = this.toString$BaseEntityModelOnMap();
         return s;
     };
@@ -496,7 +521,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Angle of attack with unit.
     * @return {String}
     */
-    exports.Flight.prototype.angleOfAttackAndUnit = function () {
+    exports.Flight.prototype.angleOfAttackAndUnit = function() {
         return this.angleOfAttack.toFixed(1) + "&deg;";
     };
 
@@ -504,7 +529,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Bank angle of aircraft.
     * @return {String}
     */
-    exports.Flight.prototype.bankAngleAndUnit = function () {
+    exports.Flight.prototype.bankAngleAndUnit = function() {
         return this.bankAngle.toFixed(1) + "&deg;";
     };
 
@@ -512,7 +537,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Pitch angle of aircraft.
     * @return {String}
     */
-    exports.Flight.prototype.pitchAngleAndUnit = function () {
+    exports.Flight.prototype.pitchAngleAndUnit = function() {
         return this.pitchAngle.toFixed(1) + "&deg;";
     };
 
@@ -520,7 +545,7 @@ namespace.module('vd.entity', function (exports, require) {
     * Vertical speed [ft/s].
     * @return {String}
     */
-    exports.Flight.prototype.verticalSpeedAndUnit = function () {
+    exports.Flight.prototype.verticalSpeedAndUnit = function() {
         var ftMin = this.verticalSpeed * 60;
         return ftMin.toFixed(1) + "ft/min";
     };
@@ -531,7 +556,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @param {Array} newFlights
     * @return {Array} updated flights including new excluding gone flights
     */
-    exports.Flight.updateFlights = function (existingFlights, newFlights) {
+    exports.Flight.updateFlights = function(existingFlights, newFlights) {
         if (Array.isNullOrEmpty(newFlights)) return existingFlights;
         if (Array.isNullOrEmpty(existingFlights)) return newFlights;
 
@@ -568,7 +593,7 @@ namespace.module('vd.entity', function (exports, require) {
     * @private
     * @return {Boolean} inserted?
     */
-    exports.Flight.prototype._insertNewWaypoint = function (ignoreSameWaypoint) {
+    exports.Flight.prototype._insertNewWaypoint = function(ignoreSameWaypoint) {
         if (this.isGrounded() && !globals.waypointSettings.displayFlightWaypointsWhenGrounded) return false;
         ignoreSameWaypoint = Object.ifNotNullOrUndefined(ignoreSameWaypoint, true);
 

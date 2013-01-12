@@ -140,12 +140,17 @@ namespace.module('vd.page', function (exports) {
         this.altitudeProfileSettings = new vd.gc.AltitudeProfileSettings();
 
         // flights, which property to display and how
-        this.flightImageWidth = 16;
-        this.flightImageHeight = 16;
+        this.flightImageWidth = 20;
+        this.flightImageHeight = 20;
+        this.flightImageWidthLarge = 26;
+        this.flightImageHeightLarge = 26;
+        this.flightImageWidthSmall = 16;
+        this.flightImageHeightSmall = 16;
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms
         this.flightSettings = new vd.entity.FlightSettings();
+        this.aircraftDataUrl = vd.util.UtilsWeb.replaceCurrentPage("jscripts/entity/AircraftData.json");
 
         this.atcGridRows = 10;
         this.atcHideZoomLevel = 4;
