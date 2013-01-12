@@ -14,10 +14,14 @@
 					);
 
 	// list of servers, for simplicity directly "hardcoded" here
-	// see: http://data.vattastic.com/vatsim-servers.txt
+	// http://data.vattastic.com/vatsim-servers.txt
+	// http://status.vatsim.net/status.txt (this contains the URLs)
 	$urls = array (
 			0 => 
+			// actually only listed as server list provider, but has data also
 			"http://www.net-flyer.net/DataFeed/vatsim-data.txt",
+			// No access
+			// "http://www.pcflyer.net/DataFeed/vatsim-data.txt",
 			// Hangs sometimes
 			// "http://www.klain.net/sidata/vatsim-data.txt",
 			"http://info.vroute.net/vatsim-data.txt",
@@ -73,14 +77,13 @@
 		$curl_error = curl_error($ch);
 		curl_close($ch);
 		if ($curl_errno > 0) {
-			echo "";
+			// I create a one line comment which can be displayed in JavaScript
+			echo "; cURL Error ($curl_errno): $curl_error for $url";
 		} else {
 			echo $data;
 		}
 
 	} else if (stristr($query, 'testurls1')) {
-
-	
 		// test all URLs
 		// and report time
 		// http://php.net/manual/en/function.curl-setopt.php
@@ -100,7 +103,7 @@
 			$time_end = microtime(true);
 			echo "$i: $url ";
 			if ($curl_errno > 0) {
-								echo "cURL Error ($curl_errno): $curl_error ";
+			  echo "cURL Error ($curl_errno): $curl_error ";
 			}
 			$time = $time_end - $time_start;
 			echo "time: $time ms<br/>";

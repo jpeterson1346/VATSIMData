@@ -210,6 +210,9 @@ namespace.module('vd.page', function (exports) {
 
         // register resize event
         $(window).resize(function () { me.windowResizeEvent(); });
+        
+        // Trigger aircraft data load
+        vd.entity.Flight.readAircraftData();
 
     }; // initialize
 
