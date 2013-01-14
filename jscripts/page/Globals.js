@@ -28,6 +28,8 @@ namespace.module('vd.page', function (exports) {
         this.logUseAppenderPopUp = true;
         this.logUseAppenderConsole = true;
         this._initLogger();
+        this.traceSemaphores = false;
+        this.traceAircraftIconMapping = false;
 
         // urls
         this.urlUserManual = "./doc/Help.pdf";
@@ -89,6 +91,7 @@ namespace.module('vd.page', function (exports) {
         this.sideBarEntitiesDisplay = null;
         this.sideBarCreditsDisplay = null;
         this.sideBarRouteDisplay = null;
+        this.sideBarNavaidsDisplay = null;
         this.sideBarOverlaysDisplay = null;
         this.sideBarAboutDisplay = null;
         this.sideBarFsxWsUrlMaxChars = 30; // truncate too long URLs
@@ -138,12 +141,17 @@ namespace.module('vd.page', function (exports) {
         this.altitudeProfileSettings = new vd.gc.AltitudeProfileSettings();
 
         // flights, which property to display and how
-        this.flightImageWidth = 16;
-        this.flightImageHeight = 16;
+        this.flightImageWidth = 20;
+        this.flightImageHeight = 20;
+        this.flightImageWidthLarge = 26;
+        this.flightImageHeightLarge = 26;
+        this.flightImageWidthSmall = 16;
+        this.flightImageHeightSmall = 16;
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms
         this.flightSettings = new vd.entity.FlightSettings();
+        this.aircraftDataUrl = vd.util.UtilsWeb.replaceCurrentPage("jscripts/entity/AircraftData.json");
 
         this.atcGridRows = 10;
         this.atcHideZoomLevel = 4;
@@ -166,6 +174,13 @@ namespace.module('vd.page', function (exports) {
 
         // route
         this.routeSettings = new vd.entity.RouteSettings();
+
+        // navaids
+        this.navaidSettings = new vd.entity.NavaidSettings();
+        this.navaidImageWidth = 20;
+        this.navaidImageHeight = 20;
+        this.navaidHideZoomLevel = 4;
+        this.navaidMouseoverTimeout = 6 * 1000; //ms
 
         // filter
         this.filtered = false;
@@ -208,7 +223,7 @@ namespace.module('vd.page', function (exports) {
     **/
     exports.Globals.prototype.assignMap = function (map) {
         this.allEntities.disposeData(); // re-entry, clean up
-        this._objects = new Array();
+        this._objects = [];
         this.map = map;
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
@@ -225,7 +240,7 @@ namespace.module('vd.page', function (exports) {
     * Is the FsxWs service available?
     * @return {Boolean} available
     **/
-    exports.Globals.prototype.isFsxAvailable = function () {
+    exports.Globals.prototype.isFsxWsAvailable = function () {
         if (Object.isNullOrUndefined(this.fsxWs)) return false;
         return this.fsxWs.successfulRead();
     };
@@ -245,7 +260,7 @@ namespace.module('vd.page', function (exports) {
     * @return {Number} objectId
     */
     exports.Globals.prototype.register = function (newObject) {
-        if (newObject == null) return -1;
+        if (Object.isNullOrUndefined(newObject)) return -1;
         var id = this._idCounter++;
         this._objects[id] = newObject;
         return id;
@@ -280,14 +295,14 @@ namespace.module('vd.page', function (exports) {
 
         // FsxWs data, do not recycle but create new, maybe params have changed
         if (!Object.isNullOrUndefined(this.fsxWs)) this.fsxWs.disposeData();
-        this.fsxWs = new vd.entity.FsxWs(this.queryParameters["fsxlocation"], this.queryParameters["fsxwsport"], this.urlFsxWsDefault);
+        this.fsxWs = new vd.entity.FsxWs(this.queryParameters.fsxlocation, this.queryParameters.fsxwsport, this.urlFsxWsDefault);
 
         //  VATSIM
         if (!Object.isNullOrUndefined(this.vatsimClients)) this.vatsimClients.disposeData();
         this.vatsimClients = new vd.entity.VatsimClients();
 
         // new objects
-        this._objects = new Array();
+        this._objects = [];
     };
 
     /**
@@ -296,11 +311,11 @@ namespace.module('vd.page', function (exports) {
     * @return {Array} 0..n objects
     */
     exports.Globals.prototype.getObjects = function (ids) {
-        var objs = new Array();
-        if (ids == null || objs.length < 1) return objs;
+        var objs = [];
+        if (Array.isNullOrEmpty(ids)) return objs;
         for (var id in ids) {
             var o = this._objects[id];
-            if (o != null) objs.push(o);
+            if (!Object.isNullOrUndefined(o)) objs.push(o);
         }
         return objs;
     };
@@ -316,7 +331,7 @@ namespace.module('vd.page', function (exports) {
         // ReSharper restore InconsistentNaming
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
-        if (xmlhttp.status == 200) {
+        if (xmlhttp.status === 200) {
             var v = xmlhttp.responseText;
             if (!String.isNullOrEmpty(v)) this.version = v;
         }

@@ -34,12 +34,14 @@ namespace.module('vd.entity.base', function (exports, require) {
     * @param {Boolean} display
     * @param {Boolean} [forceRedrawFsx] redraw
     * @param {Boolean} [forceRedrawVatsim] redraw
+    * @param {Boolean} [forceLoadedEntities] redraw such as Navaids, ..
     */
-    exports.EntityMapList.prototype.display = function (display, forceRedrawFsx, forceRedrawVatsim) {
+    exports.EntityMapList.prototype.display = function (display, forceRedrawFsx, forceRedrawVatsim, forceLoadedEntities) {
         var c = this.count();
         if (c < 1) return;
         forceRedrawFsx = Object.ifNotNullOrUndefined(forceRedrawFsx, true);
         forceRedrawVatsim = Object.ifNotNullOrUndefined(forceRedrawVatsim, true);
+        forceLoadedEntities = Object.ifNotNullOrUndefined(forceLoadedEntities, true);
         var statsEntry = new vd.util.RuntimeEntry("Display on " + c + " entities (e.g. FSX, VATSIM)");
         var entities = this.entities;
         for (var e = 0, len = entities.length; e < len; e++) {
@@ -50,6 +52,8 @@ namespace.module('vd.entity.base', function (exports, require) {
                     entity.display(display, false, forceRedrawFsx);
                 else if (entity.isVatsimBased())
                     entity.display(display, false, forceRedrawVatsim);
+                else if (entity.entity === "Navaid")
+                    entity.display(display, false, forceLoadedEntities);
                 else
                     alert("Unknown entity origin in list");
             } else {

@@ -2,14 +2,14 @@
 * @module vd.entity.base
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.base', function (exports) {
+namespace.module('vd.entity.base', function(exports) {
 
     /**
     * @classdesc List of entities.
     * @param {Array|vd.entity.base.EntityList} other entities
     * @constructor
     */
-    exports.EntityList = function (otherEntities) {
+    exports.EntityList = function(otherEntities) {
         /**
         * Entites.
         * @type {Array}
@@ -35,9 +35,27 @@ namespace.module('vd.entity.base', function (exports) {
     * Add a new entity.
     * @param {BaseEntity} entity
     */
-    exports.EntityList.prototype.add = function (entity) {
+    exports.EntityList.prototype.add = function(entity) {
         if (this.entities.contains(entity)) return;
         this.entities.push(entity);
+    };
+
+    /**
+    * Add new entities.
+    * @param {Array} entities
+    * @param {Boolean} checkUniqueness
+    */
+    exports.EntityList.prototype.addEntities = function(entities, checkUniqueness) {
+        checkUniqueness = Object.ifNotNullOrUndefined(checkUniqueness, false);
+        if (Array.isNullOrEmpty(entities)) return;
+        if (checkUniqueness) {
+            for (var e = 0, len = entities.length; e < len; e++) {
+                var entity = entities[e];
+                this.remove(entity);
+            }
+        } else {
+            this.entities = this.entities.concat(entities);
+        }
     };
 
     /**
@@ -45,7 +63,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Number} objectId
     * @param {Boolean} added?
     */
-    exports.EntityList.prototype.addByObjectId = function (objectId) {
+    exports.EntityList.prototype.addByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return false;
         var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.vatsimClients.vatsimClients(), objectId);
         if (!Object.isNullOrUndefined(entity)) {
@@ -64,7 +82,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Remove an entity.
     * @param {BaseEntity} entity
     */
-    exports.EntityList.prototype.remove = function (entity) {
+    exports.EntityList.prototype.remove = function(entity) {
         this.entities.removeByValue(entity);
     };
 
@@ -72,7 +90,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Remove multiple entities.
     * @param {Array} entities
     */
-    exports.EntityList.prototype.removeEntites = function (entities) {
+    exports.EntityList.prototype.removeEntites = function(entities) {
         if (Array.isNullOrEmpty(entities)) return;
         for (var e = 0, len = entities.length; e < len; e++) {
             var entity = entities[e];
@@ -85,7 +103,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {String} objectId
     * @param {Boolean} removed?
     */
-    exports.EntityList.prototype.removeByObjectId = function (objectId) {
+    exports.EntityList.prototype.removeByObjectId = function(objectId) {
         if (!Object.isNumber(objectId)) return false;
         var entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.vatsimClients.vatsimClients(), objectId);
         if (!Object.isNullOrUndefined(entity)) {
@@ -106,7 +124,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Boolean} deepSearch
     * @return {BaseEntityModel}
     */
-    exports.EntityList.prototype.findByObjectId = function (objectId, deepSearch) {
+    exports.EntityList.prototype.findByObjectId = function(objectId, deepSearch) {
         if (!Object.isNumber(objectId)) return null;
         return vd.entity.base.BaseEntityModel.findByObjectId(this.entities, objectId, deepSearch);
     };
@@ -117,15 +135,27 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Boolean} [considerObjectId] 
     * @return {BaseEntityModel}
     */
-    exports.EntityList.prototype.findById = function (id, considerObjectId) {
+    exports.EntityList.prototype.findById = function(id, considerObjectId) {
         if (Object.isNullOrUndefined(id)) return null;
         return vd.entity.base.BaseEntityModel.findByIdFirst(this.entities, id, considerObjectId);
     };
 
     /**
+    * Find by callsign.
+    * @param {String} callsign
+    * @return {BaseEntityModel}
+    */
+    exports.EntityList.prototype.findByCallsign = function(callsign) {
+        if (String.isNullOrEmpty(callsign)) return null;
+        var foundByCallsign = vd.entity.base.BaseEntityModel.findByCallsign(this.entities, callsign);
+        if (Array.isNullOrEmpty(foundByCallsign)) return null;
+        return (Object.isNullOrUndefined(foundByCallsign[0])) ? null : foundByCallsign[0];
+    };
+
+    /**
     * Dispose all data.
     */
-    exports.EntityList.prototype.disposeData = function () {
+    exports.EntityList.prototype.disposeData = function() {
         vd.entity.base.BaseEntityModel.dispose(this.entities);
         this.entities = new Array();
     };
@@ -134,7 +164,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Any elements?
     * @return {Boolean}
     */
-    exports.EntityList.prototype.isEmpty = function () {
+    exports.EntityList.prototype.isEmpty = function() {
         return this.count() < 1;
     };
 
@@ -142,7 +172,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Number of elements?
     * @return {Number}
     */
-    exports.EntityList.prototype.count = function () {
+    exports.EntityList.prototype.count = function() {
         if (Array.isNullOrEmpty(this.entities)) return 0;
         return this.entities.length;
     };
@@ -152,7 +182,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {BaseEntityModel} entity
     * @return {Boolean}
     */
-    exports.EntityList.prototype.contains = function (entity) {
+    exports.EntityList.prototype.contains = function(entity) {
         if (this.isEmpty()) return false;
         return this.entities.contains(entity);
     };
@@ -162,7 +192,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {BaseEntityModel} entity
     * @return {Boolean}
     */
-    exports.EntityList.prototype.containsDisposedEntities = function () {
+    exports.EntityList.prototype.containsDisposedEntities = function() {
         return (this.disposedEntitiesCount() > 0);
     };
 
@@ -170,7 +200,7 @@ namespace.module('vd.entity.base', function (exports) {
     * Number of disposed elements.
     * @param  {BaseEntityModel} entity
     */
-    exports.EntityList.prototype.disposedEntitiesCount = function () {
+    exports.EntityList.prototype.disposedEntitiesCount = function() {
         if (this.isEmpty()) return 0;
         var no;
         var disposedEntities = vd.entity.base.BaseEntityModel.findDisposed(this.entities);
@@ -188,7 +218,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Array}
     * @see vd.module:entity.Flight
     */
-    exports.EntityList.prototype.flights = function () {
+    exports.EntityList.prototype.flights = function() {
         if (this.isEmpty()) return new Array();
         return vd.entity.base.BaseEntityModel.findByType(this.entities, "Flight", null);
     };
@@ -198,7 +228,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param {Boolean} displayed
     * @returns {Array} flights displayed / not displayed
     */
-    exports.EntityList.prototype.findFlightsDisplayed = function (displayed) {
+    exports.EntityList.prototype.findFlightsDisplayed = function(displayed) {
         var flights = this.flights();
         return vd.entity.base.BaseEntityMap.findByDisplayed(flights, displayed);
     };
@@ -209,7 +239,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @return {Array}
     * @see vd.entity.Atc
     */
-    exports.EntityList.prototype.airports = function () {
+    exports.EntityList.prototype.airports = function() {
         if (this.isEmpty()) return new Array();
         return vd.entity.base.BaseEntityModel.findByType(this.entities, "Airport");
     };
@@ -219,7 +249,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {Boolean} [vatsimOnly] only purely VATSIM based entities
     * @return {Array}
     */
-    exports.EntityList.prototype.vatsimEntities = function (vatsimOnly) {
+    exports.EntityList.prototype.vatsimEntities = function(vatsimOnly) {
         return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, vatsimOnly);
     };
 
@@ -228,15 +258,7 @@ namespace.module('vd.entity.base', function (exports) {
     * @param  {Boolean} [fsxWsOnly] only purely FsxWs based entities
     * @return {Array}
     */
-    exports.EntityList.prototype.fsxWsEntities = function (fsxWsOnly) {
+    exports.EntityList.prototype.fsxWsEntities = function(fsxWsOnly) {
         return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, fsxWsOnly);
     };
-
-    /**
-    * Dispose entities.
-    */
-    exports.EntityList.prototype.fsxWsEntities = function () {
-        return vd.entity.base.BaseEntityModel.dispose(this.entities);
-    };
-
 });

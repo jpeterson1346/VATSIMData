@@ -53,7 +53,7 @@ namespace.module('vd.util', function (exports) {
 	* @return {Array}
 	*/
 	exports.UtilsWeb.getSelectedValues = function (selectElement) {
-		var values = new Array();
+		var values = [];
 		var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
 		if (Object.isNullOrUndefined(selectDomElement)) return values;
 		for (var i = 0; i < selectDomElement.length; ++i) {
@@ -121,9 +121,9 @@ namespace.module('vd.util', function (exports) {
 	*/
 	exports.UtilsWeb.isLocalServer = function () {
 		var server = window.location.hostname;
-		if (server == null) return true;
+		if (String.isNullOrEmpty(server)) return true;
 		server = server.toLowerCase();
-		if ("localhost" == server) return true;
+		if ("localhost" === server) return true;
 		return false;
 	};
 
@@ -261,7 +261,7 @@ namespace.module('vd.util', function (exports) {
 			decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
 			query = window.location.search.substring(1);
 
-		while (match = search.exec(query))
+		while (!Object.isNullOrUndefined(match = search.exec(query)))
 			urlParams[decode(match[1])] = decode(match[2]);
 
 		return urlParams;
@@ -287,7 +287,7 @@ namespace.module('vd.util', function (exports) {
 	exports.UtilsWeb.getPath = function (url) {
 		if (String.isNullOrEmpty(url)) return null;
 		var parsed = exports.UtilsWeb.parseUri(url);
-		return parsed["path"];
+		return parsed.path;
 	};
 
 	/**
@@ -298,7 +298,7 @@ namespace.module('vd.util', function (exports) {
 	exports.UtilsWeb.removeProtocol = function (url) {
 		if (String.isNullOrEmpty(url)) return null;
 		var parsed = exports.UtilsWeb.parseUri(url);
-		var newUrl = url.replace(parsed["protocol"], "").replace("://", "");
+		var newUrl = url.replace(parsed.protocol, "").replace("://", "");
 		return newUrl;
 	};
 

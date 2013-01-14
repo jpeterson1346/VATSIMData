@@ -3,7 +3,7 @@
 * @module vd.entity
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity', function (exports) {
+namespace.module('vd.entity', function(exports) {
     /**
     * @constructor
     * @classdesc 
@@ -16,17 +16,22 @@ namespace.module('vd.entity', function (exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @author KWB
     */
-    exports.FsxWs = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+    exports.FsxWs = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
         /**
         * Enabled, disabled? Disables primarily read.
         * @type {Boolean}
         */
         this.enabled = true;
         /**
-        * URL of FsxWs Web service
+        * URL of FsxWs server
         * @type {String}
         */
         this.serverUrl = null;
+        /**
+        * URL of FsxWs aircaraft web service
+        * @type {String}
+        */
+        this.aircraftsUrl = null;
         /**
         * Location of FsxWs Web service
         * @type {String}
@@ -51,22 +56,29 @@ namespace.module('vd.entity', function (exports) {
         * List of all updates.
         * @type {Array} 
         */
-        this.readHistory = new Array();
+        this.readHistory = [];
         /**
-        * Read JSON aircrafts
+        * Read JSON aircrafts. Aircraft is not a vd.entity, but a JSON object.
         * @type {Array}
         */
         this.aircrafts = null;
         /**
         * JSON aircrafts converted to flights
         * @type {Array}
+        * @see vd.entity.Flight
         */
         this.flights = null;
+        /** 
+        * Navaids such as VOR, NDB ...
+        * @type {Array}
+        * @see vd.entity.Navaid
+        */
+        this.navaids = null;
         /**
         * Loading in progress
-        * @type {Boolean}
+        * @type {vd.util.Semaphore}
         */
-        this.loading = false;
+        this.loading = new vd.util.Semaphore(vd.entity.FsxWs.SemaphoreContext);
         /**
         * Last status. see define status codes.
         * @type {Number}
@@ -94,8 +106,8 @@ namespace.module('vd.entity', function (exports) {
     * @param {String} [fsxWsDefaultLocation], for a trial of a direct connect if location / port are not provided
     * @return {Boolean} true values have been reset, false nothing changed (values remain)
     */
-    exports.FsxWs.prototype.initServerValues = function (fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
-        this.serverUrl = null;
+    exports.FsxWs.prototype.initServerValues = function(fsxWsLocation, fsxWsPort, fsxWsDefaultLocation) {
+        this.aircraftsUrl = null;
         this.serverPort = -1;
         this.serverLocation = null;
 
@@ -126,35 +138,41 @@ namespace.module('vd.entity', function (exports) {
 
         // set URL
         var url = "http://" + this.serverLocation;
-        if (this.serverPort != 80) url += ":" + this.serverPort;
-        url += "/" + exports.FsxWs.PathJsonService;
+        if (this.serverPort !== 80) url += ":" + this.serverPort;
         this.serverUrl = url;
+        url += "/" + exports.FsxWs.PathJsonService;
+        this.aircraftsUrl = url;
     };
 
     /**
     * Trigger read data from the WebService (JSON). 
-    * @param {Boolean}  [availability] check
+    * @param {Boolean}  [availability] check availability only, no locking
     * @param {Boolean}  [autoEnableDisable] error / success leads to enabled / disabled service
     * @param {function} [successfulReadCallback] call if really read data
-    * @see vd.entity.VatsimClients.readFromVatsim 
+    * @see vd.entity.VatsimClients.readFromVatsim
+    * @see vd.entity.FsxWs.readNavigraphNavaids
     */
-    exports.FsxWs.prototype.readFromFsxWs = function (availability, autoEnableDisable, successfulReadCallback) {
+    exports.FsxWs.prototype.readFromFsxWs = function(availability, autoEnableDisable, successfulReadCallback) {
         availability = Object.ifNotNullOrUndefined(availability, false);
         autoEnableDisable = Object.ifNotNullOrUndefined(autoEnableDisable, true);
         if (!availability && !this.enabled) return;
-        if (Object.isNullOrUndefined(this.serverUrl)) return;
+        if (Object.isNullOrUndefined(this.aircraftsUrl)) return;
         if (!jQuery.support.cors) alert("jQuery CORS not enabled");
-        if (this.loading && !availability) {
-            alert("Concurrent loading from FsxWs");
-            return;
+        if (this.loading.isLocked && !availability) {
+            // full data load intended, but locked
+            if (confirm("Concurrent loading from FsxWs. Reset flag and continue?"))
+                this.loading.unlock("read", false);
+            else
+                return;
         }
 
         // init
+        var displayAlert = vd.util.UtilsWeb.isLocalServer();
         successfulReadCallback = Object.ifNotNullOrUndefined(successfulReadCallback, null);
-        this.loading = !availability;
-        var url = availability ? this.serverUrl + exports.FsxWs.QueryParameterTest : this.serverUrl + exports.FsxWs.QueryParameterNoWaypoints;
+        if (!availability) this.loading.lock("read", displayAlert);
+        var url = availability ? this.aircraftsUrl + exports.FsxWs.QueryParameterTest : this.aircraftsUrl + exports.FsxWs.QueryParameterNoWaypoints;
         if (!availability) this._statisticsRead.start();
-        var datatype = BrowserDetect.browser.toLowerCase() == "explorer" ? "jsonp" : "json";
+        var datatype = (BrowserDetect.browser.toLowerCase() === "explorer") ? "jsonp" : "json";
         var me = this;
 
         // AJAX call
@@ -165,47 +183,47 @@ namespace.module('vd.entity', function (exports) {
             async: true,
             crossDomain: true,
             dataType: datatype,
-            success: function (data, status) {
+            success: function(data, status) {
                 if (status == "success" && !Object.isNullOrUndefined(data)) {
                     // testing?
                     if (availability) {
                         me.lastStatus = exports.FsxWs.Ok;
                     } else {
-                        if (!(data.constructor === Array)) {
+                        if (data.constructor !== Array) {
                             // detect JSON problems / crossdomain problems
-                            alert("Json call workin properly? Returned not an array.");
-                            globals.log.trace("FsxWs Data loaded, no array type, type: " + datatype);
-                            me.lastStatus = exports.FsxWs.ReadNoData;
+                            alert("Json call working properly? Returned not an array.");
+                            globals.log.error("FsxWs Data loaded, no array type, type: " + datatype);
+                            me.lastStatus = exports.FsxWs.ReadWrongReturnType;
                         } else if (data.length > 0) {
                             // normal mode
                             var rtEntry = me._statisticsRead.end(); // I just write full reads in the statistics in order to get real comparisons
                             globals.googleAnalyticsEvent("readFromFsxWs", "FULLREAD", rtEntry.timeDifference);
                             me.aircrafts = data;
-                            var newFlights = me.aircraftsToFlight(data);
+                            var newFlights = me._aircraftsToFlight(data);
                             me.flights = vd.entity.Flight.updateFlights(me.flights, newFlights);
                             me.lastStatus = exports.FsxWs.Ok;
                             if (!Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                         } else {
-                            globals.log.trace("FsxWs Data loaded, but no data in array");
-                            me.lastStatus = exports.FsxWs.ReadNoData;
+                            if (me.lastStatus !== exports.FsxWs.ReadNoFsxData) globals.log.trace("FsxWs Data loaded, but no data in array");
+                            me.lastStatus = exports.FsxWs.ReadNoFsxData;
                         }
                     }
                     // final state and callback
                     if (autoEnableDisable) me.enabled = true;
-                    if (me.lastStatus == exports.FsxWs.Ok && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
+                    if ((me.lastStatus === exports.FsxWs.Ok || me.lastStatus === exports.FsxWs.ReadNoFsxData)
+                        && !Object.isNullOrUndefined(successfulReadCallback)) successfulReadCallback();
                 } else {
-                    me.lastStatus = exports.FsxWs.ReadNoData;
+                    me.lastStatus = exports.FsxWs.ReadWrongReturnType;
                     if (autoEnableDisable) me.enabled = false;
                     globals.log.error("Reading from FsxWs success, but not data");
                 }
-                me.loading = false;
+                me.loading.unlock("read", displayAlert);
             },
-            error: function (xhr, textStatus, errorThrown) {
-                me.loading = false;
+            error: function(xhr, textStatus, errorThrown) {
+                me.loading.unlock("read", displayAlert);
                 if (autoEnableDisable) me.enabled = false;
                 me.lastStatus = exports.FsxWs.ReadFailed;
-                var errorMsg = String.isNullOrEmpty(errorThrown.message) ? "N/A" : errorThrown.message;
-                var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorMsg + "\". URL: " + url;
+                var msg = "FsxWs data cannot be loaded, status: \"" + textStatus + "\". Error: \"" + errorThrown + "\". URL: " + url;
                 if (availability)
                     globals.log.info("FsxWs test, but " + msg);
                 else
@@ -218,20 +236,22 @@ namespace.module('vd.entity', function (exports) {
     * Successful read?
     * @return success
     */
-    exports.FsxWs.prototype.successfulRead = function () {
-        return this.lastStatus == exports.FsxWs.Ok;
+    exports.FsxWs.prototype.successfulRead = function() {
+        return this.lastStatus === exports.FsxWs.Ok || this.lastStatus === exports.FsxWs.ReadNoFsxData;
     };
 
     /**
     * Dispose the "stored data" (hide as well).
     * @return {Boolean} info whether something was disposed
     */
-    exports.FsxWs.prototype.disposeData = function () {
+    exports.FsxWs.prototype.disposeData = function() {
         if (this.loading) return false;
-        if (this.lastStatus == vd.entity.FsxWs.Init) return false;
-        this.aircrafts = new Array();
+        if (this.lastStatus === vd.entity.FsxWs.Init) return false;
+        this.aircrafts = [];
         vd.entity.base.BaseEntityModel.dispose(this.flights);
-        this.flights = new Array();
+        this.flights = [];
+        vd.entity.base.BaseEntityModel.dispose(this.navaids);
+        this.navaids = [];
         this.lastStatus = vd.entity.FsxWs.Init;
         return true;
     };
@@ -240,15 +260,17 @@ namespace.module('vd.entity', function (exports) {
     * Aircrafts to flight.
     * @param {Array} aircrafts array of JSON Aircrafts
     * @return {Array} flight
+    * @private
     */
-    exports.FsxWs.prototype.aircraftsToFlight = function (aircrafts) {
+    exports.FsxWs.prototype._aircraftsToFlight = function(aircrafts) {
         aircrafts = Object.ifNotNullOrUndefined(aircrafts, this.aircrafts);
-        var flights = new Array();
+        var flights = [];
         if (Array.isNullOrEmpty(aircrafts)) return flights;
         for (var a = 0, len = aircrafts.length; a < len; a++) {
             var aircraft = aircrafts[a];
             // in rare cases we do not have waypoints yet in FsxWs, so no position
             if (Object.isNullOrUndefined(aircraft.latitude) || Object.isNullOrUndefined(aircraft.longitude)) continue;
+            if (!this._filterAircraft(aircraft)) continue;
 
             // VatGM: Create Flight from FsxWs aircraft
             var fp = {
@@ -275,10 +297,28 @@ namespace.module('vd.entity', function (exports) {
                 "helicopter": aircraft.isHelicopter,
                 "transponder": aircraft.transponder
             };
+
             var flight = new vd.entity.Flight(fp);
             flights.push(flight);
         }
         return flights;
+    };
+
+    /**
+    * Filter the aircraft, e.g. VRS TacPack aircraft
+    * @param  {Aircraft} aircraft
+    * @return {Boolean} valid aircraft?
+    */
+    exports.FsxWs.prototype._filterAircraft = function(aircraft) {
+        if (Object.isNullOrUndefined(aircraft)) return false;
+        if (String.isNullOrEmpty(aircraft.title)) return false;
+
+        // TacPack
+        var t = aircraft.title.toUpperCase();
+        if ("IFF" === t || "EMITSTT" === t || "EMIT" === t) return false;
+        if ("STT" === t || "TNK_FLG_O" === t || "EXPLOSION" === t) return false;
+        if ("SA2_LAU" === t || "FANSONG" ===t || "SPNREST" === t) return false;
+        return true;
     };
 
     /**
@@ -289,14 +329,14 @@ namespace.module('vd.entity', function (exports) {
     * @param  {Boolean} [hideDanglingFlights] flights not in the merged flights will be hidden
     * @return {Array} vd.entity.Flight 
     */
-    exports.FsxWs.prototype.mergeWithVatsimFlights = function (vatsimClients, addNonExisitingVatsimFlights, hideDanglingFlights) {
+    exports.FsxWs.prototype.mergeWithVatsimFlights = function(vatsimClients, addNonExisitingVatsimFlights, hideDanglingFlights) {
 
         addNonExisitingVatsimFlights = Object.ifNotNullOrUndefined(addNonExisitingVatsimFlights, true);
         hideDanglingFlights = Object.ifNotNullOrUndefined(hideDanglingFlights, true);
 
         // VATSIM data?
         if (Array.isNullOrEmpty(vatsimClients)) {
-            if (Array.isNullOrEmpty(this.flights)) return new Array();
+            if (Array.isNullOrEmpty(this.flights)) return [];
             vd.entity.base.BaseEntityModel.resetIds(this.flights, false, true); // reset all VATSIM ids
             return this.flights;
         }
@@ -305,12 +345,12 @@ namespace.module('vd.entity', function (exports) {
         if (Array.isNullOrEmpty(this.flights)) return vatsimClients;
 
         // merge
-        var mergedEntities = new Array();
+        var mergedEntities = [];
         var fsxFlights = this.flights.slice(0); // copy of array
 
         for (var f = 0, len = vatsimClients.length; f < len; f++) {
             var vatsimEntity = vatsimClients[f];
-            if (vatsimEntity.entity != "Flight") {
+            if (vatsimEntity.entity !== "Flight") {
                 mergedEntities.push(vatsimEntity);
                 continue;
             }
@@ -340,6 +380,13 @@ namespace.module('vd.entity', function (exports) {
         // return
         return mergedEntities;
     };
+
+    /**
+    * Semaphore context
+    * @type {String}
+    * @const
+    */
+    exports.FsxWs.SemaphoreContext = "FsxWs";
 
     /**
     * Query parameters indicating no waypoints
@@ -375,7 +422,13 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.FsxWs.Ok = 0;
     /**
-    * Reading OK.
+    * Reading succeeded, but no data.
+    * @type {Number}
+    * @const
+    */
+    exports.FsxWs.ReadNoFsxData = 1;
+    /**
+    * No FsxWs service at all.
     * @type {Number}
     * @const
     */
@@ -387,34 +440,40 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.FsxWs.ReadFailed = 11;
     /**
-    * Reading succeeded, but no data.
+    * Reading returned wrong signature.
     * @type {Number}
     * @const
     */
-    exports.FsxWs.ReadNoData = 12;
+    exports.FsxWs.ReadWrongReturnType = 12;
     /**
     * Status code to readable message.
     * @type {Number}
     * @return {String}
     */
-    exports.FsxWs.statusToInfo = function (status) {
+    exports.FsxWs.statusToInfo = function(status) {
         var info;
         switch (status) {
-            case vd.entity.FsxWs.Init:
-                info = "Init";
-                break;
-            case vd.entity.FsxWs.Ok:
-                info = "Data loaded";
-                break;
-            case vd.entity.FsxWs.ReadFailed:
-                info = "Read failed";
-                break;
-            case vd.entity.FsxWs.NoFsxWs.ReadNoData:
-                info = "No data";
-                break;
-            default:
-                info = "Unknown, check console";
-                break;
+        case vd.entity.FsxWs.Init:
+            info = "Init";
+            break;
+        case vd.entity.FsxWs.Ok:
+            info = "Data loaded";
+            break;
+        case vd.entity.FsxWs.ReadNoFsxData:
+            info = "No data";
+            break;
+        case vd.entity.FsxWs.ReadFailed:
+            info = "Read failed";
+            break;
+        case vd.entity.FsxWs.NoFsxWs:
+            info = "No FsxWs service";
+            break;
+        case vd.entity.FsxWs.ReadWrongReturnType:
+            info = "Wrong return type";
+            break;
+        default:
+            info = "Unknown, check console";
+            break;
         }
         return info;
     };

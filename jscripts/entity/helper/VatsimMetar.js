@@ -21,7 +21,9 @@ namespace.module('vd.entity.helper', function (exports) {
     exports.VatsimMetar.prototype.readFromVatsim = function(icao) {
         if (String.isNullOrEmpty(icao)) return null;
         var runtime = new vd.util.TimeDiff();
+        // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
+        // ReSharper restore InconsistentNaming
         var url;
         if (vd.util.UtilsWeb.isLocalServer()) {
             // local test mode
