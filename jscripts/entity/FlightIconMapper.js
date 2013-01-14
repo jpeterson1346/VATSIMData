@@ -10,45 +10,55 @@ namespace.module('vd.entity', function(exports) {
     * @private
     */
     exports.Flight.prototype._mapIcon = function() {
-        var image;
         var t = Object.ifNotNullOrUndefined(this.aircraft.toUpperCase(), null);
         var icon = { "path": null, "sizeW": globals.flightImageWidth, "sizeH": globals.flightImageHeight };
         if (!this._aircraftDataMapped) this.resolveAircraftData();
 
         // mapping
-        if (this.isHelicopter()) {
-            image = "Helicopter";
-        } else {
-            image = "AircraftJet"; // default
-            if (!String.isNullOrEmpty(t)) {
-                if (t.startsWith("F18") || t.startsWith("F16")) {
-                    image = "AircraftFighterJet";
-                } else if (this.engines > 0) {
-                    // we do have mapped data and they are valid
-                    if (this.enginesType === "P") {
-                        if (this.engines < 3) {
-                            image = "AircraftGA1P";
-                            icon.sizeH = globals.flightImageHeightSmall;
-                            icon.sizeW = globals.flightImageWidthSmall;
-                        }
-                    } else if (this.enginesType === "J") {
-                        if (this.engines < 3) {
-                            image = "AircraftJet2E";
-                        } else {
-                            image = "AircraftJet4E";
-                            if (this.wakeTurbulenceCategory === "H" || this.wakeTurbulenceCategory === "S") {
-                                icon.sizeH = globals.flightImageHeightLarge;
-                                icon.sizeW = globals.flightImageWidthLarge;
+        if (String.isNullOrEmpty(this._imageBaseName)) {
+            if (this.isHelicopter()) {
+                this._imageBaseName = "Helicopter";
+            } else {
+                this._imageBaseName = "AircraftJet"; // default
+                if (!String.isNullOrEmpty(t)) {
+                    if (t.contains("F18") || t.contains("F16")) {
+                        this._imageBaseName = "AircraftFighterJet";
+                    } else if (t.startsWith("VRS_WEAP")) {
+                        this._imageBaseName = "AircraftRocket";
+                    } else if (this.engines > 0) {
+                        // we do have mapped data and they are valid
+                        if (this.enginesType === "P") {
+                            if (this.engines < 3) {
+                                this._imageBaseName = "AircraftGA1P";
+                                icon.sizeH = globals.flightImageHeightSmall;
+                                icon.sizeW = globals.flightImageWidthSmall;
                             }
-                        }
-                    }
+                        } else if (this.enginesType === "J") {
+                            if (this.engines < 3) {
+                                this._imageBaseName = "AircraftJet2E";
+                            } else {
+                                this._imageBaseName = "AircraftJet4E";
+                                if (this.wakeTurbulenceCategory === "H" || this.wakeTurbulenceCategory === "S") {
+                                    icon.sizeH = globals.flightImageHeightLarge;
+                                    icon.sizeW = globals.flightImageWidthLarge;
+                                }
+                            }
+                        } // "J"
+                    } // engines > 0
                 }
-            }
+            } // plane / heli
+        }
+        // return
+        this._imageBaseName += this.isGrounded() ? "Gnd.png" : ".png";
+        icon.path = "images/" + this._imageBaseName;
+
+        // trace
+        if (globals.traceAircraftIconMapping) {
+            var trace = "Mapped \"" + t + "\" to icon \"" + icon.path + "\", size " + icon.sizeW + "/" + icon.sizeH;
+            globals.log.trace(trace);
         }
 
-        // return
-        image += this.isGrounded() ? "Gnd.png" : ".png";
-        icon.path = "images/" + image;
+        // bye
         return icon;
     };
 

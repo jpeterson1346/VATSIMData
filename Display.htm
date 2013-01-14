@@ -566,26 +566,22 @@
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="3">Check console pop up:</td>
-                        <td colspan="1">
-                            <button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppenderPopUp.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button>
-                        </td>
+                        <td colspan="1"><button class="ui-button sideBarRightAlign" onclick=" globals.log.fatal('Test message testing the console'); globals.logAppenderPopUp.show(); "><span class="ui-icon ui-icon-newwin" title="Is console working?"></span></button></td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="3">Trace locks (semaphores):</td>
-                        <td colspan="1">
-                            <input class="sideBarRightAlign" type="checkbox" name="TraceLocks" id="inputTraceLocks" onchange=" ctr.logLevelChanged() " />
-                        </td>
+                        <td colspan="1"><input class="sideBarRightAlign" type="checkbox" name="TraceLocks" id="inputTraceLocks" onchange=" ctr.logLevelChanged() " /></td>
+                    </tr>
+                    <tr class="ui-widget-content">
+                        <td colspan="3">Trace aircraft icon mapping:</td>
+                        <td colspan="1"><input class="sideBarRightAlign" type="checkbox" name="TraceAircraftIconMapping" id="inputTraceAircraftIconMapping" onchange=" ctr.logLevelChanged() " /></td>
                     </tr>
                     <tr class="ui-widget-header">
-                        <th colspan="4" class="sideBarHeader">
-                            FSX web services
-                        </th>
+                        <th colspan="4" class="sideBarHeader">FSX web services</th>
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="2">Location:</td>
-                        <td colspan="2">
-                            <input name="fsxWsLocation" id="inputFsxWsLocation" type="text" size="20"/>
-                        </td>
+                        <td colspan="2"><input name="fsxWsLocation" id="inputFsxWsLocation" type="text" size="20"/></td>
                     </tr>
                     <tr class="ui-widget-content">
                         <td colspan="2">Port:</td>

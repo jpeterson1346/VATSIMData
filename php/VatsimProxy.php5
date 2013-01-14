@@ -87,7 +87,7 @@
 			// try second time
 			$url = $urls[$index2];
 			$data = curlRead($url, $curl_errno, $curl_error);
-    		if ($curl_errno > 0) {
+				if ($curl_errno > 0) {
 				echo "; cURL Error ($curl_errno): $curl_error for $url" . "\r\n";
 			} else {
 				echo "; Proxy for " . $index . " / " . $url . "\r\n"; 
@@ -129,7 +129,7 @@
 			$time_end = microtime(true);
 			echo "$i: $url ";
 			if ($curl_errno > 0) {
-			  echo "cURL Error ($curl_errno): $curl_error " . "\r\n";
+				echo "cURL Error ($curl_errno): $curl_error " . "\r\n";
 			}
 			$time = $time_end - $time_start;
 			echo "time: $time ms<br/>";

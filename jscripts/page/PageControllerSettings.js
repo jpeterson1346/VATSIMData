@@ -150,7 +150,8 @@ namespace.module('vd.page', function(exports) {
         
         // trace locks
         globals.traceSemaphores = vd.util.UtilsWeb.checkboxChecked("inputTraceLocks");
-
+        globals.traceAircraftIconMapping = vd.util.UtilsWeb.checkboxChecked("inputTraceAircraftIconMapping");
+        
         // info
         this.displayInfo("New log level is " + value + ". Trace locks: " + globals.traceSemaphores);
     };

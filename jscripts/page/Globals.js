@@ -29,6 +29,7 @@ namespace.module('vd.page', function (exports) {
         this.logUseAppenderConsole = true;
         this._initLogger();
         this.traceSemaphores = false;
+        this.traceAircraftIconMapping = false;
 
         // urls
         this.urlUserManual = "./doc/Help.pdf";
