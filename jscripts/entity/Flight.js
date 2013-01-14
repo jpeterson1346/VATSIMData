@@ -137,7 +137,7 @@ namespace.module('vd.entity', function(exports, require) {
         */
         this._img = null;
         /**
-        * Corresponding plane image.
+        * Corresponding plane base image (still no path / modification such as GND).
         * @type {String}
         * @private
         */
