@@ -289,6 +289,20 @@ String.prototype.truncate = function(maxLength, useWordBoundary) {
 };
 
 /**
+* Contains other string. 
+* @param {String} toBeContained
+* @param {Boolean} [ignoreCase] case insensitive?
+* @return {Boolean}
+*/
+String.prototype.contains = function(toBeContained, ignoreCase) {
+    if (String.isNullOrEmpty(toBeContained)) return false;
+    ignoreCase = Object.ifNotNullOrUndefined(ignoreCase, false);
+    if (!ignoreCase) return (this.indexOf(toBeContained) >=0);
+    var me = this.toUpperCase();
+    return me.indexOf(toBeContained.toUpperCase()) >= 0;
+};
+
+/**
 * Truncate to max characters from the right. 
 * @param {Number} maxLength
 * @param {Boolean} [useWordBoundary] try to keep words

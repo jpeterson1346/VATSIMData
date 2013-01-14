@@ -136,6 +136,12 @@ namespace.module('vd.entity', function(exports, require) {
         * @private
         */
         this._img = null;
+        /**
+        * Corresponding plane image.
+        * @type {String}
+        * @private
+        */
+        this._imageBaseName = null;
 
         // image
         this._setImage();
