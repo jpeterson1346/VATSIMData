@@ -2,14 +2,14 @@
 * @module vd.util
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function (exports) {
+namespace.module('vd.util', function(exports) {
 
     /**
     * Generic utilities.
     * @constructor
     * @author KWB
     */
-    exports.Utils = function () {
+    exports.Utils = function() {
         // code goes heres
     };
 
@@ -18,8 +18,9 @@ namespace.module('vd.util', function (exports) {
     * @param  {Number} i 
     * @param  {Number} digits
     * @return {String} hex value
+    * @static
     */
-    exports.Utils.decToHex = function (i, digits) {
+    exports.Utils.decToHex = function(i, digits) {
         digits = Object.isNullOrUndefined(digits) ? 4 : digits;
         var result = "0000";
         if (i >= 0 && i <= 15) {
@@ -39,8 +40,9 @@ namespace.module('vd.util', function (exports) {
     * @param  {Array}  values 
     * @param  {Number} digits
     * @return {Array}  hex values
+    * @static
     */
-    exports.Utils.decsToHex = function (values, digits) {
+    exports.Utils.decsToHex = function(values, digits) {
         var r = "";
         for (var i = 0, len = values.length; i < len; i++) {
             r += exports.Utils.decToHex(values[i], digits);
@@ -53,8 +55,9 @@ namespace.module('vd.util', function (exports) {
     * @param  {Number} value
     * @param  {maxValue} interval 0-maxValue
     * @return {String} RGB color string, e.g #CCCCCC
+    * @static
     */
-    exports.Utils.valueToGreyScale = function (value, maxValue) {
+    exports.Utils.valueToGreyScale = function(value, maxValue) {
         if (value <= 0) return "#FFFFFF";
         if (value >= maxValue) return "#000000";
         var v = 255 - Math.round(value / maxValue * 255);
@@ -71,8 +74,9 @@ namespace.module('vd.util', function (exports) {
     * @return {String} RGB color string, e.g #CCCCCC
     * @see <a href="http://stackoverflow.com/questions/1423925/changing-rgb-color-values-to-represent-a-value">Color representation</a>
     * @see http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascriptvar 
+    * @static
     */
-    exports.Utils.valueToGradient = function (colorH, colorS, value, maxValue) {
+    exports.Utils.valueToGradient = function(colorH, colorS, value, maxValue) {
         var v = value / maxValue;
         if (v > 1) v = 1;
         if (v < 0) v = 0;
@@ -87,8 +91,9 @@ namespace.module('vd.util', function (exports) {
     * @param {String} colorCandidate
     * @param {String} defaultValue
     * @return {RgbColor}
+    * @static
     */
-    exports.Utils.getValidColor = function (colorCandidate, defaultValue) {
+    exports.Utils.getValidColor = function(colorCandidate, defaultValue) {
         if (Object.isNullOrUndefined(colorCandidate)) return defaultValue;
         var c = new RgbColor(colorCandidate);
         return (c.ok) ? c : new RgbColor(defaultValue);
@@ -99,8 +104,9 @@ namespace.module('vd.util', function (exports) {
     * @param {String}  value
     * @param {Boolean} stripHash strip any leading #
     * @return {String}
+    * @static
     */
-    exports.Utils.fixHexColorValue = function (value, stripHash) {
+    exports.Utils.fixHexColorValue = function(value, stripHash) {
         var v = value.trim().toUpperCase();
         if (stripHash) v = v.replace(/^#*/, "");
         return v;
@@ -111,8 +117,9 @@ namespace.module('vd.util', function (exports) {
     * @param {String} str
     * @param {Number} maxWidth
     * @param {String} lineBreak    
+    * @static
     */
-    exports.Utils.formatToMaxWidth = function (str, maxWidth, lineBreak) {
+    exports.Utils.formatToMaxWidth = function(str, maxWidth, lineBreak) {
         if (String.isNullOrEmpty(str) || maxWidth >= str.length) return str;
         lineBreak = String.isNullOrEmpty(lineBreak) ? "\n" : lineBreak;
         var counter = 0;
@@ -146,8 +153,9 @@ namespace.module('vd.util', function (exports) {
     * @param {function} superclassName
     * @see <a href="http://www.crockford.com/javascript/inheritance.html#sugar">Inheritance</a>
     * @see <a href="http://stackoverflow.com/questions/2107556/how-to-inherit-from-a-class-in-javascript/2107586#2107586">Inherit from JS class</a>
+    * @static
     */
-    exports.Utils.inheritPrototypes = function (subclass, superclass, superclassName) {
+    exports.Utils.inheritPrototypes = function(subclass, superclass, superclassName) {
         var superclassPrototypes = superclass.prototype;
         if (Object.isNullOrUndefined(subclass.superclasses)) subclass.superclasses = new Array();
         subclass.superclasses[superclassName] = superclass;
@@ -165,8 +173,9 @@ namespace.module('vd.util', function (exports) {
     /**
     * Formatted Date/time now.
     * @return {String} yyyymmddhhmmss[MMM]
+    * @static
     */
-    exports.Utils.nowFormattedYYYYMMDDhhmm = function (withMilliseconds) {
+    exports.Utils.nowFormattedYYYYMMDDhhmm = function(withMilliseconds) {
         var wms = Object.isNullOrUndefined(withMilliseconds) ? false : withMilliseconds;
         var now = new Date();
         var fs = now.getYear();
@@ -176,41 +185,7 @@ namespace.module('vd.util', function (exports) {
         fs += (now.getMinutes() < 10 ? '0' : '') + (now.getMinutes());
         fs += (now.getSeconds() < 10 ? '0' : '') + (now.getSeconds());
         if (!wms) return fs;
-        fs += ("00" + now.getMilliseconds()).substr(-3) ;
+        fs += ("00" + now.getMilliseconds()).substr(-3);
         return fs;
-    };
-
-    /**
-    * Time difference.
-    * @constructor
-    */
-    exports.TimeDiff = function () {
-        this.startTime = null;
-        this.setStartTime();
-    };
-
-    /**
-    * Set the start time ("now"). Automatically set in constructor,
-    * only required if needs to be reset later.
-    */
-    exports.TimeDiff.prototype.setStartTime = function () {
-        this.startTime = new Date().getTime();
-    };
-
-    /**
-    * Get the time difference.
-    * @return {Number} time difference in ms
-    */
-    exports.TimeDiff.prototype.getDiff = function () {
-        var d = new Date();
-        return (d.getTime() - this.startTime);
-    };
-
-    /**
-    * Get the time difference as formatted string.
-    * @return {String} time difference in ms
-    */
-    exports.TimeDiff.prototype.getDiffFormatted = function () {
-        return (this.getDiff().toFixed(0) + "ms");
     };
 });

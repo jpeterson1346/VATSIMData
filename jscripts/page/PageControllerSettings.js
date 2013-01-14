@@ -12,14 +12,14 @@ namespace.module('vd.page', function(exports) {
         redisplay = Object.isNullOrUndefined(redisplay) ? true : redisplay;
         var d = $(document.getElementById("inputSettingsDistance")).val();
         var a = $(document.getElementById("inputSettingsAltitude")).val();
-        if (d == "km") {
+        if (d === "km") {
             globals.unitDistance = "km";
             globals.unitSpeed = "km/h";
         } else {
             globals.unitDistance = "nm";
             globals.unitSpeed = "kts";
         }
-        if (a == "ft") {
+        if (a === "ft") {
             globals.unitAltitude = "ft";
             globals.unitRateOfClimb = "fpm";
         } else {
@@ -40,7 +40,7 @@ namespace.module('vd.page', function(exports) {
         mode = Object.ifNotNullOrUndefined(mode, { });
 
         var fs = globals.flightSettings;
-        if (!Object.isNullOrUndefined(mode["toggleFlights"]) && mode["toggleFlights"]) {
+        if (!Object.isNullOrUndefined(mode.toggleFlights) && mode.toggleFlights) {
             vd.util.UtilsWeb.toggleCheckbox("inputFlightSettingsShowFlight");
         }
 
@@ -90,7 +90,33 @@ namespace.module('vd.page', function(exports) {
         });
 
         // redisplay
-        if (Object.isNullOrUndefined(mode["initializeOnly"]) || !mode["initializeOnly"]) this.backgroundRefresh();
+        if (Object.isNullOrUndefined(mode.initializeOnly) || !mode.initializeOnly) this.backgroundRefresh(vd.page.PageController.DisplayNewDataVatsim);
+    };
+
+    /**
+    * Settings for the navaids has been changed.
+    * @param {Object} mode specify further actions { initializeOnly: only initialize, ... }
+    */
+    exports.PageController.prototype.navaidSettingsChanged = function (mode) {
+        // make sure we have a mode
+        mode = Object.ifNotNullOrUndefined(mode, {});
+
+        var ns = globals.navaidSettings;
+        ns.set({
+            displayNavaid: document.getElementById("inputNavaidsDisplay").checked,
+            displayVOR: document.getElementById("inputNavaidsDisplayVOR").checked,
+            displayNDB: document.getElementById("inputNavaidsDisplayNDB").checked,
+            displayTACAN: document.getElementById("inputNavaidsDisplayTACAN").checked,
+            displayILS: document.getElementById("inputNavaidsDisplayILS").checked,
+            displayVORTAC: document.getElementById("inputNavaidsDisplayVORTAC").checked,
+            displayName: document.getElementById("inputNavaidsDisplayName").checked,
+            displayFrequency: document.getElementById("inputNavaidsDisplayFrequency").checked,
+            displayType: document.getElementById("inputNavaidsDisplayType").checked,
+            displayCallsign: document.getElementById("inputNavaidsDisplayCallsign").checked
+        });
+
+        // redisplay
+        if (Object.isNullOrUndefined(mode.initializeOnly) || !mode.initializeOnly) this.backgroundRefresh(vd.page.PageController.DisplayNavaidsChanged);
     };
 
     /**
@@ -121,7 +147,13 @@ namespace.module('vd.page', function(exports) {
         default:
             return;
         }
-        this.displayInfo("New log level is " + value + ".");
+        
+        // trace locks
+        globals.traceSemaphores = vd.util.UtilsWeb.checkboxChecked("inputTraceLocks");
+        globals.traceAircraftIconMapping = vd.util.UtilsWeb.checkboxChecked("inputTraceAircraftIconMapping");
+        
+        // info
+        this.displayInfo("New log level is " + value + ". Trace locks: " + globals.traceSemaphores);
     };
 
     /**
@@ -157,6 +189,9 @@ namespace.module('vd.page', function(exports) {
         globals.styles.wpRouteLabelBackground = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsColor").val(), globals.styles.wpRouteLabelBackground).toHex();
         globals.styles.wpRouteLabelFontColor = vd.util.Utils.getValidColor($("#inputRouteSettingLabelsFontColor").val(), globals.styles.wpRouteLabelFontColor).toHex();
         globals.styles.wpRouteLineColor = vd.util.Utils.getValidColor($("#inputRouteSettingRouteLineColor").val(), globals.styles.wpRouteLineColor).toHex();
+        globals.styles.navaidLabelBackground = vd.util.Utils.getValidColor($("#inputNavaidSettingLabelsColor").val(), globals.styles.navaidLabelBackground).toHex();
+        globals.styles.navaidLabelBackgroundTransparent = vd.util.UtilsWeb.checkboxChecked("inputNavaidSettingLabelsColorTransparent");
+
         this._displayAltitudeColorBar();
         if (refresh) this.backgroundRefresh();
     };
@@ -167,7 +202,7 @@ namespace.module('vd.page', function(exports) {
     */
     exports.PageController.prototype.filterSettingsChanged = function(filterParams) {
         filterParams = Object.ifNotNullOrUndefined(filterParams, { });
-        var tf = !Object.isNullOrUndefined(filterParams["toogleFilter"]) && filterParams["toogleFilter"];
+        var tf = !Object.isNullOrUndefined(filterParams.toogleFilter) && filterParams.toogleFilter;
         var f = tf ? vd.util.UtilsWeb.toggleCheckbox("inputApplyFilter") : vd.util.UtilsWeb.checkboxChecked("inputApplyFilter");
         if (f) {
             var it = "Filter is on.";

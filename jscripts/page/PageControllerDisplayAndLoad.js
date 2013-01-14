@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function(exports) {
+namespace.module('vd.page', function (exports) {
 
     // #region ------------ clients, flights (VATSIM / FSX) display ------------
     /**
@@ -10,7 +10,7 @@ namespace.module('vd.page', function(exports) {
     * @return {Boolean} VASTIM enabled
     * @see vd.page.PageController.prototype.resetUpdateTimer
     */
-    exports.PageController.prototype.isVatsimEnabled = function() {
+    exports.PageController.prototype.isVatsimEnabled = function () {
         if (Object.isNullOrUndefined(globals.vatsimClients) || !globals.vatsimClients.enabled) return false;
         return this.timerLoadVatsimUpdate > 0;
     };
@@ -20,7 +20,7 @@ namespace.module('vd.page', function(exports) {
     * @return {Boolean} FsxWs enabled
     * @see vd.page.PageController.prototype.resetUpdateTimer
     */
-    exports.PageController.prototype.isFsxWsEnabled = function() {
+    exports.PageController.prototype.isFsxWsEnabled = function () {
         if (Object.isNullOrUndefined(globals.fsxWs) || !globals.fsxWs.enabled) return false;
         return this.timerFsxDataUpdate > 0;
     };
@@ -28,20 +28,21 @@ namespace.module('vd.page', function(exports) {
     /**
     * Load entities (flights VATSIM/FSX, airports, ATC ...).
     * @param {Boolean} displayInfo status bar info
-    * @param {String} additional info, only makes sense with displayInfo
+    * @param {String} [info] additional info, only makes sense with displayInfo
     * @param {Number} [displayReason] details, improving how to best display 
     * @return {String} infoString clear text message
     */
-    // VatGM: Display entities (from FSX / VATSIM)
-    exports.PageController.prototype.displayEntities = function(displayInfo, initInfo, displayReason) {
+    // VatGM: Display entities (from FSX / VATSIM / Navaids)
+    exports.PageController.prototype.displayEntities = function (displayInfo, info, displayReason) {
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, false);
         displayReason = Object.ifNotNullOrUndefined(displayReason, exports.PageController.DisplayForceRedisplay);
 
         // init
-        var info = String.isNullOrEmpty(initInfo) ? "" : initInfo;
+        info = String.isNullOrEmpty(info) ? "" : info;
         var vatsimClients; // representing all VATSIM entities
         var displayVatsim = displayReason == exports.PageController.DisplayForceRedisplay || displayReason == exports.PageController.DisplayNewDataVatsim || displayReason == exports.PageController.DisplayMapMoved;
         var displayFsxWs = displayReason == exports.PageController.DisplayForceRedisplay || displayReason == exports.PageController.DisplayNewDataFsx || displayReason == exports.PageController.DisplayMapMoved;
+        var displayNavaids = displayReason == exports.PageController.DisplayForceRedisplay || displayReason == exports.PageController.DisplayNavaidsChanged;
 
         // handle the VATSIM clients
         var vatsimFlightsInBound = null; // for elevation service
@@ -73,7 +74,7 @@ namespace.module('vd.page', function(exports) {
         var mergedClients = globals.allEntities;
         if (!Object.isNullOrUndefined(mergedClients) && !mergedClients.isEmpty()) {
             if (mergedClients.containsDisposedEntities()) alert("Display entities, disposed elements found: " + mergedClients.disposedEntitiesCount());
-            mergedClients.display(true, displayFsxWs, displayVatsim);
+            mergedClients.display(true, displayFsxWs, displayVatsim, displayNavaids);
         }
 
         // display info whether flights / airports will be shown
@@ -112,7 +113,7 @@ namespace.module('vd.page', function(exports) {
     * @param {vd.entity.base.BaseEntityModelOnMap} baseEntity to be followed or null
     * @private
     */
-    exports.PageController.prototype._followOnMap = function(baseEntity) {
+    exports.PageController.prototype._followOnMap = function (baseEntity) {
         var info;
         if (!Object.isNullOrUndefined(baseEntity)) {
             globals.map.setCenter(baseEntity.latLng());
@@ -124,6 +125,20 @@ namespace.module('vd.page', function(exports) {
         }
         return info;
     };
+
+    /**
+    * Load the navaids (via fsx).
+    * @param {Boolean} [display]
+    */
+    exports.PageController.prototype.loadAndDisplayNavaids = function (display) {
+        if (!globals.isFsxWsAvailable()) return;
+        var cbDisplay = vd.util.UtilsWeb.checkboxChecked("inputNavaidsDisplay");
+        display = Object.ifNotNullOrUndefined(display, cbDisplay);
+        globals.fsxWs.readNavigraphNavaids(vd.entity.FsxWs.Navaids,
+            function () {
+                vd.entity.base.BaseEntityMap.display(globals.fsxWs.navaids, display, true);
+            });
+    };
     // #endregion ------------ clients, flights (VATSIM / FSX) data display ------------
 
     // #region ------------ Timers for automatic updates ------------
@@ -131,7 +146,7 @@ namespace.module('vd.page', function(exports) {
     /**
     * Set a new or cancel the timer.
     */
-    exports.PageController.prototype.resetUpdateTimer = function(displayInfo) {
+    exports.PageController.prototype.resetUpdateTimer = function (displayInfo) {
 
         displayInfo = Object.ifNotNullOrUndefined(displayInfo, false);
 
@@ -160,7 +175,7 @@ namespace.module('vd.page', function(exports) {
 
         // init timer, even if we have both disabled, in order to detect data
         var me = this;
-        setTimeout(function() { me.timerDispatcher(); }, timeOut);
+        setTimeout(function () { me.timerDispatcher(); }, timeOut);
     };
 
     /**
@@ -172,7 +187,7 @@ namespace.module('vd.page', function(exports) {
     * </p>
     */
     // VatGM: Dispatching to the Data Loaders
-    exports.PageController.prototype.timerDispatcher = function() {
+    exports.PageController.prototype.timerDispatcher = function () {
         if (globals.timerDispatcherSemaphore) return; // avoid races
         globals.timerDispatcherSemaphore = true;
 
@@ -186,22 +201,25 @@ namespace.module('vd.page', function(exports) {
 
         // check for FSX data
         var timePassed = (this.timerFsxDataUpdateLastCall.getTime() + this.timerFsxDataUpdate < now);
-        if (this.isFsxWsEnabled() && timePassed) {
-            var autoDisable = true;
-            if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Init)
-                globals.fsxWs.readFromFsxWs(true, autoDisable); // run one test
-            else if (globals.fsxWs.enabled) {
-                globals.fsxWs.readFromFsxWs(false, autoDisable,
-                    function() {
-                        me.successfulDataReadFsxWs();
-                    }); // trigger a new read
+        if (timePassed) {
+            if (this.isFsxWsEnabled()) {
+                var autoDisable = true;
+                if (globals.fsxWs.lastStatus == vd.entity.FsxWs.Init)
+                    globals.fsxWs.readFromFsxWs(true, autoDisable); // run one test
+                else if (globals.fsxWs.enabled) {
+                    globals.fsxWs.readFromFsxWs(false, autoDisable,
+                        function () {
+                            me.successfulDataReadFsxWs();
+                        }); // trigger a new read
+                }
+
+                // time stamp
+                this.timerFsxDataUpdateLastCall = new Date();
             }
 
-            // time stamp
-            this.timerFsxDataUpdateLastCall = new Date();
-
             // update fields after a delay, hopefully the async check is completed by then
-            setTimeout(function() {
+            // I recheck always, even with FsxWs disabled, because sometimes an event is missed
+            setTimeout(function () {
                 me._setFsxWsInfoFields();
             }, globals.fsxWsAvailabilityDelay);
         }
@@ -210,7 +228,7 @@ namespace.module('vd.page', function(exports) {
         timePassed = (this.timerLoadVatsimUpdateLastCall.getTime() + this.timerLoadVatsimUpdate < now);
         if (this.isVatsimEnabled() && timePassed) {
             globals.vatsimClients.readFromVatsim(
-                function() {
+                function () {
                     me.successfulDataReadVatsim();
                 }); // trigger a new read (async)
             this.timerLoadVatsimUpdateLastCall = new Date();
@@ -224,7 +242,7 @@ namespace.module('vd.page', function(exports) {
     /**
     * Merge the clients of VATSIM and FSX flights.
     */
-    exports.PageController.prototype.mergeEntities = function() {
+    exports.PageController.prototype.mergeEntities = function () {
         var mergedList;
         var vatsimEntities = null;
 
@@ -252,6 +270,11 @@ namespace.module('vd.page', function(exports) {
             mergedList = new vd.entity.base.EntityMapList(vatsimEntities);
         }
 
+        // NaviGraph data will be added on top, irregardless of usage mode
+        if (!Object.isNullOrUndefined(globals.fsxWs)) {
+            if (globals.fsxWs.hasNavaids()) mergedList.addEntities(globals.fsxWs.navaids);
+        }
+
         // make globally available
         globals.allEntities = mergedList;
     };
@@ -260,7 +283,7 @@ namespace.module('vd.page', function(exports) {
     * Succesfully read data from VATSIM.
     */
     // VatGM: Callback, read data from VATSIM
-    exports.PageController.prototype.successfulDataReadVatsim = function() {
+    exports.PageController.prototype.successfulDataReadVatsim = function () {
         this.mergeEntities();
         this.displayEntities(false, "VATSIM data read.", exports.PageController.DisplayNewDataVatsim);
     };
@@ -269,7 +292,7 @@ namespace.module('vd.page', function(exports) {
     * Succesfully read data from VATSIM.
     */
     // VatGM: Callback, read data from FsxWs
-    exports.PageController.prototype.successfulDataReadFsxWs = function() {
+    exports.PageController.prototype.successfulDataReadFsxWs = function () {
         this.mergeEntities();
         this.displayEntities(false, "FsxWs data read.", exports.PageController.DisplayNewDataFsx);
     };
@@ -280,10 +303,9 @@ namespace.module('vd.page', function(exports) {
     /**
     * Trigger new data loads (VATSIM, FsxWs).
     * Loading is an asynchronous process.
-    *
     * @param {Boolean} [display] show an info
     */
-    exports.PageController.prototype.triggerNewLoad = function(display) {
+    exports.PageController.prototype.triggerNewLoad = function (display) {
         display = Object.ifNotNullOrUndefined(display, false);
         var info = "";
         var me = this;
@@ -293,7 +315,7 @@ namespace.module('vd.page', function(exports) {
             } else {
                 info = "Trigger FsxWs load.";
                 globals.fsxWs.readFromFsxWs(false, false,
-                    function() {
+                    function () {
                         me.successfulDataReadFsxWs();
                     }
                 ); // trigger a new read
@@ -307,7 +329,7 @@ namespace.module('vd.page', function(exports) {
             } else {
                 info += "Trigger VATSIM load.";
                 globals.vatsimClients.readFromVatsim(
-                    function() {
+                    function () {
                         me.successfulDataReadVatsim();
                     }
                 ); // trigger a new read

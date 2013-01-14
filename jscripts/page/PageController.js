@@ -68,7 +68,7 @@ namespace.module('vd.page', function (exports) {
         * @see vd.module:entity.GroundOverlay
         * @private
         */
-        this._groundOverlays = new Array();
+        this._groundOverlays = [];
         /**
         * Ground overlays, when read
         * @type {vd.module.GroundOverlay}
@@ -131,6 +131,13 @@ namespace.module('vd.page', function (exports) {
     * @static
     */
     exports.PageController.DisplayMapMoved = 3;
+    /**
+    * Navaids have been added or settings changed.
+    * @type {Number}
+    * @const
+    * @static
+    */
+    exports.PageController.DisplayNavaidsChanged = 4;
     /**
     * Usage mode.
     * @type {Number}
@@ -203,6 +210,9 @@ namespace.module('vd.page', function (exports) {
 
         // register resize event
         $(window).resize(function () { me.windowResizeEvent(); });
+        
+        // Trigger aircraft data load
+        vd.entity.Flight.readAircraftData();
 
     }; // initialize
 
@@ -340,7 +350,7 @@ namespace.module('vd.page', function (exports) {
             function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
                     var latLng = results[0].geometry.location;
-                    var fullName = results[0]['formatted_address'];
+                    var fullName = results[0].formatted_address;
                     ePlace.value = fullName;
                     if (!Object.isNullOrUndefined(latLng)) {
                         me.newLocation(center, latLng, zoomLevel);
@@ -361,7 +371,7 @@ namespace.module('vd.page', function (exports) {
         globals.geocoder.geocode({ 'latLng': latLng, 'bounds': globals.map.getBounds() },
             function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
-                    var fullName = results[0]['formatted_address'];
+                    var fullName = results[0].formatted_address;
                     document.getElementById("inputPlace").value = fullName;
                 }
             });
@@ -376,7 +386,7 @@ namespace.module('vd.page', function (exports) {
         if (!vd.util.UtilsCalc.isValidlatLon(elat.value, elon.value)) return;
         var latLng = new google.maps.LatLng(elat.value, elon.value);
         var latLngFormatted = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
-        var title = latLngFormatted["lat"] + "/" + latLngFormatted["lng"];
+        var title = latLngFormatted.lat + "/" + latLngFormatted.lng;
         var markerOptions = { position: latLng, map: globals.map, title: title };
         var marker = new google.maps.Marker(markerOptions);
         this._markers.add(marker);
@@ -407,8 +417,8 @@ namespace.module('vd.page', function (exports) {
         if (center) globals.map.setCenter(latLng);
         if (Object.isNumber(zoomLevel)) globals.map.setZoom(zoomLevel);
         var fll = vd.util.UtilsMap.formatLatLngValues(latLng, globals.coordinatesDigitsDisplayed);
-        elat.value = fll["lat"];
-        elon.value = fll["lng"];
+        elat.value = fll.lat;
+        elon.value = fll.lng;
     };
 
     /**
@@ -426,6 +436,7 @@ namespace.module('vd.page', function (exports) {
         var sideBarEntities = document.getElementById("sideBarEntities");
         var sideBarCredits = document.getElementById("sideBarCredits");
         var sideBarRoute = document.getElementById("sideBarRoute");
+        var sideBarNavaids = document.getElementById("sideBarNavaids");
         var sideBarOverlays = document.getElementById("sideBarOverlays");
         var mapCanvas = document.getElementById("mapCanvas");
         var altitudeProfile = document.getElementById("mapAltitudeProfile");
@@ -442,6 +453,7 @@ namespace.module('vd.page', function (exports) {
             globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
             globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
             globals.sideBarRouteDisplay = $(sideBarRoute).css('display');
+            globals.sideBarNavaidsDisplay = $(sideBarNavaids).css('display');
             globals.sideBarOverlaysDisplay = $(sideBarOverlays).css('display');
             if (Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
         }
@@ -469,6 +481,7 @@ namespace.module('vd.page', function (exports) {
             sideBarCredits.style.display = selected.startsWith("C") ? globals.sideBarCreditsDisplay : "none";
             sideBarEntities.style.display = selected.startsWith("E") ? globals.sideBarEntitiesDisplay : "none";
             sideBarRoute.style.display = selected.startsWith("R") ? globals.sideBarRouteDisplay : "none";
+            sideBarNavaids.style.display = selected.startsWith("N") ? globals.sideBarNavaidsDisplay : "none";
             sideBarOverlays.style.display = selected.startsWith("O") ? globals.sideBarOverlaysDisplay : "none";
 
             // further updates
@@ -594,6 +607,7 @@ namespace.module('vd.page', function (exports) {
                 // by entry in fields
                 entity = globals.allEntities.findById(id, false); // by FSX id and VATSIM id
                 if (Object.isNullOrUndefined(entity)) entity = globals.allEntities.findByObjectId(id); // search by object id first
+                if (Object.isNullOrUndefined(entity)) entity = globals.allEntities.findByCallsign(id); // assume we have a callsign
             }
         }
 
@@ -667,11 +681,13 @@ namespace.module('vd.page', function (exports) {
     /**
     * Redisplay the clients.
     * @param {Boolean} withInfo
+    * @param {Number} displayReason further details why to refresh
     */
-    exports.PageController.prototype.refresh = function (withInfo) {
+    exports.PageController.prototype.refresh = function (withInfo, displayReason) {
         var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
         withInfo = Object.ifNotNullOrUndefined(withInfo, false);
-        this.displayEntities(withInfo, "Refresh.");
+        displayReason = Object.ifNotNullOrUndefined(displayReason, false);
+        this.displayEntities(withInfo, "Refresh.", displayReason);
 
         // statistics / logging
         this._statisticsRefresh.add(statsEntry, true);
@@ -680,14 +696,18 @@ namespace.module('vd.page', function (exports) {
 
     /**
     * Redisplay the entities (after some delay in the background).
-    * @param {Boolean} forceRedraw
+    * Multiple same events are collected and only fired once.
+    * @param {Number} displayReason further details why to refresh
+    * @see PageController.DisplayForceRedisplay 
+    * @see PageController.DisplayNewDataVatsim
     */
-    exports.PageController.prototype.backgroundRefresh = function () {
+    exports.PageController.prototype.backgroundRefresh = function (displayReason) {
         var me = this;
+        displayReason = Object.ifNotNullOrUndefined(displayReason, null);
         if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
             this._backgroundRefreshCollectEvent = new vd.util.CollectingEvent(
                 function () {
-                    me.refresh();
+                    me.refresh(displayReason);
                 }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
         else
             this._backgroundRefreshCollectEvent.fire();
@@ -771,18 +791,18 @@ namespace.module('vd.page', function (exports) {
         var usageMode = String.toNumber($("#inputUsageMode").val(), vd.page.PageController.UsageModeIllegal);
         var vatsimLoadOn = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) > 0;
         var fsxLoadOn = String.toNumber($("#inputTimerUpdateFsx").val(), -1) > 0;
-        if (usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
-            usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
-            usageMode == vd.page.PageController.UsageModeFsxAndVatsim ||
-            usageMode == vd.page.PageController.UsageModeVatsimOnly) {
-            if ((usageMode == vd.page.PageController.UsageModeFsxMovingMapWithVatsim
-                || usageMode == vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
+        if (usageMode === vd.page.PageController.UsageModeFsxMovingMapWithVatsim ||
+            usageMode === vd.page.PageController.UsageModeFsxMovingMapFsxOnly ||
+            usageMode === vd.page.PageController.UsageModeFsxAndVatsim ||
+            usageMode === vd.page.PageController.UsageModeVatsimOnly) {
+            if ((usageMode === vd.page.PageController.UsageModeFsxMovingMapWithVatsim
+                || usageMode === vd.page.PageController.UsageModeFsxMovingMapOnly) && !this.isFsxWsEnabled()) {
                 this.displayInfo("Make sure FsxWs is running and connected.");
             }
 
             // set logical defaults for load time
             var timerChange = false;
-            if (usageMode == vd.page.PageController.UsageModeFsxMovingMapFsxOnly) {
+            if (usageMode === vd.page.PageController.UsageModeFsxMovingMapFsxOnly) {
                 if ($("#inputTimerUpdateVatsim").val() >= 0) {
                     $("#inputTimerUpdateVatsim").val(-1);
                     timerChange = true;
@@ -793,7 +813,7 @@ namespace.module('vd.page', function (exports) {
                     timerChange = true;
                 }
             }
-            if (usageMode == vd.page.PageController.UsageModeVatsimOnly) {
+            if (usageMode === vd.page.PageController.UsageModeVatsimOnly) {
                 if ($("#inputTimerUpdateFsx").val() >= 0) {
                     $("#inputTimerUpdateFsx").val(-1);
                     timerChange = true;
@@ -1063,6 +1083,8 @@ namespace.module('vd.page', function (exports) {
         $("#inputRouteSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputRouteSettingRouteLineColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLineColor, "CCCCCC").toHex(), true));
         $("#inputGroundOverlayBackgroundColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.groundOverlayBackground, "CCCCCC").toHex(), true));
+        $("#inputNavaidSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.navaidLabelBackground, "CCCCCC").toHex(), true));
+        vd.util.UtilsWeb.checkboxChecked("inputNavaidSettingLabelsColorTransparent", globals.styles.navaidLabelBackgroundTransparent);
     };
 
     /** 
@@ -1094,6 +1116,7 @@ namespace.module('vd.page', function (exports) {
 
         // more detailed setups
         this.vatsimClientSettingsChanged({ initializeOnly: true }); // init the settings only
+        this.navaidSettingsChanged({ initializeOnly: true });
         this._initGrids();
         this._initColorInputs();
         this._initFsxWsSettings();
@@ -1443,9 +1466,9 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._displayMapBounds = function () {
-        if (globals.map == null) return; // during init
+        if (Object.isNullOrUndefined(globals.map)) return; // during init
         var bounds = globals.map.getBounds();
-        if (bounds == null) return; // during init
+        if (Object.isNullOrUndefined(bounds)) return; // during init
         var center = globals.map.getCenter();
 
         var unitD = globals.unitDistance;
@@ -1454,8 +1477,8 @@ namespace.module('vd.page', function (exports) {
         var southWest = bounds.getSouthWest();
         var formatSw = vd.util.UtilsMap.formatLatLngValues(southWest, globals.coordinatesDigitsDisplayed);
         var centerBounds = new google.maps.LatLngBounds(southWest, center);
-        var txt1 = "NE: " + formatNe["lat"] + " / " + formatNe["lng"];
-        var txt2 = "SW: " + formatSw["lat"] + " / " + formatSw["lng"];
+        var txt1 = "NE: " + formatNe.lat + " / " + formatNe.lng;
+        var txt2 = "SW: " + formatSw.lat + " / " + formatSw.lng;
         var txt3 = "invalid";
 
         // distances 
@@ -1464,12 +1487,12 @@ namespace.module('vd.page', function (exports) {
             // The earth is a globe ;-)
             // Since I have to calculate the "longest" distance I have to go via center and *2
             var distances = vd.util.UtilsCalc.boundsDistances(centerBounds, unitD);
-            distances["h"] = distances["h"] * 2; // horizontal
-            distances["v"] = distances["v"] * 2; // vertical
-            distances["d"] = distances["d"] * 2; // diagonal
-            var h = (distances["h"] >= 1000 ? distances["h"].toFixed(0) : distances["h"].toFixed(1)) + unitD;
-            var v = (distances["v"] >= 1000 ? distances["v"].toFixed(0) : distances["v"].toFixed(1)) + unitD;
-            var d = (distances["d"] >= 1000 ? distances["d"].toFixed(0) : distances["d"].toFixed(1)) + unitD;
+            distances.h = distances.h * 2; // horizontal
+            distances.v = distances.v * 2; // vertical
+            distances.d = distances.d * 2; // diagonal
+            var h = (distances.h >= 1000 ? distances.h.toFixed(0) : distances.h.toFixed(1)) + unitD;
+            var v = (distances.v >= 1000 ? distances.v.toFixed(0) : distances.v.toFixed(1)) + unitD;
+            var d = (distances.d >= 1000 ? distances.d.toFixed(0) : distances.d.toFixed(1)) + unitD;
             txt3 = h + " x " + v + " / " + d;
         }
 
@@ -1483,8 +1506,8 @@ namespace.module('vd.page', function (exports) {
         td.appendChild(document.createTextNode(txt3));
         center = globals.map.getCenter();
         var formatCenter = vd.util.UtilsMap.formatLatLngValues(center, globals.coordinatesDigitsDisplayed);
-        document.getElementById("inputLatitude").value = formatCenter["lat"];
-        document.getElementById("inputLongitude").value = formatCenter["lng"];
+        document.getElementById("inputLatitude").value = formatCenter.lat;
+        document.getElementById("inputLongitude").value = formatCenter.lng;
     };
 
     /**
@@ -1556,16 +1579,46 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._setFsxWsInfoFields = function () {
-        var td = document.getElementById("inputFsxWsURL");
+        var info;
+
+        // FsxWs info in general
+        var td = document.getElementById("fsxWsURL");
         $(td).empty();
-        if (String.isNullOrEmpty(globals.fsxWs.serverUrl))
-            td.appendChild(document.createTextNode("No connection info"));
+        if (String.isNullOrEmpty(globals.fsxWs.aircraftsUrl))
+            info = "No connection info";
         else {
-            var info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.serverUrl);
+            info = vd.util.UtilsWeb.removeProtocol(globals.fsxWs.aircraftsUrl);
             info = info.truncateRight(globals.sideBarFsxWsUrlMaxChars, false);
-            info += globals.isFsxAvailable() ? " (connected)" : " (disconnected)";
-            td.appendChild(document.createTextNode(info));
+            if (globals.isFsxWsAvailable()) {
+                if (globals.fsxWs.lastStatus === vd.entity.FsxWs.Ok)
+                    info += " (connected)";
+                else if (globals.fsxWs.lastStatus === vd.entity.FsxWs.ReadNoFsxData)
+                    info += " (connected, no data)";
+                else
+                    info += " (inconsistent)";
+            } else
+                info += " (disconnected)";
         }
+        td.appendChild(document.createTextNode(info));
+
+        // Navaid status
+        td = document.getElementById("fsxWsNavaidStatus");
+        var loadNavaids = false;
+        $(td).empty();
+        if (!globals.isFsxWsAvailable()) {
+            info = "FsxWs not available / disabled. No Navaids available!";
+        } else if (!globals.fsxWs.hasNavaids()) {
+            info = "No Navaids available. Try 'Load' and / or check FsxWs setup.";
+            loadNavaids = true;
+        } else {
+            info = "Navaids available";
+            loadNavaids = true;
+        }
+        td.appendChild(document.createTextNode(info));
+        if (loadNavaids)
+            $("#fsxWsNavaidsLoad").show();
+        else
+            $("#fsxWsNavaidsLoad").hide();
     };
 
     /**
@@ -1686,6 +1739,7 @@ namespace.module('vd.page', function (exports) {
                         var url = globals.urlVatasimPilot + globals.gridSelectedEntity.vatsimId;
                         vd.util.UtilsWeb.newLocation(url, true);
                     }
+                    break;
                 default:
                     break;
             }
@@ -1744,7 +1798,7 @@ namespace.module('vd.page', function (exports) {
     exports.PageController.prototype._entityDislayedInfo = function (entity) {
         if (Object.isNullOrUndefined(entity)) return;
         var msg = "";
-        if (entity.entity == "Flight") {
+        if (entity.entity === "Flight") {
             if (Object.isNullOrUndefined(entity.flightplan) && globals.flightSettings.displayRequireFlightplan) msg = "No flightplan. ";
             if (entity.isGrounded() && !globals.flightSettings.displayOnGround) msg += "Flight on ground. ";
         }
@@ -1762,7 +1816,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._gridsVisible = function () {
         var d = document.getElementById("sideBarData").style.display;
-        return !(d.toLowerCase() == "none");
+        return (d.toLowerCase() !== "none");
     };
 
     /**
