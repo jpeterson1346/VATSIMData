@@ -153,7 +153,7 @@ namespace.module('vd.page', function(exports) {
         globals.traceAircraftIconMapping = vd.util.UtilsWeb.checkboxChecked("inputTraceAircraftIconMapping");
         
         // info
-        this.displayInfo("New log level is " + value + ". Trace locks: " + globals.traceSemaphores);
+        this.displayInfo("New log level is " + value + ". Trace locks: " + globals.traceSemaphores + ". Trace mapping: " + globals.traceAircraftIconMapping);
     };
 
     /**
