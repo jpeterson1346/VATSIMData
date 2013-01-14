@@ -49,8 +49,7 @@ namespace.module('vd.entity', function(exports) {
             } // plane / heli
         }
         // return
-        this._imageBaseName += this.isGrounded() ? "Gnd.png" : ".png";
-        icon.path = "images/" + this._imageBaseName;
+        icon.path = "images/" + this._imageBaseName + (this.isGrounded() ? "Gnd.png" : ".png");
 
         // trace
         if (globals.traceAircraftIconMapping) {
