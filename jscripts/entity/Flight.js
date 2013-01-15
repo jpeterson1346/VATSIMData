@@ -109,7 +109,17 @@ namespace.module('vd.entity', function(exports, require) {
         */
         this.wakeTurbulenceCategory = null;
         /**
-        * Aircraft data mapped, does not necessarily means they have been found
+        * Aircraft designator
+        * @type {String}
+        */
+        this.aircraftDesignator = null;
+        /**
+        * Aircraft name
+        * @type {String}
+        */
+        this.aircraftName = null;
+        /**
+        * Aircraft data mapped, does not necessarily mean they have been found
         * @private
         * @type {Boolean}
         */

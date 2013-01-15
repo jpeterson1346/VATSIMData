@@ -21,10 +21,11 @@ namespace.module('vd.entity', function(exports) {
             } else {
                 this._imageBaseName = "AircraftJet"; // default
                 if (!String.isNullOrEmpty(t)) {
-                    if (t.contains("F18") || t.contains("F16")) {
-                        this._imageBaseName = "AircraftFighterJet";
-                    } else if (t.startsWith("VRS_WEAP")) {
+                    if (t.startsWith("VRS_WEAP")) {
                         this._imageBaseName = "AircraftRocket";
+                        this.engines = 1;
+                        this.wakeTurbulenceCategory = "M";
+                        this.enginesType = "R";
                     } else if (this.engines > 0) {
                         // we do have mapped data and they are valid
                         if (this.enginesType === "P") {
@@ -48,12 +49,18 @@ namespace.module('vd.entity', function(exports) {
                 }
             } // plane / heli
         }
-        // return
+
+        // specific icons
+        if (this.aircraftDesignator === "F18" || this.aircraftDesignator === "F16") {
+            this._imageBaseName = "AircraftFighterJet";
+        }
+
+        // build icon
         icon.path = "images/" + this._imageBaseName + (this.isGrounded() ? "Gnd.png" : ".png");
 
         // trace
         if (globals.traceAircraftIconMapping) {
-            var trace = "Mapped \"" + t + "\" to icon \"" + icon.path + "\", size " + icon.sizeW + "/" + icon.sizeH;
+            var trace = "Mapped \"" + t + "\" to \"" + this.aircraftName + "\", icon \"" + icon.path + "\", size " + icon.sizeW + "/" + icon.sizeH;
             globals.log.trace(trace);
         }
 
@@ -68,13 +75,24 @@ namespace.module('vd.entity', function(exports) {
         if (Array.isNullOrEmpty(vd.entity.Flight.aircraftData)) return;
         if (this._aircraftDataMapped) return;
         var t = Object.ifNotNullOrUndefined(this.aircraft.toUpperCase(), null);
+        var an;
         if (!String.isNullOrEmpty(t)) {
             var aircraftData = exports.Flight.FindBestMatchInAircraftData(t);
             if (!Object.isNullOrUndefined(aircraftData)) {
                 this.engines = aircraftData.Enginecount * 1;
                 this.enginesType = aircraftData.Enginetype;
                 this.wakeTurbulenceCategory = aircraftData.WTC;
+                an = Object.ifNotNullOrUndefined(aircraftData.Manufacturer, "");
+                an = an.appendIfNotEmpty(aircraftData.Model, " ");
+                this.aircraftName = an;
+                this.aircraftDesignator = aircraftData.Designator;
             }
+        } else {
+            this.aircraftName = "";
+            this.engines = -1;
+            this.enginesType = "";
+            this.wakeTurbulenceCategory = "";
+            this.aircraftDesignator = "";
         }
         this._aircraftDataMapped = true;
     };
