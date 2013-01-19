@@ -16,6 +16,7 @@ namespace.module('vd.entity', function(exports) {
 
         // mapping
         if (String.isNullOrEmpty(this._imageBaseName)) {
+            // determine image
             if (this.isHelicopter()) {
                 this._imageBaseName = "Helicopter";
             } else {
@@ -48,19 +49,21 @@ namespace.module('vd.entity', function(exports) {
                     } // engines > 0
                 }
             } // plane / heli
-        }
 
-        // specific icons
-        if (this.aircraftDesignator === "F18" || this.aircraftDesignator === "F16") {
-            this._imageBaseName = "AircraftFighterJet";
-        }
+            // specific icons
+            if (this.aircraftDesignator === "F18" || this.aircraftDesignator === "F16") {
+                this._imageBaseName = "AircraftFighterJet";
+            }
+        } // image base name
 
         // build icon
         icon.path = "images/" + this._imageBaseName + (this.isGrounded() ? "Gnd.png" : ".png");
 
         // trace
         if (globals.traceAircraftIconMapping) {
-            var trace = "Mapped \"" + t + "\" to \"" + this.aircraftName + "\", icon \"" + icon.path + "\", size " + icon.sizeW + "/" + icon.sizeH;
+            var hasData = Array.isNullOrEmpty(vd.entity.Flight.aircraftData);
+            var trace = hasData ? "Aircraft data OK. " : "Aircraft data missing. ";
+            trace += "Mapped \"" + t + "\" to \"" + this.aircraftName + "\", icon \"" + icon.path + "\", size " + icon.sizeW + "/" + icon.sizeH;
             globals.log.trace(trace);
         }
 
