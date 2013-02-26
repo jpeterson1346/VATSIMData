@@ -180,13 +180,17 @@ namespace.module('vd.page', function (exports) {
     * Init everything.
     */
     exports.PageController.prototype.initialize = function () {
-        var browser = this.browserCheck();
-        if (browser)
-            this.displayInfo(); // clear
-        else {
-            var noBrowserInfo = "Browser does not support all features!";
-            this.displayInfo(noBrowserInfo);
-            alert(noBrowserInfo);
+
+        // browser check, but only for fully blown version
+        if (!globals.isOnlyMapMode) {
+            var browser = this.browserCheck();
+            if (browser)
+                this.displayInfo(); // clear
+            else {
+                var noBrowserInfo = "Browser does not support all features!";
+                this.displayInfo(noBrowserInfo);
+                alert(noBrowserInfo);
+            }
         }
         this.unitsChanged(false); // units such as km, ft ..
 
@@ -427,72 +431,78 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype.showHideInputAndTabs = function () {
         var me = this;
-        var selected = $("#headerBarTabSelection").val().toUpperCase();
-        var sideBar = document.getElementById("sideBar");
-        var sideBarLocation = document.getElementById("sideBarLocation");
-        var sideBarSettings = document.getElementById("sideBarSettings");
-        var sideBarData = document.getElementById("sideBarData");
-        var sideBarAbout = document.getElementById("sideBarAbout");
-        var sideBarEntities = document.getElementById("sideBarEntities");
-        var sideBarCredits = document.getElementById("sideBarCredits");
-        var sideBarRoute = document.getElementById("sideBarRoute");
-        var sideBarNavaids = document.getElementById("sideBarNavaids");
-        var sideBarOverlays = document.getElementById("sideBarOverlays");
         var mapCanvas = document.getElementById("mapCanvas");
-        var altitudeProfile = document.getElementById("mapAltitudeProfile");
 
-        // one time init, remember style sheet values
-        // http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object
-        if (Object.isNullOrUndefined(globals.sideBarMinWidth)) {
-            this._initAltitudeProfile();
-            globals.sideBarMinWidth = $(sideBar).css('min-Width');
-            globals.sideBarLocationDisplay = $(sideBarLocation).css('display');
-            globals.sideBarSettingsDisplay = $(sideBarSettings).css('display');
-            globals.sideBarEntitiesDisplay = $(sideBarEntities).css('display');
-            globals.sideBarDataDisplay = $(sideBarData).css('display');
-            globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
-            globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
-            globals.sideBarRouteDisplay = $(sideBarRoute).css('display');
-            globals.sideBarNavaidsDisplay = $(sideBarNavaids).css('display');
-            globals.sideBarOverlaysDisplay = $(sideBarOverlays).css('display');
-            if (Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
-        }
-
-        if (selected.startsWith("H")) {
-            // to invisibile
-            sideBar.style.width = "0%";
-            sideBar.style.minWidth = "0px";
+        if (globals.isOnlyMapMode) {
             mapCanvas.style.width = "100%";
-            mapCanvas.style.height = "97%";
-            altitudeProfile.style.width = "100%";
+            mapCanvas.style.height = "100%";
         } else {
-            // to visible by reseting to CSS values
-            sideBar.style.width = null;
-            sideBar.style.minWidth = null;
-            mapCanvas.style.width = null;
-            mapCanvas.style.height = null;
-            altitudeProfile.style.width = null;
-            this.altitudeProfileSettings(false); // set mapCanvas / mapAltitudeProfile height
+            var selected = $("#headerBarTabSelection").val().toUpperCase();
+            var sideBar = document.getElementById("sideBar");
+            var sideBarLocation = document.getElementById("sideBarLocation");
+            var sideBarSettings = document.getElementById("sideBarSettings");
+            var sideBarData = document.getElementById("sideBarData");
+            var sideBarAbout = document.getElementById("sideBarAbout");
+            var sideBarEntities = document.getElementById("sideBarEntities");
+            var sideBarCredits = document.getElementById("sideBarCredits");
+            var sideBarRoute = document.getElementById("sideBarRoute");
+            var sideBarNavaids = document.getElementById("sideBarNavaids");
+            var sideBarOverlays = document.getElementById("sideBarOverlays");
+            var altitudeProfile = document.getElementById("mapAltitudeProfile");
 
-            sideBarLocation.style.display = selected.startsWith("M") ? globals.sideBarLocationDisplay : "none";
-            sideBarSettings.style.display = selected.startsWith("S") ? globals.sideBarSettingsDisplay : "none";
-            sideBarData.style.display = selected.startsWith("D") ? globals.sideBarDataDisplay : "none";
-            sideBarAbout.style.display = selected.startsWith("A") ? globals.sideBarAboutDisplay : "none";
-            sideBarCredits.style.display = selected.startsWith("C") ? globals.sideBarCreditsDisplay : "none";
-            sideBarEntities.style.display = selected.startsWith("E") ? globals.sideBarEntitiesDisplay : "none";
-            sideBarRoute.style.display = selected.startsWith("R") ? globals.sideBarRouteDisplay : "none";
-            sideBarNavaids.style.display = selected.startsWith("N") ? globals.sideBarNavaidsDisplay : "none";
-            sideBarOverlays.style.display = selected.startsWith("O") ? globals.sideBarOverlaysDisplay : "none";
+            // one time init, remember style sheet values
+            // http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object
+            if (Object.isNullOrUndefined(globals.sideBarMinWidth)) {
+                this._initAltitudeProfile();
+                globals.sideBarMinWidth = $(sideBar).css('min-Width');
+                globals.sideBarLocationDisplay = $(sideBarLocation).css('display');
+                globals.sideBarSettingsDisplay = $(sideBarSettings).css('display');
+                globals.sideBarEntitiesDisplay = $(sideBarEntities).css('display');
+                globals.sideBarDataDisplay = $(sideBarData).css('display');
+                globals.sideBarAboutDisplay = $(sideBarAbout).css('display');
+                globals.sideBarCreditsDisplay = $(sideBarCredits).css('display');
+                globals.sideBarRouteDisplay = $(sideBarRoute).css('display');
+                globals.sideBarNavaidsDisplay = $(sideBarNavaids).css('display');
+                globals.sideBarOverlaysDisplay = $(sideBarOverlays).css('display');
+                if (Object.isNullOrUndefined(globals.sideBarMinWidth)) globals.log.error("Cannot retrieve CSS values, IE Compatibility View?");
+            }
 
-            // further updates
-            if (selected.startsWith("D"))
-                setTimeout(
-                    function () {
-                        me.updateGrids(true);
-                    }, 250); // delayed data update
-            if (selected.startsWith("S")) this._displayAltitudeColorBar(); // force redraw
+            if (selected.startsWith("H")) {
+                // to invisibile
+                sideBar.style.width = "0%";
+                sideBar.style.minWidth = "0px";
+                mapCanvas.style.width = "100%";
+                mapCanvas.style.height = "97%";
+                altitudeProfile.style.width = "100%";
+            } else {
+                // to visible by reseting to CSS values
+                sideBar.style.width = null;
+                sideBar.style.minWidth = null;
+                mapCanvas.style.width = null;
+                mapCanvas.style.height = null;
+                altitudeProfile.style.width = null;
+                this.altitudeProfileSettings(false); // set mapCanvas / mapAltitudeProfile height
+
+                sideBarLocation.style.display = selected.startsWith("M") ? globals.sideBarLocationDisplay : "none";
+                sideBarSettings.style.display = selected.startsWith("S") ? globals.sideBarSettingsDisplay : "none";
+                sideBarData.style.display = selected.startsWith("D") ? globals.sideBarDataDisplay : "none";
+                sideBarAbout.style.display = selected.startsWith("A") ? globals.sideBarAboutDisplay : "none";
+                sideBarCredits.style.display = selected.startsWith("C") ? globals.sideBarCreditsDisplay : "none";
+                sideBarEntities.style.display = selected.startsWith("E") ? globals.sideBarEntitiesDisplay : "none";
+                sideBarRoute.style.display = selected.startsWith("R") ? globals.sideBarRouteDisplay : "none";
+                sideBarNavaids.style.display = selected.startsWith("N") ? globals.sideBarNavaidsDisplay : "none";
+                sideBarOverlays.style.display = selected.startsWith("O") ? globals.sideBarOverlaysDisplay : "none";
+
+                // further updates
+                if (selected.startsWith("D"))
+                    setTimeout(
+                        function() {
+                            me.updateGrids(true);
+                        }, 250); // delayed data update
+                if (selected.startsWith("S")) this._displayAltitudeColorBar(); // force redraw
+            }
         }
-
+        
         // resizing
         this.windowResizeEvent(); // force resize
 
@@ -565,22 +575,28 @@ namespace.module('vd.page', function (exports) {
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
         var now = new Date().getTime();
         var me = this;
-        var ti = document.getElementById("headerBarTaskInfo");
-        if (Object.isNullOrUndefined(globals.headerTaskInfoDisplay)) globals.headerTaskInfoDisplay = ti.style.display;
+        
+        // map only mode likely will not have task bar
+        var ti = Object.ifNotNullOrUndefined(document.getElementById("headerBarTaskInfo"), null);
+        var hasTaskBar = Object.isNullOrUndefined(ti) ? false : true;
+        if (hasTaskBar && Object.isNullOrUndefined(globals.headerTaskInfoDisplay)) globals.headerTaskInfoDisplay = ti.style.display;
         if (hasContent) {
             // write to log
             globals.log.info(content);
 
             // write to status header
-            $(ti).empty();
-            ti.style.display = globals.headerTaskInfoDisplay;
-            ti.appendChild(document.createTextNode(" " + content));
-            this._lastInfoBarContentDeleteTime = now + globals.timerCleanUpInfoBar;
-            setTimeout(
-                function () {
-                    me.displayInfo(null, true); // clean me up later
-                }, globals.timerCleanUpInfoBar);
-        } else {
+            if (hasTaskBar) {
+                $(ti).empty();
+                ti.style.display = globals.headerTaskInfoDisplay;
+                ti.appendChild(document.createTextNode(" " + content));
+                this._lastInfoBarContentDeleteTime = now + globals.timerCleanUpInfoBar;
+                setTimeout(
+                    function() {
+                        me.displayInfo(null, true); // clean me up later
+                    }, globals.timerCleanUpInfoBar);
+            }
+        } else if (hasTaskBar) {
+            // delete taskbar if we have one and time is exceeded
             if (!timerCalled || now > this._lastInfoBarContentDeleteTime) {
                 $(ti).empty();
                 ti.style.display = "none";
@@ -620,27 +636,32 @@ namespace.module('vd.page', function (exports) {
 
         // element for info text
         var td = document.getElementById("inputFollowedVatsimClient");
-        $(td).empty();
+        var hasTd = Object.ifNotNullOrUndefined(td) ? true : false;
+        if (hasTd) $(td).empty();
 
         if (Object.isNullOrUndefined(entity)) {
-            $("#inputFollowId").val("");
             globals.mapFollowId = null;
             if (displayInfo) this.displayInfo("Follow mode 'off'.");
-            td.appendChild(document.createTextNode("Follow mode 'off'."));
+            if (hasTd) {
+                td.appendChild(document.createTextNode("Follow mode 'off'."));
+                $("#inputFollowId").val("");
+            }
         } else {
             var infoText = entity.callsign.appendIfNotEmpty(entity.name, " ");
             globals.mapFollowId = entity.objectId;
-            td.appendChild(document.createTextNode(infoText));
             if (displayInfo) this.displayInfo("Will follow '" + infoText + "'.");
             globals.map.setCenter(entity.latLng());
 
             // write a meaningful id back to the field
-            if (entity.isVatsimBased())
-                $("#inputFollowId").val(entity.vatsimId);
-            else if (entity.isFsxBased())
-                $("#inputFollowId").val(entity.fsxId);
-            else
-                $("#inputFollowId").val(entity.objectId);
+            if (hasTd) {
+                td.appendChild(document.createTextNode(infoText));
+                if (entity.isVatsimBased())
+                    $("#inputFollowId").val(entity.vatsimId);
+                else if (entity.isFsxBased())
+                    $("#inputFollowId").val(entity.fsxId);
+                else
+                    $("#inputFollowId").val(entity.objectId);
+            }
         }
         if (refresh) this.backgroundRefresh();
     };
@@ -840,6 +861,7 @@ namespace.module('vd.page', function (exports) {
     * @param {boolean} forceUpdate update even when grid is invisible
     */
     exports.PageController.prototype.updateGrids = function (forceUpdate) {
+        if (globals.isOnlyMapMode) return;
         var gridsVisible = this._gridsVisible();
         if (!(forceUpdate || gridsVisible)) return;
         if (Object.isNullOrUndefined(globals.allEntities) || globals.allEntities.isEmpty()) return;
@@ -910,6 +932,7 @@ namespace.module('vd.page', function (exports) {
     * @param {boolean} forceUpdate
     */
     exports.PageController.prototype.updateGridsBackground = function (forceUpdate) {
+        if (globals.isOnlyMapMode) return;
         var me = this;
         if (Object.isNullOrUndefined(this._backgroundUpdateGridCollectEvent))
             this._backgroundUpdateGridCollectEvent = new vd.util.CollectingEvent(
@@ -969,6 +992,7 @@ namespace.module('vd.page', function (exports) {
     * @see vd.module:page.PageController#_updateAltitudeProfile
     */
     exports.PageController.prototype.altitudeProfileSettings = function (resize) {
+        if (globals.isOnlyMapMode) return;
         var profile = document.getElementById("mapAltitudeProfile");
         resize = Object.ifNotNullOrUndefined(resize, true);
 
@@ -1009,11 +1033,23 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._initMap = function () {
-        var latLng = new google.maps.LatLng(50.0, 8.0);
+        if (Object.isNullOrUndefined(globals.queryParameters)) alert("Query parameters not initalized");
+
         var me = this;
+        var mapZoom = globals.isOnlyMapMode ? 7 : 9; // 7 is approx. Germany country, 9 Neckar area
+        mapZoom = Object.ifNotNullOrUndefined(globals.queryParameters.gmzoom, mapZoom);
+        mapZoom *= 1.0;
+        if (mapZoom < 3) mapZoom = 3;
+        if (mapZoom > 14) mapZoom = 15;
+
+        var lat = Object.ifNotNullOrUndefined(globals.queryParameters.gmlat, 50.0);
+        var lng = Object.ifNotNullOrUndefined(globals.queryParameters.gmlng, 8.0);
+        lat *= 1.0;
+        lng *= 1.0;
+        var latLng = new google.maps.LatLng(lat, lng);
         var mapOptions = {
             streetViewControl: false,
-            zoom: 9,
+            zoom: mapZoom,
             mapTypeControlOptions: {
                 mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN],
                 style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
@@ -1034,7 +1070,7 @@ namespace.module('vd.page', function (exports) {
 
         // check (by call back) whether we can expect geo location to be working
         // for performance reason I do not yet set the new position -> updates all flights etc.
-        if (navigator.geolocation) {
+        if (!globals.isOnlyMapMode && navigator.geolocation) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             navigator.geolocation.getCurrentPosition(
                 function (position) {
@@ -1051,7 +1087,7 @@ namespace.module('vd.page', function (exports) {
     */
     exports.PageController.prototype._initGeoLocationPosition = function () {
         // get current position if available
-        if (navigator.geolocation) {
+        if (!globals.isOnlyMapMode && navigator.geolocation) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             var me = this;
             navigator.geolocation.getCurrentPosition(
@@ -1078,7 +1114,7 @@ namespace.module('vd.page', function (exports) {
         vd.util.UtilsWeb.checkboxChecked("inputFlightSettingLabelsColorIfFilteredTransparent", globals.styles.flightLabelBackgroundIfFilteredTransparent);
         $("#inputAirportSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.airportLabelBackground, "CCCCCC").toHex(), true));
         $("#inputFlightSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.flightLabelFontColor, "CCCCCC").toHex(), true));
-        $("#inputAirportSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.airportLabelFontColor, "CCCCCC").toHex(), true));
+        $("#inputvatsimClientSettingsChangedingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.airportLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputRouteSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelBackground, "CCCCCC").toHex(), true));
         $("#inputRouteSettingLabelsFontColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLabelFontColor, "CCCCCC").toHex(), true));
         $("#inputRouteSettingRouteLineColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.wpRouteLineColor, "CCCCCC").toHex(), true));
@@ -1111,19 +1147,24 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._initSideBarData = function () {
+
         // order here is crucial!
         vd.util.UtilsWeb.selectValue("inputWaypointSettingsFlightMaxNumber", globals.waypointSettings.flightWaypointsNumberMaximum);
 
         // more detailed setups
         this.vatsimClientSettingsChanged({ initializeOnly: true }); // init the settings only
-        this.navaidSettingsChanged({ initializeOnly: true });
-        this._initGrids();
-        this._initColorInputs();
-        this._initFsxWsSettings();
-        this._initLogLevels();
-        this._initAbout();
-        this._initGroundOverlays();
-        this._displayAltitudeColorBar();
+        if (globals.isOnlyMapMode) {
+            globals.flightSettings.displayForInclude();
+        } else {
+            this.navaidSettingsChanged({ initializeOnly: true });
+            this._initGrids();
+            this._initColorInputs();
+            this._initFsxWsSettings();
+            this._initLogLevels();
+            this._initAbout();
+            this._initGroundOverlays();
+            this._displayAltitudeColorBar();
+        }
         this.resetUpdateTimer();
     };
 
@@ -1192,7 +1233,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'pilot', index: 'pilot', width: widthNameFlight, search: true },
         // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
             { name: 'isGrounded', index: 'isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
@@ -1204,7 +1245,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
         // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
@@ -1436,6 +1477,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._initAltitudeProfile = function () {
+        if (globals.isOnlyMapMode) return;
         globals.altitudeProfile = new vd.gc.AltitudeProfile("mapAltitudeProfile"); // do this before collapsing bar
         document.getElementById("inputElevationService").checked = globals.elevationServiceEnabled;
         this.altitudeProfileSettings();
@@ -1466,6 +1508,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._displayMapBounds = function () {
+        if (globals.isOnlyMapMode) return;
         if (Object.isNullOrUndefined(globals.map)) return; // during init
         var bounds = globals.map.getBounds();
         if (Object.isNullOrUndefined(bounds)) return; // during init
@@ -1515,6 +1558,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._displayGeolocation = function () {
+        if (globals.isOnlyMapMode) return;
 
         // geo location available
         var td = document.getElementById("inputGeoLocationInfo");
@@ -1567,6 +1611,8 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._setVatsimInfoFields = function (vatsimFileInfo) {
+        if (globals.isOnlyMapMode) return;
+
         // file info
         if (!Object.isNullOrUndefined(globals.vatsimClients)) vatsimFileInfo = String.isNullOrEmpty(vatsimFileInfo) ? globals.vatsimClients.info : vatsimFileInfo;
         var td = document.getElementById("inputDatafileInfo");
@@ -1579,10 +1625,11 @@ namespace.module('vd.page', function (exports) {
     * @private
     */
     exports.PageController.prototype._setFsxWsInfoFields = function () {
-        var info;
+        if (globals.isOnlyMapMode) return;
 
         // FsxWs info in general
         var td = document.getElementById("fsxWsURL");
+        var info;
         $(td).empty();
         if (String.isNullOrEmpty(globals.fsxWs.aircraftsUrl))
             info = "No connection info";

@@ -1,7 +1,7 @@
 ﻿/**
 * @module vd.entity.helper
 */
-namespace.module('vd.entity.helper', function (exports, require) {
+namespace.module('vd.entity.helper', function (exports) {
 
     /**
     * @constructor
@@ -82,5 +82,13 @@ namespace.module('vd.entity.helper', function (exports, require) {
         if (this.displayController) c++;
         if (this.displayId) c++;
         return c;
+    };
+    
+    /**
+    * Display set of properties for include map.
+    * @return {FlightSettings}
+    */
+    exports.AtcSettings.prototype.displayForInclude = function () {
+        return this;
     };
 });
