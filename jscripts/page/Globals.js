@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function (exports) {
+namespace.module('vd.page', function(exports) {
 
     /**
     * @classdesc
@@ -11,11 +11,25 @@ namespace.module('vd.page', function (exports) {
     * @constructor
     * @author KWB
     */
-    exports.Globals = function () {
+    exports.Globals = function() {
 
         var now = new Date();
         var isOsWindows = BrowserDetect.OS.toLowerCase().startsWith("win");
+
+        /**
+        * All query parameters
+        * @type {Object}
+        * @public
+        * @example fsxlocation, fsxwsport, gmzoom, gmlat, gmlng
+        */
         this.queryParameters = vd.util.UtilsWeb.getQueryParameters();
+
+        /**
+        * Only the map (used in iframe etc.)?
+        * @type {Boolean}
+        * @public
+        */
+        this.isOnlyMapMode = window.location.pathname.contains("include", true);
 
         // version
         this.version = "N/A";
@@ -25,7 +39,7 @@ namespace.module('vd.page', function (exports) {
         this.log = null;
         this.logAppenderPopUp = null;
         this.logAppenderConsole = null;
-        this.logUseAppenderPopUp = true;
+        this.logUseAppenderPopUp = !this.isOnlyMapMode;
         this.logUseAppenderConsole = true;
         this._initLogger();
         this.traceSemaphores = false;
@@ -77,7 +91,7 @@ namespace.module('vd.page', function (exports) {
         * @type {Number}
         * @see vd.module:page.PageController
         */
-        this.usingMode = vd.page.PageController.UsageModeUnspecified;
+        this.usageMode = vd.page.PageController.UsageModeVatsimOnly;
 
         // reset all entities
         this.resetEntities();
@@ -121,7 +135,7 @@ namespace.module('vd.page', function (exports) {
         this.geocoder = new google.maps.Geocoder(); // resolve places etc.
 
         // Elevation
-        this.elevationServiceEnabled = isOsWindows;
+        this.elevationServiceEnabled = isOsWindows && !this.isOnlyMapMode;
         this.elevationService = new google.maps.ElevationService(); // resolves elevations
         this.elevationServicePathRequestSamples = 200;
         this.elevationSingleSamplesMax = 75;
@@ -204,10 +218,12 @@ namespace.module('vd.page', function (exports) {
         // timers / collective events
         this.timerDispatcherSemaphore = false;
         this.timerCleanUpInfoBar = 10000; // clean info message after ms
+        this.timerKickOffTime = 5000; // kick off time after ms
         this.timerLoadVatsimUpdate = -1;
         this.timerFsxDataUpdate = -1;
         this.timerLoadVatsimUpdateLastCall = new Date(0); // date in the past
         this.timerFsxDataUpdateLastCall = new Date(0); // date in the past
+        this.timerInitialCall = true;
         this.collectiveBoundsChangedInterval = 2500; // ms
         this.collectiveBackgroundRefreshEvent = 2000; // ms
         this.collectiveBackgroundGridsDelay = 3000; // ms
@@ -221,14 +237,14 @@ namespace.module('vd.page', function (exports) {
     * Assign a new / other map.
     * @param {google.maps.Map} map
     **/
-    exports.Globals.prototype.assignMap = function (map) {
+    exports.Globals.prototype.assignMap = function(map) {
         this.allEntities.disposeData(); // re-entry, clean up
         this._objects = [];
         this.map = map;
         this.groundOverlays.setMap(map);
         this.mapOverlayView = new google.maps.OverlayView();
         this.mapOverlayView.setMap(map);
-        this.mapOverlayView.draw = function () {
+        this.mapOverlayView.draw = function() {
             if (!this.ready) {
                 this.ready = true;
                 google.maps.event.trigger(this, 'ready');
@@ -240,7 +256,7 @@ namespace.module('vd.page', function (exports) {
     * Is the FsxWs service available?
     * @return {Boolean} available
     **/
-    exports.Globals.prototype.isFsxWsAvailable = function () {
+    exports.Globals.prototype.isFsxWsAvailable = function() {
         if (Object.isNullOrUndefined(this.fsxWs)) return false;
         return this.fsxWs.successfulRead();
     };
@@ -250,7 +266,7 @@ namespace.module('vd.page', function (exports) {
     * @param {LatLng} latLng position to be checked.
     * @see Globals#map
     */
-    exports.Globals.prototype.isInBounds = function (latLng) {
+    exports.Globals.prototype.isInBounds = function(latLng) {
         return this.map.getBounds().contains(latLng);
     };
 
@@ -259,7 +275,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Object} newObject: to be registered object
     * @return {Number} objectId
     */
-    exports.Globals.prototype.register = function (newObject) {
+    exports.Globals.prototype.register = function(newObject) {
         if (Object.isNullOrUndefined(newObject)) return -1;
         var id = this._idCounter++;
         this._objects[id] = newObject;
@@ -271,7 +287,7 @@ namespace.module('vd.page', function (exports) {
     * on temporary objects.
     * @return {Number} objectId
     */
-    exports.Globals.prototype.getObjectId = function () {
+    exports.Globals.prototype.getObjectId = function() {
         var id = this._idCounter++;
         return id;
     };
@@ -281,21 +297,23 @@ namespace.module('vd.page', function (exports) {
     * @param  {Number} id
     * @return {Object}
     */
-    exports.Globals.prototype.getObject = function (id) {
+    exports.Globals.prototype.getObject = function(id) {
         return this._objects[id];
     };
 
     /**
     * Reset the clients.
     */
-    exports.Globals.prototype.resetEntities = function () {
+    exports.Globals.prototype.resetEntities = function() {
         // dispose all entities but recycle the list
         if (!Object.isNullOrUndefined(this.allEntities)) this.allEntities.disposeData();
         this.allEntities = new vd.entity.base.EntityMapList();
 
         // FsxWs data, do not recycle but create new, maybe params have changed
         if (!Object.isNullOrUndefined(this.fsxWs)) this.fsxWs.disposeData();
+        if (Object.isNullOrUndefined(this.queryParameters)) alert("Query parameters not initalized");
         this.fsxWs = new vd.entity.FsxWs(this.queryParameters.fsxlocation, this.queryParameters.fsxwsport, this.urlFsxWsDefault);
+        this.fsxWs.enabled = !this.isOnlyMapMode;
 
         //  VATSIM
         if (!Object.isNullOrUndefined(this.vatsimClients)) this.vatsimClients.disposeData();
@@ -310,7 +328,7 @@ namespace.module('vd.page', function (exports) {
     * @param  {Array} ids
     * @return {Array} 0..n objects
     */
-    exports.Globals.prototype.getObjects = function (ids) {
+    exports.Globals.prototype.getObjects = function(ids) {
         var objs = [];
         if (Array.isNullOrEmpty(ids)) return objs;
         for (var id in ids) {
@@ -324,7 +342,7 @@ namespace.module('vd.page', function (exports) {
     * Init the version (by version.txt).
     * @private
     */
-    exports.Globals.prototype._initVersion = function () {
+    exports.Globals.prototype._initVersion = function() {
         var url = vd.util.UtilsWeb.replaceCurrentPage("version/version.txt");
         // ReSharper disable InconsistentNaming
         var xmlhttp = new XMLHttpRequest();
@@ -344,7 +362,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Number} value (MUST be an INTEGER)
     * @see <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html">Google Analytics Events</a>
     */
-    exports.Globals.prototype.googleAnalyticsEvent = function (action, label, value) {
+    exports.Globals.prototype.googleAnalyticsEvent = function(action, label, value) {
         value = Object.ifNotNullOrUndefined(value, 0);
         // I have to use the global var _gaq here, because it will be changed to valid object later
         // see: http://stackoverflow.com/questions/7944860/google-analytics-events-when-are-they-send
@@ -355,7 +373,7 @@ namespace.module('vd.page', function (exports) {
     * Init the logger.
     * @private
     */
-    exports.Globals.prototype._initLogger = function () {
+    exports.Globals.prototype._initLogger = function() {
         var local = vd.util.UtilsWeb.isLocalServer();
         this.log = log4javascript.getDefaultLogger();
         this.log.removeAllAppenders();
@@ -380,7 +398,7 @@ namespace.module('vd.page', function (exports) {
             this.log.setLevel(local ? log4javascript.Level.TRACE : log4javascript.Level.WARN);
             if (local) {
                 // display something and hide
-                this.log.info("Local mode");
+                this.log.info("Local mode for logging, level is " + this.log.getLevel());
                 if (this.logUseAppenderPopUp) this.logAppenderPopUp.hide();
             }
         } else {

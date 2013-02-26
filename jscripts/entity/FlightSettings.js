@@ -131,6 +131,14 @@ namespace.module('vd.entity', function(exports) {
     };
 
     /**
+    * Display set of properties for include map.
+    * @return {FlightSettings}
+    */
+    exports.FlightSettings.prototype.displayForInclude = function () {
+        return this.displayMinimal();
+    };
+
+    /**
     * Number of elements displayed.
     * @return {Number}
     */

@@ -2,7 +2,7 @@
 * @module vd.entity.helper
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.helper', function (exports) {
+namespace.module('vd.entity.helper', function(exports) {
 
     /**
     * @constructor
@@ -10,7 +10,7 @@ namespace.module('vd.entity.helper', function (exports) {
     * @param {Array} [options]
     * @author KWB
     */
-    exports.WaypointSettings = function (options) {
+    exports.WaypointSettings = function(options) {
         // set the values
         this.set(options);
     };
@@ -50,7 +50,7 @@ namespace.module('vd.entity.helper', function (exports) {
     * Set values on the same object.
     * @param {Object} [args]
     */
-    exports.WaypointSettings.prototype.set = function (options) {
+    exports.WaypointSettings.prototype.set = function(options) {
 
         // make sure we have an options object
         options = Object.ifNotNullOrUndefined(options, {});
@@ -65,7 +65,7 @@ namespace.module('vd.entity.helper', function (exports) {
         * Display flight altitude and speed?
         * @type {Boolean}
         */
-        this.displayFlightAltitudeSpeed = Object.ifNotNullOrUndefined(options["displayFlightAltitudeSpeed"], true); ;
+        this.displayFlightAltitudeSpeed = Object.ifNotNullOrUndefined(options["displayFlightAltitudeSpeed"], true);
         /**
         * Display flight callsign?
         * @type {Boolean}
@@ -80,7 +80,7 @@ namespace.module('vd.entity.helper', function (exports) {
         * Number of maximum waypoints for a flight. Null means all values.
         * @type {Number}
         */
-        this.flightWaypointsNumberMaximum = Object.isNumber(no) ? no * 1 : null;
+        this.flightWaypointsNumberMaximum = Object.isNumber(no) ? no * 1 : 0;
         /**
         * Display airway?
         * @type {Boolean}
@@ -104,11 +104,28 @@ namespace.module('vd.entity.helper', function (exports) {
     };
 
     /**
+    * Display set of properties for include map.
+    * @return {WaypointSettings}
+    */
+    exports.WaypointSettings.prototype.displayForInclude = function() {
+        this.displayFlightWaypoints = false;
+        this.displayFlightAltitudeSpeed = false;
+        this.displayFlightCallsign = false;
+        this.displayFlightWaypointsWhenGrounded = false;
+        this.flightWaypointsNumberMaximum = 0;
+        this.displayAirway = false;
+        this.displayFrequency = false;
+        this.displayDistance = false;
+        this.displayCourse = false;
+        return this;
+    };
+
+    /**
     * Number of elements displayed.
     * @param {String} [type]
     * @return {Number}
     */
-    exports.WaypointSettings.prototype.displayedElements = function (type) {
+    exports.WaypointSettings.prototype.displayedElements = function(type) {
         if (Object.isNullOrUndefined(type)) return 0;
 
         var c = 0;
