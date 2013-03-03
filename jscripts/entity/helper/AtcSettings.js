@@ -89,6 +89,7 @@ namespace.module('vd.entity.helper', function (exports) {
     * @return {FlightSettings}
     */
     exports.AtcSettings.prototype.displayForInclude = function () {
+        this.displayAtc = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayatc, this.displayAtc);
         return this;
     };
 });

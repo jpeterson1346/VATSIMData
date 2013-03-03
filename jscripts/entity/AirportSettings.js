@@ -51,7 +51,7 @@ namespace.module('vd.entity', function(exports) {
     * @return {AirportSettings}
     */
     exports.AirportSettings.prototype.displayForInclude = function() {
-        this.displayAirport = true;
+        this.displayAirport = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayairport, true);
         this.displayAirportVicinity = false;
         this.displayAtis = false;
         this.displayMetar = false;

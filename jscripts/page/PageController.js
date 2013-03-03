@@ -429,13 +429,32 @@ namespace.module('vd.page', function (exports) {
     * Show / hide the input fields.
     * @see vd.module:page.PageController#altitudeProfileSettings
     */
+    // VatGM: Show or hide input tabs, also relevant since style sheet widths are modified here ("include mode")
     exports.PageController.prototype.showHideInputAndTabs = function () {
         var me = this;
         var mapCanvas = document.getElementById("mapCanvas");
 
         if (globals.isOnlyMapMode) {
-            mapCanvas.style.width = "100%";
-            mapCanvas.style.height = "100%";
+            // view port size (if running in iframe)
+            var vpw = $(window).width();
+            var vph = $(window).height();
+
+            // clean up restrictions
+            mapCanvas.style.minWidth = "";
+            mapCanvas.style.minHeight = "";
+
+            // for some reason absolue pixels are more reliable than %
+            // in an iframe 
+            if (Object.isNullOrUndefined(vpw) || Object.isNullOrUndefined(vph)) {
+                // default is something is wrong with viewport dimensions
+                mapCanvas.style.width = "100%";
+                mapCanvas.style.height = "100%";
+            } else {
+                var vpwPx = vpw + "px";
+                var vphPx = vph + "px";
+                mapCanvas.style.width = vpwPx;
+                mapCanvas.style.height = vphPx;
+            }
         } else {
             var selected = $("#headerBarTabSelection").val().toUpperCase();
             var sideBar = document.getElementById("sideBar");
@@ -1031,16 +1050,24 @@ namespace.module('vd.page', function (exports) {
     /**
     * Init the map.
     * @private
+    * @see vd.page.PageControllerSettings setting further query parameters
     */
     exports.PageController.prototype._initMap = function () {
         if (Object.isNullOrUndefined(globals.queryParameters)) alert("Query parameters not initalized");
+
+        // view port size (if running in iframe)
+        var mapW = $("#mapCanvas").width();
+        var mapH = $("#mapCanvas").height();
 
         var me = this;
         var mapZoom = globals.isOnlyMapMode ? 7 : 9; // 7 is approx. Germany country, 9 Neckar area
         mapZoom = Object.ifNotNullOrUndefined(globals.queryParameters.gmzoom, mapZoom);
         mapZoom *= 1.0;
         if (mapZoom < 3) mapZoom = 3;
-        if (mapZoom > 14) mapZoom = 15;
+        if (mapZoom > 11) mapZoom = 11;
+
+        var overViewControl = mapW > 600 && mapH > 400;
+        overViewControl = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.gmoverview, overViewControl);
 
         var lat = Object.ifNotNullOrUndefined(globals.queryParameters.gmlat, 50.0);
         var lng = Object.ifNotNullOrUndefined(globals.queryParameters.gmlng, 8.0);
@@ -1050,13 +1077,15 @@ namespace.module('vd.page', function (exports) {
         var mapOptions = {
             streetViewControl: false,
             zoom: mapZoom,
+            minZoom: 3,
+            maxZoom: 11,
             mapTypeControlOptions: {
                 mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN],
                 style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
             },
             overviewMapControl: true,
             overviewMapControlOptions: {
-                opened: true
+                opened: overViewControl
             },
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
