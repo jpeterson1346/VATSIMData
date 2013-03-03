@@ -161,6 +161,8 @@ namespace.module('vd.page', function(exports) {
         this.flightImageHeightLarge = 26;
         this.flightImageWidthSmall = 16;
         this.flightImageHeightSmall = 16;
+        this.flightImageWidthSimplified = 10;
+        this.flightImageHeightSimplified = 10;
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms

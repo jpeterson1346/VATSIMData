@@ -6,18 +6,25 @@ namespace.module('vd.entity', function(exports) {
 
     /**
     * Get icon.
-    * @return {Objec} path, sizeH, sizeW
+    * @return {Object} path, sizeH, sizeW
     * @private
     */
+    // VatGM: Get aircraft icon
     exports.Flight.prototype._mapIcon = function() {
         var t = Object.ifNotNullOrUndefined(this.aircraft.toUpperCase(), null);
-        var icon = { "path": null, "sizeW": globals.flightImageWidth, "sizeH": globals.flightImageHeight };
         if (!this._aircraftDataMapped) this.resolveAircraftData();
+
+        // defaults
+        var icon = { "path": null, "sizeW": globals.flightImageWidth, "sizeH": globals.flightImageHeight };
 
         // mapping
         if (String.isNullOrEmpty(this._imageBaseName)) {
             // determine image
-            if (this.isHelicopter()) {
+            if (this.flightSettings.displaySimplifiedIcon) {
+                this._imageBaseName = "AircraftDot";
+                icon.sizeH = globals.flightImageHeightSimplified;
+                icon.sizeW = globals.flightImageWidthSimplified;
+            } else if (this.isHelicopter()) {
                 this._imageBaseName = "Helicopter";
             } else {
                 this._imageBaseName = "AircraftJet"; // default

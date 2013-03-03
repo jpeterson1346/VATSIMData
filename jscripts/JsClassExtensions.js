@@ -297,7 +297,7 @@ String.prototype.truncate = function(maxLength, useWordBoundary) {
 String.prototype.contains = function(toBeContained, ignoreCase) {
     if (String.isNullOrEmpty(toBeContained)) return false;
     ignoreCase = Object.ifNotNullOrUndefined(ignoreCase, false);
-    if (!ignoreCase) return (this.indexOf(toBeContained) >=0);
+    if (!ignoreCase) return (this.indexOf(toBeContained) >= 0);
     var me = this.toUpperCase();
     return me.indexOf(toBeContained.toUpperCase()) >= 0;
 };
@@ -336,6 +336,26 @@ Object.isNullOrUndefined = function(candidate) {
 */
 Object.ifNotNullOrUndefined = function(candidate, ifNullValue) {
     return Object.isNullOrUndefined(candidate) ? ifNullValue : candidate;
+};
+
+/**
+* Return respective value depending on candidate as boolean
+* @param {Object} candidate
+* @param {Object} ifNullValue
+* @return {Boolean} candidate or ifNullValue
+*/
+Object.ifNotNullOrUndefinedBoolean = function(candidate, ifNullValue) {
+    var o = Object.isNullOrUndefined(candidate) ? ifNullValue : candidate;
+    if (Object.isNullOrUndefined(o)) return false;
+    if (o.constructor === Boolean) return o;
+    if (o.constructor === String) {
+        if ("true" === o || "yes" === o || "on" === o) return true;
+        if ("false" === o || "no" === o || "off" === o) return false;
+        // continue with standard
+    }
+
+    // standard conversion
+    return Boolean(o);
 };
 
 /**

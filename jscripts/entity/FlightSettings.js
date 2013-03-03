@@ -71,6 +71,11 @@ namespace.module('vd.entity', function(exports) {
         * @type {Boolean}
         */
         this.displayHeightAndDeclination = false;
+        /**
+        * Display as "dot" only.
+        * @type {Boolean}
+        */
+        this.displaySimplifiedIcon = false;
 
         // set values
         this.set(properties);
@@ -107,6 +112,7 @@ namespace.module('vd.entity', function(exports) {
         this.displayAircraft = true;
         this.displayRequireFlightplan = true;
         this.displayHeightAndDeclination = true;
+        this.displaySimplifiedIcon = false;
         return this;
     };
 
@@ -135,7 +141,9 @@ namespace.module('vd.entity', function(exports) {
     * @return {FlightSettings}
     */
     exports.FlightSettings.prototype.displayForInclude = function () {
-        return this.displayMinimal();
+        this.displayMinimal();
+        this.displayFlight = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayflight, this.displayFlight);
+        this.displaySimplifiedIcon = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displaysimplifiedicon, this.displaySimplifiedIcon);
     };
 
     /**

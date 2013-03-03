@@ -188,19 +188,34 @@ namespace.module('vd.entity', function(exports, require) {
     * @private
     */
     exports.Flight.prototype._setImage = function() {
-        var me = this;
-        if (Object.isNullOrUndefined(this._img)) this._img = document.createElement('img');
-        this._img.alt = this.toString();
-        this._img.id = this.entity + "_" + this.objectId;
-        var iconInfo = this._mapIcon();
-        if (Object.isNullOrUndefined(iconInfo)) alert("Missing icon info for " + this.toString());
-        this._img.src = iconInfo.path;
-        this._img.width = iconInfo.sizeW;
-        this._img.height = iconInfo.sizeH;
-        this._img.style.visibility = true;
-        this._img.onmouseover = function() { me._imageMouseover(); };
-        this._img.onmouseout = function() { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
-        this.setHeading(this.heading, true);
+        var iconInfo;
+        if (!Object.isNullOrUndefined(this._img)) {
+            iconInfo = { "path": this._img.src, "sizeW": this._img.width, "sizeH": this._img.height };
+
+            // fallback if w / h is not available (older IE)
+            if (iconInfo.sizeW == 0 || iconInfo.sizeH == 0) {
+                var w = this._img.style.width.replace(/[^0-9]/g, ''); // remove non numbers
+                var h = this._img.style.height.replace(/[^0-9]/g, ''); // remove non numbers
+                iconInfo.sizeW = 1 * w;
+                iconInfo.sizeH = 1 * h;
+            }
+        } else {
+            var me = this;
+            this._img = document.createElement('img');
+            this._img.alt = this.toString();
+            this._img.id = this.entity + "_" + this.objectId;
+            iconInfo = this._mapIcon(); // get the icon
+            if (Object.isNullOrUndefined(iconInfo)) alert("Missing icon info for " + this.toString());
+            this._img.src = iconInfo.path;
+            this._img.width = iconInfo.sizeW;
+            this._img.height = iconInfo.sizeH;
+            this._img.style.width = iconInfo.sizeW + "px";
+            this._img.style.height = iconInfo.sizeH + "px";
+            this._img.style.visibility = true;
+            this._img.onmouseover = function() { me._imageMouseover(); };
+            this._img.onmouseout = function() { me._imgMouseout(); }; // creates flickering in some browser, disable in such a case
+            this.setHeading(this.heading, true);
+        }
         return iconInfo;
     };
 
@@ -211,7 +226,7 @@ namespace.module('vd.entity', function(exports, require) {
     exports.Flight.prototype._imageMouseover = function() {
         if (this.disposed) return; // no longer valid
         if (!Object.isNullOrUndefined(this._flightSettings)) return; // already in this mode
-        this._flightSettings = this.flightSettings;
+        this._flightSettings = this.flightSettings; // "backup"
         this.flightSettings = this.flightSettings.clone().displayAll();
         this._draw(true);
 
@@ -283,7 +298,9 @@ namespace.module('vd.entity', function(exports, require) {
         if (Object.isNullOrUndefined(force)) force = false;
         if (this.heading === heading && !force) return;
         this.heading = heading;
-        if (Object.isNumber(this.heading)) $(this._img).rotate(this.heading);
+        if (Object.isNumber(this.heading)) {
+            if (!this.flightSettings.displaySimplifiedIcon) $(this._img).rotate(this.heading);
+        }
     };
 
     /**

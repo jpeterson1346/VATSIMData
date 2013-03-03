@@ -38,7 +38,7 @@ namespace.module('vd.page', function(exports) {
     exports.PageController.prototype.vatsimClientSettingsChanged = function(mode) {
 
         // make sure we have a mode
-        mode = Object.ifNotNullOrUndefined(mode, { });
+        mode = Object.ifNotNullOrUndefined(mode, {});
 
         var fs = globals.flightSettings;
         if (globals.isOnlyMapMode) {
@@ -48,7 +48,8 @@ namespace.module('vd.page', function(exports) {
                 vd.util.UtilsWeb.toggleCheckbox("inputFlightSettingsShowFlight");
             }
             fs.set({
-                    displayFlight: document.getElementById("inputFlightSettingsShowFlight").checked,
+                    displaySimplifiedIcon: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displaysimplifiedicon, false),
+                    displayFlight: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayflight, document.getElementById("inputFlightSettingsShowFlight").checked),
                     displayCallsign: document.getElementById("inputFlightSettingsCallsign").checked,
                     displayPilot: document.getElementById("inputFlightSettingsPilot").checked,
                     displayId: document.getElementById("inputFlightSettingsId").checked,
@@ -62,13 +63,13 @@ namespace.module('vd.page', function(exports) {
                 }
             );
         }
-        
+
         var atc = globals.atcSettings;
         if (globals.isOnlyMapMode) {
             atc.displayForInclude();
         } else {
             atc.set({
-                displayAtc: document.getElementById("inputAtcSettingsShowAtc").checked,
+                displayAtc: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayatc, document.getElementById("inputAtcSettingsShowAtc").checked),
                 displayCallsign: document.getElementById("inputAtcSettingsCallsign").checked,
                 displayController: document.getElementById("inputAtcSettingsController").checked,
                 displayId: document.getElementById("inputAtcSettingsId").checked,
@@ -76,19 +77,19 @@ namespace.module('vd.page', function(exports) {
                 displayObservers: document.getElementById("inputAtcSettingsObserver").checked
             });
         }
-        
+
         var ap = globals.airportSettings;
         if (globals.isOnlyMapMode) {
             ap.displayForInclude();
         } else {
             ap.set({
-                displayAirport: document.getElementById("inputAirportSettingsShowAirport").checked,
+                displayAirport: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayatc, document.getElementById("inputAirportSettingsShowAirport").checked),
                 displayAirportVicinity: document.getElementById("inputAirportSettingsVicinity").checked,
                 displayAtis: document.getElementById("inputAirportSettingsAtis").checked,
                 displayMetar: document.getElementById("inputAirportSettingsMetar").checked
             });
         }
-        
+
         var ws = globals.waypointSettings;
         if (globals.isOnlyMapMode) {
             ws.displayForInclude();
@@ -113,7 +114,7 @@ namespace.module('vd.page', function(exports) {
     * Settings for the navaids has been changed.
     * @param {Object} mode specify further actions { initializeOnly: only initialize, ... }
     */
-    exports.PageController.prototype.navaidSettingsChanged = function (mode) {
+    exports.PageController.prototype.navaidSettingsChanged = function(mode) {
         // map only mode?
         if (globals.isOnlyMapMode) return; // skip
 
@@ -166,11 +167,11 @@ namespace.module('vd.page', function(exports) {
         default:
             return;
         }
-        
+
         // trace locks
         globals.traceSemaphores = vd.util.UtilsWeb.checkboxChecked("inputTraceLocks");
         globals.traceAircraftIconMapping = vd.util.UtilsWeb.checkboxChecked("inputTraceAircraftIconMapping");
-        
+
         // info
         this.displayInfo("New log level is " + value + ". Trace locks: " + globals.traceSemaphores + ". Trace mapping: " + globals.traceAircraftIconMapping);
     };
@@ -220,7 +221,7 @@ namespace.module('vd.page', function(exports) {
     * @param {Object} filterParams 
     */
     exports.PageController.prototype.filterSettingsChanged = function(filterParams) {
-        filterParams = Object.ifNotNullOrUndefined(filterParams, { });
+        filterParams = Object.ifNotNullOrUndefined(filterParams, {});
         var tf = !Object.isNullOrUndefined(filterParams.toogleFilter) && filterParams.toogleFilter;
         var f = tf ? vd.util.UtilsWeb.toggleCheckbox("inputApplyFilter") : vd.util.UtilsWeb.checkboxChecked("inputApplyFilter");
         if (f) {
