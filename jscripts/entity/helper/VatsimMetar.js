@@ -2,7 +2,7 @@
 * @module vd.entity.helper
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.entity.helper', function (exports) {
+namespace.module('vd.entity.helper', function(exports) {
 
     /**
     * @classdesc Metar information
@@ -30,8 +30,12 @@ namespace.module('vd.entity.helper', function (exports) {
             url = vd.util.UtilsWeb.replaceCurrentPage("data/Metar.txt"); // full url required for Chrome
         } else {
             // normal mode
-            url = vd.util.UtilsWeb.replaceCurrentPage("php/VatsimProxy.php5?metar&id=") + icao.toUpperCase();
+            url = vd.util.UtilsWeb.replaceCurrentPage("php/VatsimProxy.php5");
         }
+        url = vd.util.UtilsWeb.removeQueryString(url);
+        url += "?metar&id=" + icao.toUpperCase();
+
+        // read metar
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
         if (xmlhttp.status == 200) {

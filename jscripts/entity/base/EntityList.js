@@ -261,4 +261,19 @@ namespace.module('vd.entity.base', function(exports) {
     exports.EntityList.prototype.fsxWsEntities = function(fsxWsOnly) {
         return vd.entity.base.BaseEntityModel.findVatsimBased(this.entities, fsxWsOnly);
     };
+    
+    /**
+    * Classnames of the entities in the list.
+    * @return {Array} class names
+    */
+    exports.EntityList.prototype.entityTypes = function() {
+        var typeNames = new Array();
+        if (Object.isNullOrUndefined(this.entities)) return typeNames;
+        for (var e = 0, len = this.entities.length; e < len; e++) {
+            var entity = this.entities[e];
+            var tn = entity.entity;
+            if (!typeNames.contains(tn)) typeNames.push(tn);
+        }
+        return typeNames;
+    };
 });

@@ -2,7 +2,7 @@
 * @module vd.page
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.page', function (exports) {
+namespace.module('vd.page', function(exports) {
 
     // #region ------------ Constructor ------------
     /**
@@ -11,7 +11,7 @@ namespace.module('vd.page', function (exports) {
     * @see vd.module:page.Globals
     * @author KWB
     */
-    exports.PageController = function () {
+    exports.PageController = function() {
         /**
         * The collecting event for bounds changing.
         * @private
@@ -179,7 +179,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Init everything.
     */
-    exports.PageController.prototype.initialize = function () {
+    exports.PageController.prototype.initialize = function() {
 
         // browser check, but only for fully blown version
         if (!globals.isOnlyMapMode) {
@@ -206,15 +206,15 @@ namespace.module('vd.page', function (exports) {
         // load flights when map completed
         var me = this;
         google.maps.event.addListenerOnce(globals.map, 'tilesloaded',
-            function () {
+            function() {
                 me.resetUpdateTimer(); // inital kick off reading
                 if (globals.geolocationWorking) me._initGeoLocationPosition();
             }
         );
 
         // register resize event
-        $(window).resize(function () { me.windowResizeEvent(); });
-        
+        $(window).resize(function() { me.windowResizeEvent(); });
+
         // Trigger aircraft data load
         vd.entity.Flight.readAircraftData();
 
@@ -223,7 +223,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Close the application.
     */
-    exports.PageController.prototype.close = function () {
+    exports.PageController.prototype.close = function() {
         if (!Object.isNullOrUndefined(globals.logAppenderPopUp)) globals.logAppenderPopUp.close();
     };
     // #endregion ------------ public part init / close ------------
@@ -233,7 +233,7 @@ namespace.module('vd.page', function (exports) {
     * Does the browser fullfill all requirements?
     * @return true means check is passed 
     */
-    exports.PageController.prototype.browserCheck = function () {
+    exports.PageController.prototype.browserCheck = function() {
         var bar = document.getElementById("inputFlightWaypointsLegend");
         if (Object.isNullOrUndefined(bar.getContext)) return false;
         return true;
@@ -242,7 +242,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Bring logger to front and focus (aka pop up logger).
     */
-    exports.PageController.prototype.showLogger = function () {
+    exports.PageController.prototype.showLogger = function() {
         if (Object.isNullOrUndefined(globals.logAppenderPopUp)) {
             if (Object.isNullOrUndefined(globals.logAppenderConsole))
                 this.displayInfo("Logger is disabled");
@@ -257,7 +257,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Test FsxWs connection and update info.
     */
-    exports.PageController.prototype.refreshFsxWsInfo = function () {
+    exports.PageController.prototype.refreshFsxWsInfo = function() {
         if (Object.isNullOrUndefined(globals.fsxWs)) {
             alert("No refresh possible, FsxWs object not available!");
             return;
@@ -266,7 +266,7 @@ namespace.module('vd.page', function (exports) {
         var me = this;
 
         // update fields after a delay, hopefully the async check is completed by then
-        setTimeout(function () {
+        setTimeout(function() {
             me._setFsxWsInfoFields();
         }, globals.fsxWsAvailabilityDelay);
     };
@@ -274,7 +274,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Show VATroute.
     */
-    exports.PageController.prototype.showVatRoute = function () {
+    exports.PageController.prototype.showVatRoute = function() {
         var routeString = $("#inputVatRoute").val();
         var wps = vd.entity.helper.RouteParser.parseVatRoute(routeString);
         if (Array.isNullOrEmpty(wps)) {
@@ -291,7 +291,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Hide Route.
     */
-    exports.PageController.prototype.hideRoute = function () {
+    exports.PageController.prototype.hideRoute = function() {
         if (!Object.isNullOrUndefined(this._shownRoute)) {
             this._shownRoute.dispose();
             this._shownRoute = null;
@@ -301,7 +301,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Show some VATroute demo data.
     */
-    exports.PageController.prototype.loadVatRouteDemoData = function () {
+    exports.PageController.prototype.loadVatRouteDemoData = function() {
         var routeString = vd.entity.helper.RouteParser.vatRouteDemoData();
         $("#inputVatRoute").val(routeString);
     };
@@ -309,7 +309,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Hide all clients.
     */
-    exports.PageController.prototype.hideAllEntities = function () {
+    exports.PageController.prototype.hideAllEntities = function() {
         if (Object.isNullOrUndefined(globals.allEntities)) return;
         globals.allEntities.display(false);
         this._clearOwnMapOverlays(); // overlays which are not based the FsxWs / VATSIM entities, e.g. routes
@@ -320,7 +320,7 @@ namespace.module('vd.page', function (exports) {
     * @param {KeyboardEvent} event
     * @param {function}      func to be called
     */
-    exports.PageController.prototype.onEnter = function (event, func) {
+    exports.PageController.prototype.onEnter = function(event, func) {
         if (Object.isNullOrUndefined(event) || event.keyCode != 13 || Object.isNullOrUndefined(func)) return;
         func();
     };
@@ -328,7 +328,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Go to a new location, "the" geolocation
     */
-    exports.PageController.prototype.gotoGeolocation = function () {
+    exports.PageController.prototype.gotoGeolocation = function() {
         if (globals.geolocationWorking) {
             var l = new google.maps.LatLng(globals.geolocationLat, globals.geolocationLon);
             exports.newLocation(true, l);
@@ -343,7 +343,7 @@ namespace.module('vd.page', function (exports) {
     * @param {String}  [place]
     * @param {Number}  [zoomLevel]
     */
-    exports.PageController.prototype.newPlace = function (center, place, zoomLevel) {
+    exports.PageController.prototype.newPlace = function(center, place, zoomLevel) {
         var ePlace = document.getElementById("inputPlace");
         if (String.isNullOrEmpty(place)) place = ePlace.value;
         if (String.isNullOrEmpty(place)) return; // still nothing
@@ -351,7 +351,7 @@ namespace.module('vd.page', function (exports) {
         // async call
         var me = this;
         globals.geocoder.geocode({ 'address': place, 'bounds': globals.map.getBounds() },
-            function (results, status) {
+            function(results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
                     var latLng = results[0].geometry.location;
                     var fullName = results[0].formatted_address;
@@ -366,14 +366,14 @@ namespace.module('vd.page', function (exports) {
     /**
     * Latitude / Longitude to address / place.
     */
-    exports.PageController.prototype.reverseLookup = function () {
+    exports.PageController.prototype.reverseLookup = function() {
         var elat = document.getElementById("inputLatitude");
         var elon = document.getElementById("inputLongitude");
         if (!vd.util.UtilsCalc.isValidlatLon(elat.value, elon.value)) return;
         var latLng = new google.maps.LatLng(elat.value, elon.value);
         // async call
         globals.geocoder.geocode({ 'latLng': latLng, 'bounds': globals.map.getBounds() },
-            function (results, status) {
+            function(results, status) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
                     var fullName = results[0].formatted_address;
                     document.getElementById("inputPlace").value = fullName;
@@ -384,7 +384,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Display a marker for latitude / longitude.
     */
-    exports.PageController.prototype.addLatLngMarker = function () {
+    exports.PageController.prototype.addLatLngMarker = function() {
         var elat = document.getElementById("inputLatitude");
         var elon = document.getElementById("inputLongitude");
         if (!vd.util.UtilsCalc.isValidlatLon(elat.value, elon.value)) return;
@@ -401,7 +401,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Display a marker for latitude / longitude.
     */
-    exports.PageController.prototype.removeLatLngMarkers = function () {
+    exports.PageController.prototype.removeLatLngMarkers = function() {
         this._markers.clear();
     };
 
@@ -411,7 +411,7 @@ namespace.module('vd.page', function (exports) {
     * @param {google.maps.LatLng} [latLng]
     * @param {Number}             [zoomLevel]
     */
-    exports.PageController.prototype.newLocation = function (center, latLng, zoomLevel) {
+    exports.PageController.prototype.newLocation = function(center, latLng, zoomLevel) {
         var elat = document.getElementById("inputLatitude");
         var elon = document.getElementById("inputLongitude");
         if (Object.isNullOrUndefined(latLng)) {
@@ -430,7 +430,7 @@ namespace.module('vd.page', function (exports) {
     * @see vd.module:page.PageController#altitudeProfileSettings
     */
     // VatGM: Show or hide input tabs, also relevant since style sheet widths are modified here ("include mode")
-    exports.PageController.prototype.showHideInputAndTabs = function () {
+    exports.PageController.prototype.showHideInputAndTabs = function() {
         var me = this;
         var mapCanvas = document.getElementById("mapCanvas");
 
@@ -521,7 +521,7 @@ namespace.module('vd.page', function (exports) {
                 if (selected.startsWith("S")) this._displayAltitudeColorBar(); // force redraw
             }
         }
-        
+
         // resizing
         this.windowResizeEvent(); // force resize
 
@@ -534,32 +534,32 @@ namespace.module('vd.page', function (exports) {
     * @param {String} tab
     * @param {Object} [optParams]
     */
-    exports.PageController.prototype.selectTab = function (tab, optParams) {
+    exports.PageController.prototype.selectTab = function(tab, optParams) {
         if (!String.isNullOrEmpty(tab)) {
             var t = tab.substr(0, 1).toUpperCase();
             var value = null;
             switch (t) {
-                case "M":
-                    value = "Map";
-                    break;
-                case "S":
-                    value = "Settings";
-                    break;
-                case "D":
-                    value = "Data";
-                    break;
-                case "E":
-                    value = "Entities";
-                    break;
-                case "C":
-                    value = "Credits";
-                    break;
-                case "R":
-                    value = "Route";
-                    break;
-                case "O":
-                    value = "Overlays";
-                    break;
+            case "M":
+                value = "Map";
+                break;
+            case "S":
+                value = "Settings";
+                break;
+            case "D":
+                value = "Data";
+                break;
+            case "E":
+                value = "Entities";
+                break;
+            case "C":
+                value = "Credits";
+                break;
+            case "R":
+                value = "Route";
+                break;
+            case "O":
+                value = "Overlays";
+                break;
             }
             var el = document.getElementById("headerBarTabSelection");
             if (!String.isNullOrEmpty(value)) {
@@ -577,7 +577,7 @@ namespace.module('vd.page', function (exports) {
     * @param {String}  content
     * @param {Boolean} [timerCalled]
     */
-    exports.PageController.prototype.displayInfoIfNotEmpty = function (content, timerCalled) {
+    exports.PageController.prototype.displayInfoIfNotEmpty = function(content, timerCalled) {
         if (String.isNullOrEmpty(content)) return;
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
         this.displayInfo(content, timerCalled);
@@ -588,13 +588,13 @@ namespace.module('vd.page', function (exports) {
     * @param {String}  [content]
     * @param {Boolean} [timerCalled]
     */
-    exports.PageController.prototype.displayInfo = function (content, timerCalled) {
+    exports.PageController.prototype.displayInfo = function(content, timerCalled) {
         if (!Object.isNullOrUndefined(content)) content = content.trim();
         var hasContent = !String.isNullOrEmpty(content);
         timerCalled = Object.ifNotNullOrUndefined(timerCalled, false);
         var now = new Date().getTime();
         var me = this;
-        
+
         // map only mode likely will not have task bar
         var ti = Object.ifNotNullOrUndefined(document.getElementById("headerBarTaskInfo"), null);
         var hasTaskBar = Object.isNullOrUndefined(ti) ? false : true;
@@ -629,7 +629,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Boolean} [displayInfo] display an info message
     * @param {Boolean} [refresh] update the entities, e.g. by highlighting them
     */
-    exports.PageController.prototype.followId = function (id, displayInfo, refresh) {
+    exports.PageController.prototype.followId = function(id, displayInfo, refresh) {
         var idByParameter = !Object.isNullOrUndefined(id);
         id = Object.ifNotNullOrUndefined(id, $("#inputFollowId").val());
         if (id == globals.mapFollowId) return; // already followed
@@ -690,11 +690,11 @@ namespace.module('vd.page', function (exports) {
     /**
     * Map has been dragged.
     */
-    exports.PageController.prototype.boundsChangedEvent = function () {
+    exports.PageController.prototype.boundsChangedEvent = function() {
         var me = this;
         if (Object.isNullOrUndefined(this._boundsChangedCollectedEvent))
             this._boundsChangedCollectedEvent = new vd.util.CollectingEvent(
-                function () {
+                function() {
                     me._asyncBoundsUpdate();
                 }, globals.collectiveBoundsChangedInterval, true, "Bounds changed event");
         else
@@ -705,11 +705,11 @@ namespace.module('vd.page', function (exports) {
     * Window resize.
     * @see <a href="http://stackoverflow.com/questions/743214/how-do-i-resize-a-google-map-with-javascript-after-it-has-loaded">Google Map resize</a>
     */
-    exports.PageController.prototype.windowResizeEvent = function () {
+    exports.PageController.prototype.windowResizeEvent = function() {
         var me = this;
         if (Object.isNullOrUndefined(this._windowsResizeCollectedEvent))
             this._windowsResizeCollectedEvent = new vd.util.CollectingEvent(
-                function () {
+                function() {
                     me._initGrids(true);
                     me._updateAltitudeProfile();
                     google.maps.event.trigger(globals.map, "resize");
@@ -723,7 +723,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Boolean} withInfo
     * @param {Number} displayReason further details why to refresh
     */
-    exports.PageController.prototype.refresh = function (withInfo, displayReason) {
+    exports.PageController.prototype.refresh = function(withInfo, displayReason) {
         var statsEntry = new vd.util.RuntimeEntry("Refresh (PageController)");
         withInfo = Object.ifNotNullOrUndefined(withInfo, false);
         displayReason = Object.ifNotNullOrUndefined(displayReason, false);
@@ -741,12 +741,12 @@ namespace.module('vd.page', function (exports) {
     * @see PageController.DisplayForceRedisplay 
     * @see PageController.DisplayNewDataVatsim
     */
-    exports.PageController.prototype.backgroundRefresh = function (displayReason) {
+    exports.PageController.prototype.backgroundRefresh = function(displayReason) {
         var me = this;
         displayReason = Object.ifNotNullOrUndefined(displayReason, null);
         if (Object.isNullOrUndefined(this._backgroundRefreshCollectEvent))
             this._backgroundRefreshCollectEvent = new vd.util.CollectingEvent(
-                function () {
+                function() {
                     me.refresh(displayReason);
                 }, globals.collectiveBackgroundRefreshEvent, true, "Refresh (redisplay) the clients");
         else
@@ -756,7 +756,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Load ground overlay charts list.
     */
-    exports.PageController.prototype.loadOverlayChartList = function () {
+    exports.PageController.prototype.loadOverlayChartList = function() {
         var icao = vd.util.UtilsWeb.getSelectedValue("inputGroundOverlaysAirport");
         if (String.isNullOrEmpty(icao)) return;
         var selectedOverlays = vd.entity.base.BaseEntityModel.findByCallsign(this._groundOverlays, icao); // already in memory
@@ -773,7 +773,7 @@ namespace.module('vd.page', function (exports) {
     * Display overlay chart.
     * @param {Boolean} [center]
     */
-    exports.PageController.prototype.displayOverlayChart = function (center) {
+    exports.PageController.prototype.displayOverlayChart = function(center) {
         var name = vd.util.UtilsWeb.getSelectedValue("inputGroundOverlaysAirportCharts");
         center = Object.ifNotNullOrUndefined(center, true);
         var selectedOverlays = vd.entity.base.BaseEntityModel.findByName(this._groundOverlays, name); // already in memory
@@ -790,7 +790,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Remove (hide) overlay chart.
     */
-    exports.PageController.prototype.removeOverlayChart = function () {
+    exports.PageController.prototype.removeOverlayChart = function() {
         if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
         this.groundOverlayDisplayed.display(false);
         this.groundOverlayDisplayed = null;
@@ -800,7 +800,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Settings for overlay chart has been changed.
     */
-    exports.PageController.prototype.groundOverlayChanged = function () {
+    exports.PageController.prototype.groundOverlayChanged = function() {
         globals.styles.groundOverlayOpacity = String.toNumber(vd.util.UtilsWeb.getSelectedValue("inputGroundOverlayOpacity"), globals.styles.groundOverlayOpacity);
         if (vd.util.UtilsWeb.checkboxChecked("inputGroundOverlayBackgroundTransparent"))
             globals.styles.groundOverlayBackground = "transparent";
@@ -817,7 +817,7 @@ namespace.module('vd.page', function (exports) {
     * Zoom to ground overlay.
     * Nothing happens if there is no ground overlay.
     */
-    exports.PageController.prototype.zoomToGroundOverlay = function () {
+    exports.PageController.prototype.zoomToGroundOverlay = function() {
         if (Object.isNullOrUndefined(this.groundOverlayDisplayed)) return;
         this.groundOverlayDisplayed.zoomMapToVicinity();
     };
@@ -827,7 +827,7 @@ namespace.module('vd.page', function (exports) {
     * and display is handled en detail.
     * @see vd.module:page.PageController.UsageModeFsxMovingMapWithVatsim
     */
-    exports.PageController.prototype.usageModeChanged = function () {
+    exports.PageController.prototype.usageModeChanged = function() {
         var usageMode = String.toNumber($("#inputUsageMode").val(), vd.page.PageController.UsageModeIllegal);
         var vatsimLoadOn = String.toNumber($("#inputTimerUpdateVatsim").val(), -1) > 0;
         var fsxLoadOn = String.toNumber($("#inputTimerUpdateFsx").val(), -1) > 0;
@@ -879,7 +879,8 @@ namespace.module('vd.page', function (exports) {
     * Remark: Time consuming method, use wisely.
     * @param {boolean} forceUpdate update even when grid is invisible
     */
-    exports.PageController.prototype.updateGrids = function (forceUpdate) {
+    // VatGM: Update grids, populates the grids
+    exports.PageController.prototype.updateGrids = function(forceUpdate) {
         if (globals.isOnlyMapMode) return;
         var gridsVisible = this._gridsVisible();
         if (!(forceUpdate || gridsVisible)) return;
@@ -901,6 +902,7 @@ namespace.module('vd.page', function (exports) {
             var flights = globals.allEntities.flights();
             for (var f = 0, lenF = flights.length; f < lenF; f++) {
                 var flight = flights[f];
+                if (String.isNullOrEmpty(flight.objectId)) alert("No object id for flight: " + flight.toString());
                 flightsGrid.addRowData(flight.objectId, flight);
             }
         } else if (this._gridFlightsMouseOver) {
@@ -914,6 +916,7 @@ namespace.module('vd.page', function (exports) {
             var atcs = globals.vatsimClients.atcs; // I need to get the helper entities as well
             for (var a = 0, lenA = atcs.length; a < lenA; a++) {
                 var atc = atcs[a];
+                if (String.isNullOrEmpty(atc.objectId)) alert("No object id for ATC: " + atc.toString());
                 atcGrid.addRowData(atc.objectId, atc);
             }
         } else {
@@ -939,7 +942,7 @@ namespace.module('vd.page', function (exports) {
     * @param {jQuery|String|HtmlDomElement} [flightsGrid]
     * @param {jQuery|String|HtmlDomElement} [atcGrid]
     */
-    exports.PageController.prototype.sortGrids = function (sortProperty, flightsGrid, atcGrid) {
+    exports.PageController.prototype.sortGrids = function(sortProperty, flightsGrid, atcGrid) {
         var sc = String.isNullOrEmpty(sortProperty) ? "_isInBounds" : sortProperty;
         if (!Object.isNullOrUndefined(flightsGrid)) flightsGrid.sortGrid(sc, false, "desc");
         if (!Object.isNullOrUndefined(atcGrid)) atcGrid.sortGrid(sc, false, "desc");
@@ -950,12 +953,12 @@ namespace.module('vd.page', function (exports) {
     * Remark: Triggers a time consuming method.
     * @param {boolean} forceUpdate
     */
-    exports.PageController.prototype.updateGridsBackground = function (forceUpdate) {
+    exports.PageController.prototype.updateGridsBackground = function(forceUpdate) {
         if (globals.isOnlyMapMode) return;
         var me = this;
         if (Object.isNullOrUndefined(this._backgroundUpdateGridCollectEvent))
             this._backgroundUpdateGridCollectEvent = new vd.util.CollectingEvent(
-                function () {
+                function() {
                     me.updateGrids(forceUpdate);
                 }, globals.collectiveBackgroundGridsDelay, true, "Update grids");
         else
@@ -966,7 +969,7 @@ namespace.module('vd.page', function (exports) {
     * Update the filter grid.
     * @param {Boolean} [refresh] refresh the entities, e.g. by highlighting them.
     */
-    exports.PageController.prototype.updateFilterGrid = function (refresh) {
+    exports.PageController.prototype.updateFilterGrid = function(refresh) {
         refresh = Object.ifNotNullOrUndefined(refresh, false);
         var filterGrid = jQuery("#filterData");
         filterGrid.clearGridData();
@@ -981,7 +984,7 @@ namespace.module('vd.page', function (exports) {
     * Update the data grid.
     * @param {Object} gridParams
     */
-    exports.PageController.prototype.collapseGrids = function (gridParams) {
+    exports.PageController.prototype.collapseGrids = function(gridParams) {
         if (Object.isNullOrUndefined(gridParams)) return;
         var ft = document.getElementById("flightData");
         var at = document.getElementById("atcData");
@@ -998,7 +1001,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Boolean} mouseOverFlightsGrid
     * @param {Boolean} mouseOverAtcGrid
     */
-    exports.PageController.prototype.gridMouseState = function (mouseOverFlightsGrid, mouseOverAtcGrid) {
+    exports.PageController.prototype.gridMouseState = function(mouseOverFlightsGrid, mouseOverAtcGrid) {
         if (!Object.isNullOrUndefined(mouseOverAtcGrid)) this._gridAtcMouseOver = mouseOverAtcGrid;
         if (!Object.isNullOrUndefined(mouseOverFlightsGrid)) this._gridFlightsMouseOver = mouseOverFlightsGrid;
     };
@@ -1010,7 +1013,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Boolean} [resize] further calling the resize event to adjust width / height 
     * @see vd.module:page.PageController#_updateAltitudeProfile
     */
-    exports.PageController.prototype.altitudeProfileSettings = function (resize) {
+    exports.PageController.prototype.altitudeProfileSettings = function(resize) {
         if (globals.isOnlyMapMode) return;
         var profile = document.getElementById("mapAltitudeProfile");
         resize = Object.ifNotNullOrUndefined(resize, true);
@@ -1040,7 +1043,7 @@ namespace.module('vd.page', function (exports) {
     * @see vd.module:page.PageController#altitudeProfileSettings
     * @private
     */
-    exports.PageController.prototype._updateAltitudeProfile = function () {
+    exports.PageController.prototype._updateAltitudeProfile = function() {
         if (Object.isNullOrUndefined(globals.altitudeProfile)) return; // during init
         globals.altitudeProfile.displayProjection();
     };
@@ -1052,7 +1055,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see vd.page.PageControllerSettings setting further query parameters
     */
-    exports.PageController.prototype._initMap = function () {
+    exports.PageController.prototype._initMap = function() {
         if (Object.isNullOrUndefined(globals.queryParameters)) alert("Query parameters not initalized");
 
         // view port size (if running in iframe)
@@ -1091,7 +1094,7 @@ namespace.module('vd.page', function (exports) {
         };
         globals.assignMap(new google.maps.Map(document.getElementById("mapCanvas"), mapOptions));
         google.maps.event.addListener(globals.map, 'bounds_changed',
-            function () { me.boundsChangedEvent(); }
+            function() { me.boundsChangedEvent(); }
         ); // zoom_changed, dragend
         this._displayLocationAndBounds();
         this.newLocation(true, latLng);
@@ -1102,7 +1105,7 @@ namespace.module('vd.page', function (exports) {
         if (!globals.isOnlyMapMode && navigator.geolocation) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             navigator.geolocation.getCurrentPosition(
-                function (position) {
+                function(position) {
                     globals.geolocationWorking = true;
                     globals.geolocationLat = position.coords.latitude;
                     globals.geolocationLon = position.coords.longitude;
@@ -1114,13 +1117,13 @@ namespace.module('vd.page', function (exports) {
     * Init the geolocation position.
     * @private
     */
-    exports.PageController.prototype._initGeoLocationPosition = function () {
+    exports.PageController.prototype._initGeoLocationPosition = function() {
         // get current position if available
         if (!globals.isOnlyMapMode && navigator.geolocation) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             var me = this;
             navigator.geolocation.getCurrentPosition(
-                function (position) {
+                function(position) {
                     globals.geolocationWorking = true;
                     var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                     me._displayLocationAndBounds();
@@ -1134,7 +1137,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see vd.module:page.PageController#colorSettingsChanged
     */
-    exports.PageController.prototype._initColorInputs = function () {
+    exports.PageController.prototype._initColorInputs = function() {
         $("#inputFlightSettingsWaypointLinesColor").val(vd.util.Utils.fixHexColorValue(globals.styles.wpFlightWaypointBaseColor.toHex(), true));
         $("#inputFlightSettingLabelsColor").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.flightLabelBackground, "CCCCCC").toHex(), true));
         $("#inputFlightSettingLabelsColorIfFollowed").val(vd.util.Utils.fixHexColorValue(vd.util.Utils.getValidColor(globals.styles.flightLabelBackgroundIfFollowed, "CCCCCC").toHex(), true));
@@ -1157,7 +1160,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see vd.module:page.PageController#fsxWsSettingsChanged
     */
-    exports.PageController.prototype._initFsxWsSettings = function () {
+    exports.PageController.prototype._initFsxWsSettings = function() {
         if (Object.isNumber(globals.fsxWs.serverPort) && globals.fsxWs.serverPort >= 79)
             $("#inputFsxWsPort").val(globals.fsxWs.serverPort);
         else
@@ -1175,7 +1178,7 @@ namespace.module('vd.page', function (exports) {
     * Init the side bar.
     * @private
     */
-    exports.PageController.prototype._initSideBarData = function () {
+    exports.PageController.prototype._initSideBarData = function() {
 
         // order here is crucial!
         vd.util.UtilsWeb.selectValue("inputWaypointSettingsFlightMaxNumber", globals.waypointSettings.flightWaypointsNumberMaximum);
@@ -1203,7 +1206,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see vd.module:page.PageController#updateGrids
     */
-    exports.PageController.prototype._initGrids = function (onlyResize) {
+    exports.PageController.prototype._initGrids = function(onlyResize) {
         onlyResize = Object.ifNotNullOrUndefined(onlyResize, false);
         var elementSideBar = document.getElementById("sideBar");
         if ($(elementSideBar).width() < 10) return; // sidebar is invisible / hidden. Stop here!
@@ -1261,7 +1264,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'pilot', index: 'pilot', width: widthNameFlight, search: true },
-        // does for some reasons not work with id
+            // does for some reasons not work with id
             { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'transponder', index: 'transponder', width: widthTransponder, hidden: (widthTransponder < 5), search: true },
             { name: 'isGrounded', index: 'isGrounded', align: 'center', hidden: !withGrounded, width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
@@ -1273,7 +1276,7 @@ namespace.module('vd.page', function (exports) {
             { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'controller', index: 'controller', width: widthNameAtc, search: true },
-        // does for some reasons not work with id
+            // does for some reasons not work with id
             { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: '_isInBounds', index: '_isInBounds', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true },
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
@@ -1283,8 +1286,8 @@ namespace.module('vd.page', function (exports) {
             { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
             { name: 'name', index: 'name', width: widthNameFilter, search: true },
-        // does for some reasons not work with id
-            {name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
+            // does for some reasons not work with id
+            { name: 'vatsimId', index: 'vatsimId', width: widthId, search: true, hidden: (widthId < 5) },
             { name: 'entity', index: 'entity', search: false, width: widthEntity }
         ];
 
@@ -1312,7 +1315,7 @@ namespace.module('vd.page', function (exports) {
                 position: "last",
                 title: "Follow on map",
                 cursor: "pointer",
-                onClickButton: function () {
+                onClickButton: function() {
                     var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) me.followId(objectId);
                 }
@@ -1323,7 +1326,7 @@ namespace.module('vd.page', function (exports) {
                 position: "last",
                 title: "Add to filter",
                 cursor: "pointer",
-                onClickButton: function () {
+                onClickButton: function() {
                     var objectId = $(elementFlightData).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.addByObjectId(objectId);
                     me.updateFilterGrid(true);
@@ -1335,7 +1338,7 @@ namespace.module('vd.page', function (exports) {
                 position: "last",
                 title: "Remove from filter",
                 cursor: "pointer",
-                onClickButton: function () {
+                onClickButton: function() {
                     var objectId = $(elementFilter).jqGrid('getGridParam', 'selrow');
                     if (!String.isNullOrEmpty(objectId)) globals.filter.removeByObjectId(objectId);
                     me.updateFilterGrid(true);
@@ -1347,7 +1350,7 @@ namespace.module('vd.page', function (exports) {
                 position: "last",
                 title: "Clear filter",
                 cursor: "pointer",
-                onClickButton: function () {
+                onClickButton: function() {
                     globals.filter.clear();
                     me.updateFilterGrid(true);
                 }
@@ -1371,11 +1374,11 @@ namespace.module('vd.page', function (exports) {
                 ignoreCase: true,
                 caption: 'Flights',
                 // rowId, status
-                onSelectRow: function (rowId) { me._updateDetailsGrid(rowId); },
+                onSelectRow: function(rowId) { me._updateDetailsGrid(rowId); },
                 // rowId, iRow, iCol, e
-                ondblClickRow: function (rowId) { me._centerMapToObject(rowId); }
+                ondblClickRow: function(rowId) { me._centerMapToObject(rowId); }
             });
-            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementFlightData); };
+            navCenterOnMap.onClickButton = function() { me._centerToMapClick(elementFlightData); };
             $(elementFlightData).jqGrid('filterToolbar', gridFilterOpts);
             $(elementFlightData).jqGrid('navGrid', "#flightDataPager", navOptions);
             $(elementFlightData).jqGrid('navButtonAdd', "#flightDataPager", navCenterOnMap);
@@ -1401,11 +1404,11 @@ namespace.module('vd.page', function (exports) {
                 hiddengrid: true, // initially collapse
                 caption: 'ATC',
                 // rowId, status
-                onSelectRow: function (rowId) { me._updateDetailsGrid(rowId); },
+                onSelectRow: function(rowId) { me._updateDetailsGrid(rowId); },
                 // rowId, iRow, iCol, e
-                ondblClickRow: function (rowId) { me._centerMapToObject(rowId); }
+                ondblClickRow: function(rowId) { me._centerMapToObject(rowId); }
             });
-            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementAtcData); };
+            navCenterOnMap.onClickButton = function() { me._centerToMapClick(elementAtcData); };
             $(elementAtcData).jqGrid('filterToolbar', gridFilterOpts);
             $(elementAtcData).jqGrid('navGrid', "#atcDataPager", navOptions);
             $(elementAtcData).jqGrid('navButtonAdd', "#atcDataPager", navCenterOnMap);
@@ -1429,11 +1432,11 @@ namespace.module('vd.page', function (exports) {
                 hiddengrid: true, // initially collapse
                 caption: 'Filter',
                 // rowId, status
-                onSelectRow: function (rowId) { me._updateDetailsGrid(rowId); },
+                onSelectRow: function(rowId) { me._updateDetailsGrid(rowId); },
                 // rowId, iRow, iCol, e
-                ondblClickRow: function (rowId) { me._centerMapToObject(rowId, true); }
+                ondblClickRow: function(rowId) { me._centerMapToObject(rowId, true); }
             });
-            navCenterOnMap.onClickButton = function () { me._centerToMapClick(elementFilter); };
+            navCenterOnMap.onClickButton = function() { me._centerToMapClick(elementFilter); };
             $(elementFilter).jqGrid('filterToolbar', gridFilterOpts);
             $(elementFilter).jqGrid('navGrid', "#filterDataPager", navOptions);
             $(elementFilter).jqGrid('navButtonAdd', "#filterDataPager", navCenterOnMap);
@@ -1443,7 +1446,7 @@ namespace.module('vd.page', function (exports) {
             // details
             $(elementDetailsData).jqGrid({
                 datatype: 'clientSide',
-                data: [{ property: "-->", value: "select object to display"}],
+                data: [{ property: "-->", value: "select object to display" }],
                 height: "auto",
                 width: widthGrids,
                 forceFit: true,
@@ -1451,7 +1454,7 @@ namespace.module('vd.page', function (exports) {
                 colNames: ['Name', 'Value'],
                 colModel: colModelDetails,
                 viewrecords: true,
-                onSelectRow: function (rowId) { me._updateDetailsGrid(rowId); },
+                onSelectRow: function(rowId) { me._updateDetailsGrid(rowId); },
                 gridview: true,
                 hiddengrid: true, // initially collapse
                 caption: 'Details'
@@ -1469,7 +1472,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see vd.module:page.Globals#_initLogger
     */
-    exports.PageController.prototype._initLogLevels = function () {
+    exports.PageController.prototype._initLogLevels = function() {
         var levels = [
             log4javascript.Level.TRACE.name, log4javascript.Level.DEBUG.name,
             log4javascript.Level.INFO.name, log4javascript.Level.WARN.name,
@@ -1483,7 +1486,7 @@ namespace.module('vd.page', function (exports) {
     * @see vd.module:page.PageController#displayOverlayChart
     * @see vd.module:page.PageController#loadOverlayChart
     */
-    exports.PageController.prototype._initGroundOverlays = function () {
+    exports.PageController.prototype._initGroundOverlays = function() {
         var airportIcaos = globals.groundOverlays.airports;
         vd.util.UtilsWeb.selectAddOptions("inputGroundOverlaysAirport", airportIcaos);
         var opacities = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
@@ -1495,7 +1498,7 @@ namespace.module('vd.page', function (exports) {
     * Init the about side bar tab.
     * @private
     */
-    exports.PageController.prototype._initAbout = function () {
+    exports.PageController.prototype._initAbout = function() {
         var version = document.getElementById("vatGmVersion");
         $(version).empty();
         version.appendChild(document.createTextNode(globals.version));
@@ -1505,7 +1508,7 @@ namespace.module('vd.page', function (exports) {
     * Init altitude profile.
     * @private
     */
-    exports.PageController.prototype._initAltitudeProfile = function () {
+    exports.PageController.prototype._initAltitudeProfile = function() {
         if (globals.isOnlyMapMode) return;
         globals.altitudeProfile = new vd.gc.AltitudeProfile("mapAltitudeProfile"); // do this before collapsing bar
         document.getElementById("inputElevationService").checked = globals.elevationServiceEnabled;
@@ -1516,7 +1519,7 @@ namespace.module('vd.page', function (exports) {
     * Clear own map overlays.
     * @private
     */
-    exports.PageController.prototype._clearOwnMapOverlays = function () {
+    exports.PageController.prototype._clearOwnMapOverlays = function() {
         this.hideRoute();
     };
     // #endregion ------------ private part init ------------
@@ -1526,7 +1529,7 @@ namespace.module('vd.page', function (exports) {
     * Display bounds and geo location.
     * @private
     */
-    exports.PageController.prototype._displayLocationAndBounds = function () {
+    exports.PageController.prototype._displayLocationAndBounds = function() {
         this._displayMapBounds();
         this._displayGeolocation();
         this._displayZoomInfo();
@@ -1536,7 +1539,7 @@ namespace.module('vd.page', function (exports) {
     * Display then map bounds (coordinates).
     * @private
     */
-    exports.PageController.prototype._displayMapBounds = function () {
+    exports.PageController.prototype._displayMapBounds = function() {
         if (globals.isOnlyMapMode) return;
         if (Object.isNullOrUndefined(globals.map)) return; // during init
         var bounds = globals.map.getBounds();
@@ -1586,7 +1589,7 @@ namespace.module('vd.page', function (exports) {
     * Update the geo location.
     * @private
     */
-    exports.PageController.prototype._displayGeolocation = function () {
+    exports.PageController.prototype._displayGeolocation = function() {
         if (globals.isOnlyMapMode) return;
 
         // geo location available
@@ -1602,7 +1605,7 @@ namespace.module('vd.page', function (exports) {
     * Display an infto that the zoom is too low.
     * @private
     */
-    exports.PageController.prototype._displayZoomInfo = function () {
+    exports.PageController.prototype._displayZoomInfo = function() {
         // Info
         var hiddenInfo = this._hiddenByZoomMessage();
         if (!String.isNullOrEmpty(hiddenInfo)) this.displayInfo(hiddenInfo);
@@ -1612,7 +1615,7 @@ namespace.module('vd.page', function (exports) {
     * Display a color bar for the altitude.
     * @private
     */
-    exports.PageController.prototype._displayAltitudeColorBar = function () {
+    exports.PageController.prototype._displayAltitudeColorBar = function() {
         var bar = document.getElementById("inputFlightWaypointsLegend");
         if (Object.isNullOrUndefined(bar.getContext)) {
             // check
@@ -1639,7 +1642,7 @@ namespace.module('vd.page', function (exports) {
     * @param {String} info
     * @private
     */
-    exports.PageController.prototype._setVatsimInfoFields = function (vatsimFileInfo) {
+    exports.PageController.prototype._setVatsimInfoFields = function(vatsimFileInfo) {
         if (globals.isOnlyMapMode) return;
 
         // file info
@@ -1653,7 +1656,7 @@ namespace.module('vd.page', function (exports) {
     * Set FsxWs file info.
     * @private
     */
-    exports.PageController.prototype._setFsxWsInfoFields = function () {
+    exports.PageController.prototype._setFsxWsInfoFields = function() {
         if (globals.isOnlyMapMode) return;
 
         // FsxWs info in general
@@ -1702,7 +1705,7 @@ namespace.module('vd.page', function (exports) {
     * @return {String}
     * @private
     */
-    exports.PageController.prototype._hiddenByZoomMessage = function () {
+    exports.PageController.prototype._hiddenByZoomMessage = function() {
         var zoom = globals.map.getZoom();
         var hiddenInfo = "";
         if (zoom <= globals.flightHideZoomLevel) hiddenInfo = "Flights";
@@ -1718,7 +1721,7 @@ namespace.module('vd.page', function (exports) {
     * @return {Boolean}
     * @private
     */
-    exports.PageController.prototype._isSideBarWide = function () {
+    exports.PageController.prototype._isSideBarWide = function() {
         var w = $("#sideBar").width();
         return globals.sideBarWideWidth < w;
     };
@@ -1726,7 +1729,7 @@ namespace.module('vd.page', function (exports) {
     /**
     * Enable / disable the ground overlay URLs
     */
-    exports.PageController.prototype._groundOverlayUrls = function () {
+    exports.PageController.prototype._groundOverlayUrls = function() {
         var god = document.getElementById("inputGroundOverlayDetails");
         var golv = document.getElementById("inputGroundOverlayChartLatestVersion");
 
@@ -1752,7 +1755,7 @@ namespace.module('vd.page', function (exports) {
     * Async handling of bounds changed.
     * @private
     */
-    exports.PageController.prototype._asyncBoundsUpdate = function () {
+    exports.PageController.prototype._asyncBoundsUpdate = function() {
         if (globals._asyncBoundsUpdateSemaphore) {
             // multiple calls / race, must never happen
             return;
@@ -1781,7 +1784,7 @@ namespace.module('vd.page', function (exports) {
     * @param {HTMLElement} element
     * @private
     */
-    exports.PageController.prototype._centerToMapClick = function (element) {
+    exports.PageController.prototype._centerToMapClick = function(element) {
         if (Object.isNullOrUndefined(element)) return;
         var objectId = String.toNumber($(element).jqGrid('getGridParam', 'selrow'), -1);
         if (objectId < 0) return;
@@ -1796,28 +1799,28 @@ namespace.module('vd.page', function (exports) {
     * @param {String} rowId
     * @private
     */
-    exports.PageController.prototype._updateDetailsGrid = function (rowId) {
+    exports.PageController.prototype._updateDetailsGrid = function(rowId) {
         var objectId = String.toNumber(rowId, -1);
         var pv = null;
         if (objectId < 0 && !String.isNullOrEmpty(rowId) && !Object.isNullOrUndefined(globals.gridSelectedEntity)) {
             // navigation within details
             switch (rowId.toLowerCase()) {
-                case "flightplan":
-                    if (!Object.isNullOrUndefined(globals.gridSelectedEntity.flightplan))
-                        pv = globals.gridSelectedEntity.flightplan.toPropertyValue();
-                    break;
-                case "flight":
-                    pv = globals.gridSelectedEntity.toPropertyValue();
-                    break;
-                case "vataware":
-                    if (!Object.isNullOrUndefined(globals.gridSelectedEntity) &&
+            case "flightplan":
+                if (!Object.isNullOrUndefined(globals.gridSelectedEntity.flightplan))
+                    pv = globals.gridSelectedEntity.flightplan.toPropertyValue();
+                break;
+            case "flight":
+                pv = globals.gridSelectedEntity.toPropertyValue();
+                break;
+            case "vataware":
+                if (!Object.isNullOrUndefined(globals.gridSelectedEntity) &&
                     globals.gridSelectedEntity.isVatsimBased()) {
-                        var url = globals.urlVatasimPilot + globals.gridSelectedEntity.vatsimId;
-                        vd.util.UtilsWeb.newLocation(url, true);
-                    }
-                    break;
-                default:
-                    break;
+                    var url = globals.urlVatasimPilot + globals.gridSelectedEntity.vatsimId;
+                    vd.util.UtilsWeb.newLocation(url, true);
+                }
+                break;
+            default:
+                break;
             }
         } else {
             var entity = globals.allEntities.findByObjectId(objectId);
@@ -1847,17 +1850,28 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see <a href="http://www.trirand.com/jqgridwiki/doku.php?id=wiki:events">Docu jqGrid</a>
     */
-    exports.PageController.prototype._centerMapToObject = function (rowId, displayInfo) {
+    exports.PageController.prototype._centerMapToObject = function(rowId, displayInfo) {
         if (String.isNullOrEmpty(rowId)) {
-            globals.log.warn("Center to map called without row id");
+            globals.log.warn("Center to map called without id");
             return;
         }
         displayInfo = Object.isNullOrUndefined(displayInfo, false);
+
+        // find all main objects, but no helper entities
         var entity = globals.allEntities.findByObjectId(rowId, true); // deep search, also finds secondary entities
+
+        // helper objects (ATC) is also displayed in the grid and needs to be checked
+        if (Object.isNullOrUndefined(entity)) {
+            entity = vd.entity.base.BaseEntityModel.findByObjectId(globals.vatsimClients.atcs, rowId, true);
+        }
+
+        // warning if not initialized
         if (Object.isNullOrUndefined(entity)) {
             globals.log.warn("Center to map called with id " + rowId + ", but no entity");
             return;
         }
+        
+        // center
         globals.map.setCenter(entity.latLng());
         if (displayInfo) this._entityDislayedInfo(entity);
 
@@ -1871,7 +1885,7 @@ namespace.module('vd.page', function (exports) {
     * @param {vd.entity.base.BaseEntityModel}
     * @private
     */
-    exports.PageController.prototype._entityDislayedInfo = function (entity) {
+    exports.PageController.prototype._entityDislayedInfo = function(entity) {
         if (Object.isNullOrUndefined(entity)) return;
         var msg = "";
         if (entity.entity === "Flight") {
@@ -1890,7 +1904,7 @@ namespace.module('vd.page', function (exports) {
     * @return {Boolean}
     * @private
     */
-    exports.PageController.prototype._gridsVisible = function () {
+    exports.PageController.prototype._gridsVisible = function() {
         var d = document.getElementById("sideBarData").style.display;
         return (d.toLowerCase() !== "none");
     };
@@ -1901,7 +1915,7 @@ namespace.module('vd.page', function (exports) {
     * @return {String}
     * @private
     */
-    exports.PageController.prototype._gridHidden = function (hidden) {
+    exports.PageController.prototype._gridHidden = function(hidden) {
         return hidden ? "hidden" : "visible";
     };
 
@@ -1912,7 +1926,7 @@ namespace.module('vd.page', function (exports) {
     * @param {Number} gridWidth 
     * @private
     */
-    exports.PageController.prototype._changeGridColumnWidths = function (table, colModel, gridWidth) {
+    exports.PageController.prototype._changeGridColumnWidths = function(table, colModel, gridWidth) {
         if (gridWidth < 10) return; // grid most likely invisible / hidden!
 
         // the whole model cannot be changed at once:
@@ -1930,7 +1944,7 @@ namespace.module('vd.page', function (exports) {
     * @private
     * @see <a href="http://tntluoma.com/sidebars/codes/">Codes (Unicode)</a>
     */
-    exports.PageController.prototype._booleanToCheckmark = function (cellvalue) {
+    exports.PageController.prototype._booleanToCheckmark = function(cellvalue) {
         // full signature cellvalue, options, rowObject
         return cellvalue ? "&#10004;" : "";
     };
