@@ -46,6 +46,17 @@ namespace.module('vd.util', function (exports) {
 		url = url.replace(window.location.pathname, newDestination);
 		return url;
 	};
+	
+	/**
+	* Remove query string.
+	* @param  {String} url with query string
+	* @return {String} url without query string
+	*/
+	exports.UtilsWeb.removeQueryString = function (url) {
+		if (String.isNullOrEmpty(url)) return url;
+		if (!url.contains("?")) return url;
+		return url.substring(0, url.indexOf('?'));
+	};
 
 	/**
 	* Get the selected values.

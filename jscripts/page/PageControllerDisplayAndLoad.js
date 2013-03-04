@@ -286,6 +286,9 @@ namespace.module('vd.page', function(exports) {
             mergedList = new vd.entity.base.EntityMapList(vatsimEntities);
         }
 
+        // can be used to debug, types
+        // var cn = mergedList.entityTypes();
+
         // NaviGraph data will be added on top, irregardless of usage mode
         if (!Object.isNullOrUndefined(globals.fsxWs)) {
             if (globals.fsxWs.hasNavaids()) mergedList.addEntities(globals.fsxWs.navaids);
