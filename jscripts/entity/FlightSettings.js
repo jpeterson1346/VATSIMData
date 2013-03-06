@@ -144,6 +144,8 @@ namespace.module('vd.entity', function(exports) {
         this.displayMinimal();
         this.displayFlight = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayflight, this.displayFlight);
         this.displaySimplifiedIcon = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displaysimplifiedicon, this.displaySimplifiedIcon);
+        this.displayOnGround = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayonground, this.displayOnGround);
+        this.displayWaypointLines = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displaywaypointlines, this.displayWaypointLines);
     };
 
     /**

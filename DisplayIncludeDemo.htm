@@ -1,22 +1,7 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>Use VatGM iny our webpages</title>
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-26175113-1']);
-            _gaq.push(['_setDomainName', 'klausbasan.de']);
-            _gaq.push(['_trackPageview']);
-
-            (function() {
-                var ga = document.createElement('script');
-                ga.type = 'text/javascript';
-                ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0];
-                s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
+        <title>Use VatGM in your webpages</title>
         <style type="text/css">
             body {
                 color: black;
@@ -43,9 +28,13 @@
         <div class="headerBar"><a href="http://vatgm.codeplex.com/">Project</a> | <a href="http://vatgm.codeplex.com/wikipage?title=Legal">Legal info</a></div>
         <hr/>
         <div>
-            Using VatGM in your application (e.g. as iframe) is permitted. But it is your responsibility 
-            a) to check the Google license agreements and comply with them, and 
-            b) notify the user about the privacy details as stated above (usage of cookies etc.).
+            Using VatGM in your application (e.g. as iframe) is permitted (refer to the 
+            <a href="http://vatgm.codeplex.com/wikipage?title=Include">project page</a>).
+            But it is <b> your responsibility</b>:
+            <ol>
+                <li>to check the Google license agreements and comply with them, and</li> 
+                <li>notify the user about the privacy details as stated above (usage of cookies, Google Analytics etc.).</li>
+            </ol>
         </div>
         <div>
             <b>Caveats:</b> Please understand VatGM is completely <a href="http://vatgm.codeplex.com/">JavaScript based</a>, this
@@ -53,18 +42,16 @@
             for mobile devices, or if you require a low footprint at all. 
         </div>
         <div>
-            <b>Query parameters:</b><br/>
-            gmzoom [3..11], gmlat / gmlng, gmoverview [true|false], displayatc [true|false], displayairport [true|false],
-            displayflight [true|false], displaysimplifiedicon [true|false]
+            Query parameters are explained <a href="http://vatgm.codeplex.com/wikipage?title=Include">here</a>.
         </div>
         <h1>Tiny demo</h1>
         <div>
-            In an 300x200 iframe:<br/>
+            In an 300x200 iframe, as <a href="DisplayInclude.htm?displaysimplifiedicon=true">full page</a>:<br/>
             <iframe name="VatGM in iframe" scrolling="no" width="300" height="200" src="DisplayInclude.htm?displaysimplifiedicon=true"></iframe><br/>
         </div>
         <h1>Mid size frame demo</h1>
         <div>
-            In an 800x600 iframe:<br/>
+            In an 800x600 iframe, as <a  href="DisplayInclude.htm">full page</a>:<br/>
             <iframe name="VatGM in iframe" scrolling="no" width="800" height="600" src="DisplayInclude.htm"></iframe><br/>
         </div>
     </body>

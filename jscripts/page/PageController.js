@@ -355,7 +355,10 @@ namespace.module('vd.page', function(exports) {
                 if (status == google.maps.GeocoderStatus.OK && results && results[0]) {
                     var latLng = results[0].geometry.location;
                     var fullName = results[0].formatted_address;
-                    ePlace.value = fullName;
+                    // DOM ePlace not always available, e.g. by IncludePage
+                    if (!Object.isNullOrUndefined(ePlace)) {
+                        ePlace.value = fullName;
+                    }
                     if (!Object.isNullOrUndefined(latLng)) {
                         me.newLocation(center, latLng, zoomLevel);
                     }
@@ -1096,13 +1099,21 @@ namespace.module('vd.page', function(exports) {
         google.maps.event.addListener(globals.map, 'bounds_changed',
             function() { me.boundsChangedEvent(); }
         ); // zoom_changed, dragend
-        this._displayLocationAndBounds();
-        this.newLocation(true, latLng);
+
+        // set location, either by lat/lng or given location
+        if (String.isNullOrEmpty(globals.queryParameters.gmplace)) {
+            this._displayLocationAndBounds();
+            this.newLocation(true, latLng);
+        } else {
+            this.newPlace(true, globals.queryParameters.gmplace, mapZoom);
+        }
+
+        // markers
         this._markers.map = globals.map;
 
         // check (by call back) whether we can expect geo location to be working
         // for performance reason I do not yet set the new position -> updates all flights etc.
-        if (!globals.isOnlyMapMode && navigator.geolocation) {
+        if (globals.geolocationEnabled && navigator.geolocation && String.isNullOrEmpty(globals.queryParameters.gmplace)) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             navigator.geolocation.getCurrentPosition(
                 function(position) {
@@ -1119,7 +1130,7 @@ namespace.module('vd.page', function(exports) {
     */
     exports.PageController.prototype._initGeoLocationPosition = function() {
         // get current position if available
-        if (!globals.isOnlyMapMode && navigator.geolocation) {
+        if (globals.geolocationEnabled && navigator.geolocation) {
             globals.geolocationWorking = false; // the feature is supported by the DOM, but is it working?
             var me = this;
             navigator.geolocation.getCurrentPosition(
@@ -1870,7 +1881,7 @@ namespace.module('vd.page', function(exports) {
             globals.log.warn("Center to map called with id " + rowId + ", but no entity");
             return;
         }
-        
+
         // center
         globals.map.setCenter(entity.latLng());
         if (displayInfo) this._entityDislayedInfo(entity);

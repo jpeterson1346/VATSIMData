@@ -118,7 +118,7 @@ namespace.module('vd.page', function(exports) {
         this.map = null;
         this.mapOverlayView = null;
         this.mapOldCenter = null;
-        this.mapFollowId = null; // Object id being followed
+        this.mapFollowId =  Object.ifNotNullOrUndefined(this.queryParameters.followid , null); // Object id being followed
         this.mapOldZoom = -1;
         this.mapRelevantMovement = 5; // 5%
         this.mapElevationZeroCutoff = true; // Google features sea levels < 0, I am aware this will cutoff some places on land < 0
@@ -128,6 +128,7 @@ namespace.module('vd.page', function(exports) {
         this.angelsDigitsDisplayed = 2;
 
         // Places, geolocation
+        this.geolocationEnabled = !this.isOnlyMapMode; // enable geolocation for this  application
         this.geolocation = navigator.geolocation; // browser supports feature
         this.geolocationWorking = this.geolocation; // feature is really working
         this.geolocationLat = 0;
@@ -161,8 +162,8 @@ namespace.module('vd.page', function(exports) {
         this.flightImageHeightLarge = 26;
         this.flightImageWidthSmall = 16;
         this.flightImageHeightSmall = 16;
-        this.flightImageWidthSimplified = 10;
-        this.flightImageHeightSimplified = 10;
+        this.flightImageWidthSimplified = 8;
+        this.flightImageHeightSimplified = 8;
         this.flightGridRows = 10;
         this.flightHideZoomLevel = 4;
         this.flightMouseoverTimeout = 6 * 1000; //ms

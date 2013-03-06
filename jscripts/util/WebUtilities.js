@@ -2,14 +2,14 @@
 * @module vd.util
 * @license <a href = "http://vatgm.codeplex.com/wikipage?title=Legal">Project site</a>
 */
-namespace.module('vd.util', function (exports) {
+namespace.module('vd.util', function(exports) {
 
 	/**
 	* Web utilities.
 	* @constructor
 	* @author KWB
 	*/
-	exports.UtilsWeb = function () {
+	exports.UtilsWeb = function() {
 		// code goes here
 	};
 
@@ -17,7 +17,7 @@ namespace.module('vd.util', function (exports) {
 	* Get the current page name
 	* @return {String} current page name
 	*/
-	exports.UtilsWeb.getPageName = function () {
+	exports.UtilsWeb.getPageName = function() {
 		var sPath = window.location.pathname;
 		var sPage = sPath.substring(sPath.lastIndexOf('/') + 1);
 		return sPage;
@@ -28,7 +28,7 @@ namespace.module('vd.util', function (exports) {
 	* @param  {String} newDestination
 	* @return {String} url
 	*/
-	exports.UtilsWeb.replaceCurrentPage = function (newDestination) {
+	exports.UtilsWeb.replaceCurrentPage = function(newDestination) {
 		var page = vd.util.UtilsWeb.getPageName();
 		var nd = newDestination.startsWith("/") ? newDestination.substr(1) : newDestination;
 		var url = window.location.toString();
@@ -41,18 +41,18 @@ namespace.module('vd.util', function (exports) {
 	* @param  {String} newDestination
 	* @return {String} url
 	*/
-	exports.UtilsWeb.replacePath = function (newDestination) {
+	exports.UtilsWeb.replacePath = function(newDestination) {
 		var url = window.location.toString();
 		url = url.replace(window.location.pathname, newDestination);
 		return url;
 	};
-	
+
 	/**
 	* Remove query string.
 	* @param  {String} url with query string
 	* @return {String} url without query string
 	*/
-	exports.UtilsWeb.removeQueryString = function (url) {
+	exports.UtilsWeb.removeQueryString = function(url) {
 		if (String.isNullOrEmpty(url)) return url;
 		if (!url.contains("?")) return url;
 		return url.substring(0, url.indexOf('?'));
@@ -63,7 +63,7 @@ namespace.module('vd.util', function (exports) {
 	* @param  {String|HTMLSelectElement} selectElement
 	* @return {Array}
 	*/
-	exports.UtilsWeb.getSelectedValues = function (selectElement) {
+	exports.UtilsWeb.getSelectedValues = function(selectElement) {
 		var values = [];
 		var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
 		if (Object.isNullOrUndefined(selectDomElement)) return values;
@@ -79,7 +79,7 @@ namespace.module('vd.util', function (exports) {
 	* @param  {String|HTMLSelectElement} selectElement
 	* @return {Array}
 	*/
-	exports.UtilsWeb.getSelectedValue = function (selectElement) {
+	exports.UtilsWeb.getSelectedValue = function(selectElement) {
 		var values = exports.UtilsWeb.getSelectedValues(selectElement);
 		return (Array.isNullOrEmpty(values)) ? null : values[0];
 	};
@@ -89,7 +89,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {HTMLSelectElement} selectElement
 	* @param {String} value to be set value, must be one of the options
 	*/
-	exports.UtilsWeb.selectValue = function (selectElement, value) {
+	exports.UtilsWeb.selectValue = function(selectElement, value) {
 		var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
 		if (Object.isNullOrUndefined(selectDomElement)) return;
 		for (var i = 0; i < selectDomElement.length; ++i) {
@@ -101,7 +101,7 @@ namespace.module('vd.util', function (exports) {
 	* Unselect all values.
 	* @param {String|HTMLSelectElement} selectElement
 	*/
-	exports.UtilsWeb.unselectAllValues = function (selectElement) {
+	exports.UtilsWeb.unselectAllValues = function(selectElement) {
 		var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
 		if (Object.isNullOrUndefined(selectDomElement)) return;
 		for (var i = 0; i < selectDomElement.length; i++) {
@@ -114,7 +114,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String|HTMLSelectElement} selectElement
 	* @param {Array} options
 	*/
-	exports.UtilsWeb.selectAddOptions = function (selectElement, options, selectedValue) {
+	exports.UtilsWeb.selectAddOptions = function(selectElement, options, selectedValue) {
 		var selectDomElement = exports.UtilsWeb.elementFromStringOrDomElement(selectElement);
 		if (Object.isNullOrUndefined(selectDomElement)) return;
 		if (Array.isNullOrEmpty(options)) return;
@@ -130,7 +130,7 @@ namespace.module('vd.util', function (exports) {
 	* Local server?
 	* @return {Boolean}
 	*/
-	exports.UtilsWeb.isLocalServer = function () {
+	exports.UtilsWeb.isLocalServer = function() {
 		var server = window.location.hostname;
 		if (String.isNullOrEmpty(server)) return true;
 		server = server.toLowerCase();
@@ -143,7 +143,7 @@ namespace.module('vd.util', function (exports) {
 	* @param   {String} content
 	* @return {String}
 	*/
-	exports.UtilsWeb.spaceToNbsp = function (content) {
+	exports.UtilsWeb.spaceToNbsp = function(content) {
 		if (String.isNullOrEmpty(content)) return content;
 		return content.replace(/\s/g, "&nbsp;");
 	};
@@ -153,7 +153,7 @@ namespace.module('vd.util', function (exports) {
 	* @param   {String} content
 	* @return {String}
 	*/
-	exports.UtilsWeb.crToBr = function (content) {
+	exports.UtilsWeb.crToBr = function(content) {
 		if (String.isNullOrEmpty(content)) return content;
 		return content.replace(/\n/g, "<br/>");
 	};
@@ -163,7 +163,7 @@ namespace.module('vd.util', function (exports) {
 	* @param   {String} content
 	* @return {String}
 	*/
-	exports.UtilsWeb.cleanUpAndSpaceToNsp = function (content) {
+	exports.UtilsWeb.cleanUpAndSpaceToNsp = function(content) {
 		if (String.isNullOrEmpty(content)) return content;
 		return spaceToNbsp(content.cleanUp());
 	};
@@ -177,7 +177,7 @@ namespace.module('vd.util', function (exports) {
 	* @return {String} property of the style
 	* @see <a href="http://stackoverflow.com/questions/2226869/css-parser-abstracter-how-to-convert-stylesheet-into-object">CSS parser</a>
 	*/
-	exports.UtilsWeb.getCssStyle = function (ruleSelector, cssprop, styleSheet) {
+	exports.UtilsWeb.getCssStyle = function(ruleSelector, cssprop, styleSheet) {
 		for (var c = 0, lenC = document.styleSheets.length; c < lenC; c++) {
 			var sheet = document.styleSheets[c];
 			if (!String.isNullOrEmpty(styleSheet) && !String.isNullOrEmpty(sheet.href)) {
@@ -202,7 +202,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String|HTMLCheckbox} checkbox
 	* @return {Boolean} new value
 	*/
-	exports.UtilsWeb.toggleCheckbox = function (checkbox) {
+	exports.UtilsWeb.toggleCheckbox = function(checkbox) {
 		var el = exports.UtilsWeb.elementFromStringOrDomElement(checkbox);
 		if (Object.isNullOrUndefined(el) || Object.isNullOrUndefined(el.checked)) return false;
 		el.checked = !el.checked;
@@ -215,7 +215,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {Boolean} [setValue] set value 
 	* @return {Boolean} new value
 	*/
-	exports.UtilsWeb.checkboxChecked = function (checkbox, setValue) {
+	exports.UtilsWeb.checkboxChecked = function(checkbox, setValue) {
 		var el = exports.UtilsWeb.elementFromStringOrDomElement(checkbox);
 		if (Object.isNullOrUndefined(el) || Object.isNullOrUndefined(el.checked)) return false;
 		if (!Object.isNullOrUndefined(setValue)) el.checked = setValue;
@@ -238,10 +238,31 @@ namespace.module('vd.util', function (exports) {
 	* @param {String|DomElement} stringOrDomElement
 	* @return {DomElement}
 	*/
-	exports.UtilsWeb.elementFromStringOrDomElement = function (stringOrDomElement) {
+	exports.UtilsWeb.elementFromStringOrDomElement = function(stringOrDomElement) {
 		if (Object.isNullOrUndefined(stringOrDomElement)) return null;
 		if (!String.isString(stringOrDomElement)) return stringOrDomElement; // assuming we have DOM already
 		return document.getElementById(fixIdString(stringOrDomElement));
+	};
+
+	/**
+	* Init the Google Analytics variable, 
+	* requires global variable _gaq
+	*/
+	// VatGM: Init Google Analytics
+	exports.UtilsWeb.initGoogleAnalytics = function() {
+		// original snippet: https://developers.google.com/analytics/devguides/collection/gajs/asyncTracking
+		if (Object.isNullOrUndefined(_gaq)) alert("Global Google Analytics variable _gaq missing");
+		_gaq.push(['_setAccount', 'UA-26175113-1']);
+		_gaq.push(['_setDomainName', 'auto']);
+		// _gaq.push(['_setDomainName', 'mydomainnayme.de']);
+		_gaq.push(['_trackPageview']);
+
+		var ga = document.createElement('script');
+		ga.type = 'text/javascript';
+		ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(ga, s);
 	};
 
 	/**
@@ -249,7 +270,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String} url
 	* @param {Boolean} [newWindow]
 	*/
-	exports.UtilsWeb.newLocation = function (url, newWindow) {
+	exports.UtilsWeb.newLocation = function(url, newWindow) {
 		if (String.isNullOrEmpty(url)) return;
 		newWindow = Object.ifNotNullOrUndefined(newWindow, true);
 		if (newWindow)
@@ -264,12 +285,12 @@ namespace.module('vd.util', function (exports) {
 	* @see <a href="http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929">Stack overflow articler</a>
 	* @see vd.module:util.UtilsWeb.getQueryParameter
 	*/
-	exports.UtilsWeb.getQueryParameters = function () {
+	exports.UtilsWeb.getQueryParameters = function() {
 		var urlParams = {};
 		var match,
 			pl = /\+/g, // Regex for replacing addition symbol with a space
 			search = /([^&=]+)=?([^&]*)/g,
-			decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+			decode = function(s) { return decodeURIComponent(s.replace(pl, " ")); },
 			query = window.location.search.substring(1);
 
 		while (!Object.isNullOrUndefined(match = search.exec(query)))
@@ -285,7 +306,7 @@ namespace.module('vd.util', function (exports) {
 	* @see <a href="http://stackoverflow.com/a/5158301/356726">Stack overflow article</a>
 	* @see vd.module:util.UtilsWeb.getQueryParameter
 	*/
-	exports.UtilsWeb.getQueryParameter = function (name) {
+	exports.UtilsWeb.getQueryParameter = function(name) {
 		var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
 		return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 	};
@@ -295,7 +316,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String} url
 	* @return {String} path 
 	*/
-	exports.UtilsWeb.getPath = function (url) {
+	exports.UtilsWeb.getPath = function(url) {
 		if (String.isNullOrEmpty(url)) return null;
 		var parsed = exports.UtilsWeb.parseUri(url);
 		return parsed.path;
@@ -306,7 +327,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String} url
 	* @return {String} path 
 	*/
-	exports.UtilsWeb.removeProtocol = function (url) {
+	exports.UtilsWeb.removeProtocol = function(url) {
 		if (String.isNullOrEmpty(url)) return null;
 		var parsed = exports.UtilsWeb.parseUri(url);
 		var newUrl = url.replace(parsed.protocol, "").replace("://", "");
@@ -319,7 +340,7 @@ namespace.module('vd.util', function (exports) {
 	* @param {String} str URI string to be parsed
 	* @return {Object} URI object as described in the 
 	*/
-	exports.UtilsWeb.parseUri = function (str) {
+	exports.UtilsWeb.parseUri = function(str) {
 		var o = exports.UtilsWeb.parseUri.options,
 			m = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
 			uri = {},
@@ -328,7 +349,7 @@ namespace.module('vd.util', function (exports) {
 		while (i--) uri[o.key[i]] = m[i] || "";
 
 		uri[o.q.name] = {};
-		uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+		uri[o.key[12]].replace(o.q.parser, function($0, $1, $2) {
 			if ($1) uri[o.q.name][$1] = $2;
 		});
 
