@@ -54,9 +54,9 @@ namespace.module('vd.page', function(exports) {
                     displayPilot: document.getElementById("inputFlightSettingsPilot").checked,
                     displayId: document.getElementById("inputFlightSettingsId").checked,
                     displayTransponder: document.getElementById("inputFlightSettingsTransponder").checked,
-                    displayOnGround: document.getElementById("inputFlightSettingsOnGround").checked,
+                    displayOnGround: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayonground, document.getElementById("inputFlightSettingsOnGround").checked),
                     displaySpeedAltitudeHeading: document.getElementById("inputFlightSettingsSpeedAltitudeHeading").checked,
-                    displayWaypointLines: document.getElementById("inputFlightSettingsWaypointLines").checked,
+                    displayWaypointLines: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displaywaypointlines, document.getElementById("inputFlightSettingsWaypointLines").checked),
                     displayAircraft: document.getElementById("inputFlightSettingsAircraft").checked,
                     displayRequireFlightplan: document.getElementById("inputFlightSettingsRequireFlightplan").checked,
                     displayHeightAndDeclination: document.getElementById("inputFlightSettingsHeightAndDeclination").checked
@@ -83,7 +83,7 @@ namespace.module('vd.page', function(exports) {
             ap.displayForInclude();
         } else {
             ap.set({
-                displayAirport: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayatc, document.getElementById("inputAirportSettingsShowAirport").checked),
+                displayAirport: Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayairport, document.getElementById("inputAirportSettingsShowAirport").checked),
                 displayAirportVicinity: document.getElementById("inputAirportSettingsVicinity").checked,
                 displayAtis: document.getElementById("inputAirportSettingsAtis").checked,
                 displayMetar: document.getElementById("inputAirportSettingsMetar").checked
