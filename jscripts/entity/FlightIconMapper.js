@@ -60,7 +60,11 @@ namespace.module('vd.entity', function(exports) {
             // specific icons
             if (this.aircraftDesignator === "F18" || this.aircraftDesignator === "F16") {
                 this._imageBaseName = "AircraftFighterJet";
+            } else if (this.aircraftDesignator === "EXPLOSION" || this.aircraftDesignator === "VRS_SA2") {
+                // some TacPack objects, currently mapped against ?? unknown ??
+                this._imageBaseName = "Unknown";
             }
+            
         } // image base name
 
         // build icon
