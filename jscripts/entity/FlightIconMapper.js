@@ -64,7 +64,7 @@ namespace.module('vd.entity', function(exports) {
                 // some TacPack objects, currently mapped against ?? unknown ??
                 this._imageBaseName = "Unknown";
             }
-            
+
         } // image base name
 
         // build icon
@@ -175,14 +175,32 @@ namespace.module('vd.entity', function(exports) {
     * @return {Object} aircraft data tupel
     */
     exports.Flight.FindBestMatchInAircraftData = function(designator) {
-        if (String.isNullOrEmpty(designator)) return null;
-        if (designator.length < 4) return null;
-        var d = designator.toUpperCase();
+        var d = this.StripDesignator(designator);
+        if (String.isNullOrEmpty(d)) return null;
+        if (d.length < 4) return null;
         for (var a = 0, len = exports.Flight.aircraftData.length; a < len; a++) {
             var tupel = exports.Flight.aircraftData[a];
-            // such as /T/E190/F C173 B737/T
-            if (d.indexOf(tupel.Designator) >= 0) return tupel;
+            if (d === tupel.Designator) return tupel;
         }
         return null;
+    };
+
+    /**
+    * Strip unwanted parts from designator
+    * such as /T/E190/F C173 B737/T MD11/Q to E190, MD11
+    * @param {String} designator
+    * @return {String}
+    */
+    exports.Flight.StripDesignator = function(designator) {
+        // 
+        if (String.isNullOrEmpty(designator)) return "";
+        if (!designator.contains("/")) return designator;
+        var parts = designator.split("/");
+        for (var p = 0, len = parts.length; p < len; p++) {
+            var ps = parts[p];
+            if (String.isNullOrEmpty(ps)) continue;
+            if (ps.length >= 2) return ps.toUpperCase();
+        }
+        return "";
     };
 });
