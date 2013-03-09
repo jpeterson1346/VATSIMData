@@ -274,6 +274,15 @@ String.prototype.regexLastIndexOf = function(regex, startpos) {
 };
 
 /**
+* Count occurences of given string.
+* @param {String} countMe
+* @return {Number}
+*/
+String.prototype.count = function(countMe) {
+    return (this.length - this.replace(new RegExp(countMe, "g"), '').length) / countMe.length;
+};
+
+/**
 * Truncate to max characters. 
 * @param {Number} maxLength
 * @param {Boolean} [useWordBoundary] try to keep words

@@ -108,11 +108,11 @@ namespace.module('vd.entity.helper', function(exports) {
     * @return {WaypointSettings}
     */
     exports.WaypointSettings.prototype.displayForInclude = function() {
-        this.displayFlightWaypoints = false;
+        this.displayFlightWaypoints = Object.ifNotNullOrUndefinedBoolean(globals.queryParameters.displayflightwaypoints, false);
         this.displayFlightAltitudeSpeed = false;
         this.displayFlightCallsign = false;
         this.displayFlightWaypointsWhenGrounded = false;
-        this.flightWaypointsNumberMaximum = 0;
+        this.flightWaypointsNumberMaximum = this.displayFlightWaypoints ? 10 : 0;
         this.displayAirway = false;
         this.displayFrequency = false;
         this.displayDistance = false;
