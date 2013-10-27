@@ -52,7 +52,7 @@ namespace.module('vd.gc', function(exports, require) {
         */
         this.elevationProfile = true;
         /**
-        * Color for for elevation profile dots.
+        * Color for elevation profile dots.
         * @type{Number}
         */
         this.elevationProfileColor = "gray";

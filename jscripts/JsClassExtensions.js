@@ -400,9 +400,11 @@ Array.toArray = function(arr) {
     return realArray;
 };
 
-// Convert array values - which represent a number - to type number.
-// @param {Array} array
-// @returns {Array}
+/**
+* Convert array values - which represent a number - to type number.
+* @param {Array} array
+* @returns {Array}
+*/
 Array.arrayValuesToNumber = function(array) {
     var a = [];
     for (var i in array) {
