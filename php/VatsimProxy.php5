@@ -6,15 +6,21 @@
 	//
 	// My standard curl reading
 	//
-	function curlRead($url, &$curl_errno, &$curl_error) {
+	function curlRead($url, &$curl_errno, &$curl_error, &$http_status) {
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
 		$data = curl_exec($ch);
-		$curl_errno = curl_errno($ch);
+		$curl_errno = curl_errno($ch); // 0 is OK
 		$curl_error = curl_error($ch);
+		$http_status = 666; // curl error
+		if (!$curl_errno) {
+			// http://php.net/manual/de/function.curl-getinfo.php
+			$info = curl_getinfo($ch);
+			$http_status = $info['http_code'];
+		} 
 		curl_close($ch);
 		return $data;
 	}
@@ -37,17 +43,11 @@
 	// http://status.vatsim.net/status.txt (this contains the URLs)
 	$urls = array (
 			0 => 
-			// actually only listed as server list provider, but has data also
-			"http://www.net-flyer.net/DataFeed/vatsim-data.txt",
-			// No access
-			// "http://www.pcflyer.net/DataFeed/vatsim-data.txt",
-			// Hangs sometimes
-			// "http://www.klain.net/sidata/vatsim-data.txt",
 			"http://info.vroute.net/vatsim-data.txt",
-			// fast in browser, but slow / denied via PHP
-			// "http://fsproshop.com/servinfo/vatsim-data.txt",
-			// "http://69.89.31.208/servinfo/vatsim-data.txt",
 			"http://data.vattastic.com/vatsim-data.txt"
+
+			// "http://www.pcflyer.net/DataFeed/vatsim-data.txt", // slow
+			// "http://fsproshop.com/servinfo/vatsim-data.txt", // slow
 	);
 	
 	// testing?
@@ -65,7 +65,10 @@
 		)
 	);
 	$urlctx = stream_context_create($context);
-
+	$curl_errno = 0;
+	$curl_error = "";
+	$http_status = 666;
+	
 	if (empty($query) || stristr($query, 'data') || !$knownQuery) {
 		
 		//
@@ -78,17 +81,15 @@
 
 		// retrieve data
 		// http://stackoverflow.com/questions/10189232/file-get-contents-timeout
-		$curl_errno = 0;
-		$curl_error = "";
-		$data = curlRead($url, $curl_errno, $curl_error);
-		if ($curl_errno > 0) {
-			echo "; cURL Error ($curl_errno): $curl_error for $url" . "\r\n";
+		$data = curlRead($url, $curl_errno, $curl_error, $http_status);
+		if ($curl_errno > 0 || $http_status != 200) {
+			echo "; cURL Error ($curl_errno): $curl_error for $url http-status: $http_status" . "\r\n";
 
 			// try second time
 			$url = $urls[$index2];
-			$data = curlRead($url, $curl_errno, $curl_error);
-				if ($curl_errno > 0) {
-				echo "; cURL Error ($curl_errno): $curl_error for $url" . "\r\n";
+			$data = curlRead($url, $curl_errno, $curl_error, $http_status);
+				if ($curl_errno > 0 || $http_status != 200) {
+					echo "; cURL Error ($curl_errno): $curl_error for $url http-status: $http_status" . "\r\n";
 			} else {
 				echo "; Proxy for " . $index . " / " . $url . "\r\n"; 
 				echo $data;
@@ -107,11 +108,9 @@
 		$url = "http://metar.vatsim.net/metar.php?" . $query;
 		
 		// retrieve data changed to curl because of better error handling
-		$curl_errno = 0;
-		$curl_error = "";
-		$data = curlRead($url, $curl_errno, $curl_error);
-		if ($curl_errno > 0) {
-			echo "; cURL Error ($curl_errno): $curl_error for $url";
+		$data = curlRead($url, $curl_errno, $curl_error, $http_status);
+		if ($curl_errno > 0 || $http_status != 200) {
+			echo "; cURL Error ($curl_errno): $curl_error for $url http-status: $http_status" . "\r\n";
 		} else {
 			echo $data;
 		}
@@ -123,13 +122,11 @@
 		for ($i = 0; $i < $urlsCount; $i++) {
 			$url = $urls[$i];
 			$time_start = microtime(true);
-			$curl_errno = 0;
-			$curl_error = "";
-			$data = curlRead($url, $curl_errno, $curl_error);
+			$data = curlRead($url, $curl_errno, $curl_error, $http_status);
 			$time_end = microtime(true);
 			echo "$i: $url ";
-			if ($curl_errno > 0) {
-				echo "cURL Error ($curl_errno): $curl_error " . "\r\n";
+			if ($curl_errno > 0 || $http_status != 200) {
+				echo "; cURL Error ($curl_errno): $curl_error for $url http-status: $http_status" . "\r\n";
 			}
 			$time = $time_end - $time_start;
 			echo "time: $time ms<br/>";
