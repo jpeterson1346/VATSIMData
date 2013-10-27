@@ -230,6 +230,11 @@ namespace.module('vd.entity', function (exports) {
     */
     exports.VatsimClients.prototype._parseVatsimDataFile = function (rawData) {
 
+        // init check
+        if (String.isNullOrEmpty(rawData)) {
+            return exports.VatsimClients.NoNewData;
+        }
+        
         // init
         var statsEntry = new vd.util.RuntimeEntry("Parsing file (VatsimClients)");
         var lines = rawData.split("\n");
@@ -345,8 +350,22 @@ namespace.module('vd.entity', function (exports) {
             }
         } // end parsing lines
 
+        var readAnyObject = !(
+                Array.isNullOrEmpty(atcs) && Array.isNullOrEmpty(flights) &&
+                Array.isNullOrEmpty(flightplans) && Array.isNullOrEmpty(airports));
+
+        // no new objects
+        if (!readAnyObject) {
+            globals.log.info("Parsing vatsimClients, read VATSIM data but no objects");
+            return exports.VatsimClients.NoNewData;
+        }
+
         // update info, helper entities
-        if (Object.isNullOrUndefined(this.update)) alert("Update undefined in VATSIM data parsing");
+        if (Object.isNullOrUndefined(this.update)) {
+            globals.log.error("Parsing vatsimClients, update undefined");
+            return exports.VatsimClients.ParsingFailed;
+        }
+
         this.info = this.update.format("dd.MM.yyyy HH:mm:ss") + " " + this.clientsConnected;
         this.atcs = atcs; // atc currently replaced, since not displayed on map
         this.flightplans = flightplans;

@@ -216,7 +216,7 @@ InfoBox.prototype.createInfoBoxDiv_ = function() {
                 this.eventListeners_.push(google.maps.event.addDomListener(this.div_, events[i], cancelHandler));
             }
 
-            // Workaround for Google bug that causes the cursor to change to a pointer
+            // Workaround for Google issue that causes the cursor to change to a pointer
             // when the mouse moves over a marker underneath InfoBox.
             this.eventListeners_.push(google.maps.event.addDomListener(this.div_, "mouseover", function(e) {
                 this.style.cursor = "default";

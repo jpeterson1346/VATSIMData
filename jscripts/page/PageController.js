@@ -1293,6 +1293,7 @@ namespace.module('vd.page', function(exports) {
             { name: 'displayed', index: 'displayed', align: 'center', width: widthCheckboxes, formatter: this._booleanToCheckmark, search: true }
         ];
 
+        // Filter is a grid used as filter, it is not a specific jqGrid functionality
         var colModelFilter = [
             { name: 'objectId', index: 'objectId', width: 60, hidden: true, search: false },
             { name: 'callsign', index: 'callsign', width: widthCallsign, search: true },
